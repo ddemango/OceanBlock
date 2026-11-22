@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Tidebreaker",
+    "slug": "tidebreaker",
+    "owner": "davide42",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#8fd7ee",
+    "ios": {
+      "bundleIdentifier": "com.tidebreaker.game",
+      "supportsTablet": false,
+      "requireFullScreen": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIStatusBarHidden": true,
+        "UIViewControllerBasedStatusBarAppearance": false
+      }
+    },
+    "android": {
+      "package": "com.tidebreaker.game",
+      "adaptiveIcon": {
+        "backgroundColor": "#1b9fc9",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      }
+    },
+    "plugins": [
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "PORTRAIT_UP"
+        }
+      ],
+      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 260,
+          "resizeMode": "contain",
+          "backgroundColor": "#1b9fc9"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "920e9beb-fa19-4f91-9307-1a1924b89837"
+      }
+    }
+  }
+}

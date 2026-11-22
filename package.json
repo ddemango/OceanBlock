@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "build:mobile": "vite build --config vite.single.config.js && node scripts-embed.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.2",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@capacitor/assets": "^4.0.0",
     "@capacitor/cli": "^8.6.2",
-    "vite": "6.3.5"
+    "vite": "6.3.5",
+    "vite-plugin-singlefile": "^2.3.4"
   }
 }

@@ -5,7 +5,7 @@ import { getLevel, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
 import { buildEnvironment, buildCannon, buildRaft } from './scenery.js';
 import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture } from './textures.js';
 import * as sfx from './audio.js';
-import { isNative, initNative, nativeVibrate } from './native.js';
+import { isNative, isEmbedded, initNative, nativeVibrate } from './native.js';
 
 // ======================================================================
 // Save data
@@ -573,7 +573,7 @@ function toast(msg) {
 
 function vibrate(ms) {
   if (!save.vibe) return;
-  if (isNative) nativeVibrate(ms);
+  if (isNative || isEmbedded) nativeVibrate(ms);
   else if (navigator.vibrate) navigator.vibrate(ms);
 }
 
@@ -765,6 +765,6 @@ frame();
 
 initNative();
 
-if ('serviceWorker' in navigator && import.meta.env.PROD && !isNative) {
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isNative && !isEmbedded) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
