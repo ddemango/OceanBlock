@@ -42,6 +42,7 @@ jobs:
       - name: Simulator build (no Apple account needed)
         if: env.HAS_APPLE_KEY != 'true'
         run: |
+          set -eo pipefail
           echo "::notice::Apple secrets not set — doing an unsigned simulator build only. Add ASC_KEY_P8, ASC_KEY_ID, ASC_ISSUER_ID and APPLE_TEAM_ID to upload to TestFlight."
           xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \

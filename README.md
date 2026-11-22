@@ -76,3 +76,20 @@ Source images live in `assets/` (`icon-only.png`, `splash.png`). Regenerate all 
 ```bash
 npx @capacitor/assets generate --iconBackgroundColor '#1b9fc9' --splashBackgroundColor '#1b9fc9'
 ```
+
+### TestFlight (no Mac needed)
+
+`.github/workflows/ios-testflight.yml` builds the iOS app on a GitHub-hosted Mac on every push
+(or from the Actions tab → "iOS → TestFlight" → Run workflow).
+
+- Without Apple secrets it only compiles a simulator build.
+- With these 4 repository secrets set, it signs the app and uploads it to TestFlight:
+
+| Secret | Where to find it |
+| --- | --- |
+| `APPLE_TEAM_ID` | developer.apple.com → Account → Membership details → Team ID |
+| `ASC_ISSUER_ID` | App Store Connect → Users and Access → Integrations → App Store Connect API |
+| `ASC_KEY_ID` | Same page, the key's Key ID (create a key with the **Admin** role) |
+| `ASC_KEY_P8` | Full text of the downloaded `AuthKey_XXXX.p8` file |
+
+The app record (bundle id `com.tidebreaker.game`) must exist in App Store Connect first.
