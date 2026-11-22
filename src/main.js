@@ -5,6 +5,7 @@ import { getLevel, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
 import { buildEnvironment, buildCannon, buildRaft } from './scenery.js';
 import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture } from './textures.js';
 import * as sfx from './audio.js';
+import { isNative, initNative, nativeVibrate } from './native.js';
 
 // ======================================================================
 // Save data
@@ -571,7 +572,9 @@ function toast(msg) {
 }
 
 function vibrate(ms) {
-  if (save.vibe && navigator.vibrate) navigator.vibrate(ms);
+  if (!save.vibe) return;
+  if (isNative) nativeVibrate(ms);
+  else if (navigator.vibrate) navigator.vibrate(ms);
 }
 
 function goHome() {
@@ -760,6 +763,8 @@ window.__tidebreaker = { state, fire: (x, y, z) => fire(new THREE.Vector3(x, y, 
 goHome();
 frame();
 
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+initNative();
+
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isNative) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }

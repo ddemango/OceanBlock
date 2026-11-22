@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tidebreaker</string>
+    <string name="title_activity_main">Tidebreaker</string>
+    <string name="package_name">com.tidebreaker.game</string>
+    <string name="custom_url_scheme">com.tidebreaker.game</string>
+</resources>

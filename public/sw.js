@@ -1,7 +1,7 @@
 // Simple cache-first service worker so the game works offline once loaded.
 const CACHE = 'tidebreaker-v1';
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/index.html', '/manifest.webmanifest', '/icon.svg'])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/index.html', '/manifest.webmanifest', '/icon.svg', '/icons/icon-192.webp', '/icons/icon-512.webp'])));
   self.skipWaiting();
 });
 self.addEventListener('activate', (e) => {

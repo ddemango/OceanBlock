@@ -1,0 +1,12 @@
+{
+  "appId": "com.tidebreaker.game",
+  "appName": "Tidebreaker",
+  "webDir": "dist",
+  "backgroundColor": "#8fd7ee",
+  "android": { "allowMixedContent": false },
+  "ios": { "contentInset": "never" },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 1200, "backgroundColor": "#1b9fc9", "showSpinner": false },
+    "StatusBar": { "overlaysWebView": true }
+  }
+}

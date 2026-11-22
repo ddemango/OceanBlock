@@ -33,3 +33,46 @@ npm run preview  # serve the production build
 | `src/textures.js` | Canvas-drawn textures (crates, drums, buoys, beams, stone) |
 | `src/audio.js` | WebAudio sound effects |
 | `public/` | PWA manifest, icon and offline service worker |
+
+## Native apps (Android & iOS)
+
+The game is wrapped as a native app with [Capacitor](https://capacitorjs.com). App id: `com.tidebreaker.game`.
+Native extras: real haptics, hidden status bar, splash screen, portrait lock, app icons.
+
+After any change to the game code, rebuild and copy it into the native projects:
+
+```bash
+npm run build && npx cap sync
+```
+
+### Android
+
+Needs Android Studio (or the Android SDK + Java 21).
+
+```bash
+npx cap open android                       # open in Android Studio and press Run
+# or from the command line:
+cd android && ./gradlew assembleDebug      # -> android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+For the Google Play Store, build a signed release bundle in Android Studio
+(Build → Generate Signed App Bundle) and upload the `.aab` in the Play Console.
+
+### iOS
+
+Needs a Mac with Xcode.
+
+```bash
+npx cap open ios     # opens ios/App/App.xcworkspace in Xcode
+```
+
+Pick your Apple developer team under Signing & Capabilities, then Run on a device, or
+Product → Archive to upload to TestFlight / the App Store.
+
+### Icons & splash screens
+
+Source images live in `assets/` (`icon-only.png`, `splash.png`). Regenerate all sizes with:
+
+```bash
+npx @capacitor/assets generate --iconBackgroundColor '#1b9fc9' --splashBackgroundColor '#1b9fc9'
+```
