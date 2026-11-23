@@ -47,7 +47,8 @@ function buildWater() {
     metalness: 0.05,
     flatShading: true,
     transparent: true,
-    opacity: 0.94,
+    opacity: 0.8,
+    depthWrite: false,
   });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.z = -40;

@@ -59,9 +59,9 @@ class Builder {
 const HAND_MADE = [
   // 1 — a friendly crate pyramid
   () => {
-    const b = new Builder().raft(0, 0, 6.4);
-    b.pyramid(0, 0, 4);
-    return b.build(15);
+    const b = new Builder().raft(0, 0, 7.6);
+    b.pyramid(0, 0, 5);
+    return b.build(20);
   },
   // 2 — drum towers with a beam bridge
   () => {

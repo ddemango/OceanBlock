@@ -5,6 +5,7 @@ import { getLevel, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
 import { buildEnvironment, buildCannon, buildRaft } from './scenery.js';
 import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture } from './textures.js';
 import * as sfx from './audio.js';
+import { celebrate, stop as stopCelebrate, countUp } from './celebrate.js';
 import { isNative, isEmbedded, initNative, nativeVibrate } from './native.js';
 
 // ======================================================================
@@ -65,7 +66,7 @@ renderer.toneMappingExposure = 1.05;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 400);
-const CAM_POS = new THREE.Vector3(0, 6.0, 9.5);
+const CAM_POS = new THREE.Vector3(0, 5.4, 8.2);
 const CAM_LOOK = new THREE.Vector3(0, 2.6, RAFT_Z);
 camera.position.copy(CAM_POS);
 camera.lookAt(CAM_LOOK);
@@ -82,7 +83,7 @@ function resize() {
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   // Keep roughly the same horizontal field of view in portrait and landscape.
-  const wantH = THREE.MathUtils.degToRad(39);
+  const wantH = THREE.MathUtils.degToRad(40);
   const v = 2 * Math.atan(Math.tan(wantH / 2) / camera.aspect);
   camera.fov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(v), 48, 92);
   camera.updateProjectionMatrix();
@@ -106,7 +107,7 @@ world.defaultContactMaterial.restitution = 0.05;
 world.addContactMaterial(new CANNON.ContactMaterial(blockMat, blockMat, { friction: 0.55, restitution: 0.02 }));
 world.addContactMaterial(new CANNON.ContactMaterial(blockMat, raftMat, { friction: 0.7, restitution: 0.02 }));
 world.addContactMaterial(new CANNON.ContactMaterial(ballMat, blockMat, { friction: 0.3, restitution: 0.15 }));
-world.addContactMaterial(new CANNON.ContactMaterial(ballMat, raftMat, { friction: 0.4, restitution: 0.3 }));
+world.addContactMaterial(new CANNON.ContactMaterial(ballMat, raftMat, { friction: 0.6, restitution: 0.05 }));
 
 // ======================================================================
 // Materials / geometry cache for blocks
@@ -203,8 +204,9 @@ function loadLevel(n) {
   clearLevel();
   const def = getLevel(n);
   state.level = n;
-  state.shots = def.shots;
-  state.startShots = def.shots;
+  // rapid fire burns through shots, so every level gets a generous supply
+  state.shots = def.shots + 8;
+  state.startShots = state.shots;
   state.shotsFired = 0;
   state.extraUsed = false;
   state.endTimer = 0;
@@ -252,10 +254,49 @@ function loadLevel(n) {
 function onBlockCollide(block, e) {
   const impact = Math.abs(e.contact.getImpactVelocityAlongNormal());
   if (impact > 2.5 && state.mode === 'play') sfx.sfxHit(impact / 12);
+  const ud = e.body.userData;
+  if (ud?.ball && !ud.burst) {
+    ud.burst = true;
+    queueBurst(e.body.position.clone(), e.body.velocity.clone());
+  }
   if (!state.firstHit && e.body.userData?.ball) {
     // First cannonball impact wakes the whole level so supports collapse naturally.
     state.firstHit = true;
     for (const b of state.blocks) b.body.wakeUp();
+  }
+}
+
+// A cannonball hit bursts the nearby cargo apart (applied after the physics step).
+const pendingBursts = [];
+let shake = 0;
+function queueBurst(pos, vel) {
+  pendingBursts.push({ pos, vel });
+}
+function applyBursts() {
+  while (pendingBursts.length) {
+    const { pos, vel } = pendingBursts.pop();
+    const dir = new CANNON.Vec3(vel.x, 0, vel.z);
+    dir.normalize();
+    for (const b of state.blocks) {
+      if (b.cleared) continue;
+      const d = b.body.position.vsub(pos);
+      const dist = d.length();
+      if (dist > 2.6) continue;
+      const k = (1 - dist / 2.6) * 1.0;
+      d.normalize();
+      // push outward + along the shot + a little upward
+      const imp = new CANNON.Vec3(
+        (d.x * 7 + dir.x * 9) * k * b.body.mass,
+        (3 + Math.max(0, d.y) * 4) * k * b.body.mass,
+        (d.z * 7 + dir.z * 9) * k * b.body.mass
+      );
+      b.body.wakeUp();
+      b.body.applyImpulse(imp, b.body.position);
+      b.body.angularVelocity.set((Math.random() - 0.5) * 8 * k, (Math.random() - 0.5) * 8 * k, (Math.random() - 0.5) * 8 * k);
+    }
+    particles.sparks(new THREE.Vector3(pos.x, pos.y, pos.z));
+    shake = Math.min(1, shake + 0.5);
+    vibrate(12);
   }
 }
 
@@ -296,21 +337,39 @@ function aimAt(target) {
 function ballisticVelocity(from, to) {
   const d = tmpV.copy(to).sub(from);
   const dist = d.length();
-  const t = 0.42 + dist / 42;
+  const t = 0.2 + dist / 85; // fast, flat shots
   const g = world.gravity.y;
   return new THREE.Vector3(d.x / t, (d.y - 0.5 * g * t * t) / t, d.z / t);
 }
 
+// Hold a finger down to keep firing (auto-fire), drag to sweep the aim.
+const FIRE_INTERVAL = 280;
+const pointer = { down: false, x: 0, y: 0 };
+
 function onPointerDown(e) {
   sfx.unlockAudio();
+  pointer.down = true;
+  pointer.x = e.clientX;
+  pointer.y = e.clientY;
+  tryFire();
+}
+function onPointerMove(e) {
+  pointer.x = e.clientX;
+  pointer.y = e.clientY;
+}
+function onPointerUp() {
+  pointer.down = false;
+}
+
+function tryFire() {
   if (state.mode !== 'play') return;
   if (state.shots <= 0) return;
   const now = performance.now();
-  if (now - lastFire < 220) return;
+  if (now - lastFire < FIRE_INTERVAL) return;
   lastFire = now;
 
   const rect = canvas.getBoundingClientRect();
-  ndc.set(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+  ndc.set(((pointer.x - rect.left) / rect.width) * 2 - 1, -((pointer.y - rect.top) / rect.height) * 2 + 1);
   raycaster.setFromCamera(ndc, camera);
   const targets = [...state.blocks.filter((b) => !b.cleared).map((b) => b.mesh), ...state.rafts.map((r) => r.mesh)];
   const hits = raycaster.intersectObjects(targets, true);
@@ -328,12 +387,12 @@ function onPointerDown(e) {
 function fire(target) {
   const vel = aimAt(target);
   const body = new CANNON.Body({
-    mass: 9,
+    mass: 14,
     material: ballMat,
     shape: new CANNON.Sphere(0.38),
     linearDamping: 0.01,
   });
-  body.userData = { ball: true };
+  body.userData = { ball: true, burst: false };
   body.position.set(tipPos.x, tipPos.y, tipPos.z);
   body.velocity.set(vel.x, vel.y, vel.z);
   body.ccdSpeedThreshold = 1;
@@ -346,6 +405,7 @@ function fire(target) {
   state.shots--;
   state.shotsFired++;
   recoil = 1;
+  shake = Math.min(1, shake + 0.35);
   particles.muzzle(tipPos, vel);
   sfx.sfxFire();
   vibrate(18);
@@ -360,6 +420,8 @@ const particles = (() => {
   const geo = new THREE.IcosahedronGeometry(0.18, 0);
   const splashMat = new THREE.MeshBasicMaterial({ color: 0xeafcff, transparent: true });
   const smokeMat = new THREE.MeshBasicMaterial({ color: 0xf2ece0, transparent: true, depthWrite: false });
+  const fireMat = new THREE.MeshBasicMaterial({ color: 0xffa834, transparent: true, depthWrite: false });
+  const sparkMat = new THREE.MeshBasicMaterial({ color: 0xfff1a8, transparent: true, depthWrite: false });
   const live = [];
   let flash = null;
 
@@ -397,7 +459,29 @@ const particles = (() => {
         );
       }
     },
+    sparks(pos) {
+      for (let i = 0; i < 16; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const up = Math.random();
+        const sp = 4 + Math.random() * 7;
+        spawn(
+          i % 3 === 0 ? fireMat : sparkMat,
+          pos,
+          new THREE.Vector3(Math.cos(a) * sp * (1 - up * 0.5), 2 + up * 7, Math.sin(a) * sp * (1 - up * 0.5)),
+          0.35 + Math.random() * 0.35,
+          0.5 + Math.random() * 0.9,
+          -16
+        );
+      }
+    },
     muzzle(pos, vel) {
+      const fdir = vel.clone().normalize();
+      for (let i = 0; i < 8; i++) {
+        const v = fdir.clone().multiplyScalar(6 + Math.random() * 6);
+        v.x += (Math.random() - 0.5) * 3;
+        v.y += (Math.random() - 0.5) * 3;
+        spawn(fireMat, pos, v, 0.18 + Math.random() * 0.15, 1.6 + Math.random() * 1.2, 0);
+      }
       const dir = vel.clone().normalize();
       for (let i = 0; i < 10; i++) {
         const v = dir.clone().multiplyScalar(2 + Math.random() * 4);
@@ -458,7 +542,7 @@ function stepPhysics(dt) {
       }
       body.linearDamping = 0.92;
       body.angularDamping = 0.9;
-      body.applyForce(new CANNON.Vec3(0, body.mass * 14, 0), body.position);
+      body.applyForce(new CANNON.Vec3(0, body.mass * 17, 0), body.position);
     }
   }
   for (const ball of state.balls) {
@@ -472,6 +556,7 @@ function stepPhysics(dt) {
     }
   }
   world.step(1 / 60, dt, 4);
+  applyBursts();
 }
 
 function syncMeshes() {
@@ -606,7 +691,8 @@ function onWin() {
   save.coins += reward;
   save.level = state.level + 1;
   persist();
-  $('win-coins').textContent = reward;
+  countUp($('win-coins'), reward);
+  celebrate();
   $('win-detail').textContent = `Cleared with ${used} shot${used === 1 ? '' : 's'} · ${state.shots} spare`;
   document.querySelectorAll('.stars span').forEach((s, i) => s.classList.toggle('on', i < stars));
   sfx.sfxWin();
@@ -635,6 +721,7 @@ $('btn-play').addEventListener('click', () => {
 });
 $('btn-next').addEventListener('click', () => {
   sfx.sfxClick();
+  stopCelebrate();
   goHome();
 });
 $('btn-extra').addEventListener('click', () => {
@@ -707,6 +794,9 @@ optVibe.addEventListener('change', () => {
 });
 
 canvas.addEventListener('pointerdown', onPointerDown);
+window.addEventListener('pointermove', onPointerMove);
+window.addEventListener('pointerup', onPointerUp);
+window.addEventListener('pointercancel', onPointerUp);
 
 // ======================================================================
 // Main loop
@@ -738,8 +828,13 @@ function frame() {
   recoil = Math.max(0, recoil - dt * 4);
   cannon.pitch.position.z = recoil * 0.45;
 
-  // idle camera sway
-  camera.position.set(CAM_POS.x + Math.sin(elapsed * 0.3) * 0.12, CAM_POS.y + Math.sin(elapsed * 0.5) * 0.06, CAM_POS.z);
+  if (pointer.down) tryFire();
+
+  // idle camera sway + impact shake
+  shake = Math.max(0, shake - dt * 3);
+  const sx = (Math.random() - 0.5) * shake * 0.25;
+  const sy = (Math.random() - 0.5) * shake * 0.25;
+  camera.position.set(CAM_POS.x + Math.sin(elapsed * 0.3) * 0.12 + sx, CAM_POS.y + Math.sin(elapsed * 0.5) * 0.06 + sy, CAM_POS.z);
   camera.lookAt(CAM_LOOK);
 
   uiTick += dt;
@@ -758,7 +853,7 @@ function frame() {
 }
 
 // Debug / test hook
-window.__tidebreaker = { state, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save };
+window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save };
 
 goHome();
 frame();
