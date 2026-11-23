@@ -5,6 +5,7 @@ import { getLevel, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
 import { buildEnvironment, buildCannon, buildRaft, THEMES, themeForLevel } from './scenery.js';
 import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture, ironTexture, tntTexture } from './textures.js';
 import * as sfx from './audio.js';
+import { BALLS, SKINS, ACHIEVEMENTS, ballById, skinById } from './armory.js';
 import { celebrate, stop as stopCelebrate, countUp } from './celebrate.js';
 import { isNative, isEmbedded, initNative, nativeVibrate } from './native.js';
 
@@ -17,7 +18,8 @@ const HEART_REGEN_MS = 15 * 60 * 1000;
 
 const save = loadSave();
 function loadSave() {
-  const fallback = { level: 1, coins: 100, lives: MAX_LIVES, lifeTimer: 0, sound: true, vibe: true, music: true, stars: {}, daily: { last: '', streak: 0 } };
+  const fallback = { level: 1, coins: 100, lives: MAX_LIVES, lifeTimer: 0, sound: true, vibe: true, music: true, stars: {}, daily: { last: '', streak: 0 },
+    armory: { balls: ['standard'], ball: 'standard', skins: ['bronze'], skin: 'bronze' }, stats: {}, claimed: {} };
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     return raw ? { ...fallback, ...JSON.parse(raw) } : fallback;
@@ -52,6 +54,12 @@ function loseLife() {
 }
 
 sfx.audio.enabled = save.sound;
+save.armory = save.armory || { balls: ['standard'], ball: 'standard', skins: ['bronze'], skin: 'bronze' };
+save.stats = save.stats || {};
+save.claimed = save.claimed || {};
+function stat(key, n = 1) {
+  save.stats[key] = (save.stats[key] || 0) + n;
+}
 
 // ======================================================================
 // Renderer / scene / camera
@@ -76,6 +84,7 @@ const cannon = buildCannon();
 cannon.root.position.set(0, 1.4, 4.6);
 cannon.root.scale.setScalar(0.85);
 scene.add(cannon.root);
+cannon.setSkin(skinById(save.armory.skin));
 
 function resize() {
   const w = window.innerWidth;
@@ -215,6 +224,13 @@ const state = {
 
 const ballGeo = new THREE.SphereGeometry(0.38, 20, 14);
 const ballMatVis = new THREE.MeshStandardMaterial({ color: 0x2a3140, metalness: 0.6, roughness: 0.35 });
+const ballMats = {};
+function ballMaterial(kind) {
+  if (!ballMats[kind.id]) {
+    ballMats[kind.id] = new THREE.MeshStandardMaterial({ color: kind.color, emissive: kind.emissive, emissiveIntensity: 0.8, metalness: 0.5, roughness: 0.35 });
+  }
+  return ballMats[kind.id];
+}
 
 function clearLevel() {
   for (const b of state.blocks) {
@@ -315,7 +331,7 @@ function onBlockCollide(block, e) {
   }
   if (ud?.ball && !ud.burst) {
     ud.burst = true;
-    queueBurst(e.body.position.clone(), e.body.velocity.clone(), ud.bomb);
+    queueBurst(e.body.position.clone(), e.body.velocity.clone(), ud.bomb, ud);
   }
   if (!state.firstHit && e.body.userData?.ball) {
     // First cannonball impact wakes the whole level so supports collapse naturally.
@@ -375,6 +391,7 @@ function applyExplosions() {
       if (other.hp > 0 && other.body.position.distanceTo(pos) < 3) damageIron(other, 2);
     }
     particles.fireball(new THREE.Vector3(pos.x, pos.y, pos.z));
+    stat('tnt');
     popup('KABOOM!', '#ff5a3c');
     updateHud();
   }
@@ -400,14 +417,16 @@ function driftRafts(dt) {
 // A cannonball hit bursts the nearby cargo apart (applied after the physics step).
 const pendingBursts = [];
 let shake = 0;
-function queueBurst(pos, vel, bomb = false) {
-  pendingBursts.push({ pos, vel, bomb });
+function queueBurst(pos, vel, bomb = false, ud = null) {
+  pendingBursts.push({ pos, vel, bomb, ud });
 }
 function applyBursts() {
   while (pendingBursts.length) {
-    const { pos, vel, bomb } = pendingBursts.pop();
-    const R = bomb ? 5 : 2.6;
-    const P = bomb ? 1.8 : 1;
+    const { pos, vel, bomb, ud } = pendingBursts.pop();
+    const kind = ballById(ud?.kind);
+    const R = bomb ? 5 : kind.radius;
+    const P = bomb ? 1.8 : kind.power;
+    if (ud && kind.split && !ud.child && !bomb) splitBall(pos, vel);
     const dir = new CANNON.Vec3(vel.x, 0, vel.z);
     dir.normalize();
     for (const b of state.blocks) {
@@ -454,6 +473,7 @@ function onCargoCleared() {
       vibrate(30);
     }
   }
+  stat('sunk');
   const c = state.combo;
   c.count++;
   c.timer = 1.2;
@@ -463,6 +483,7 @@ function onCargoCleared() {
       c.shown = n;
       state.bonus += coins;
       popup(word, color, `+${coins} coins`);
+      if (n === 12) stat('amazing');
       break;
     }
   }
@@ -475,6 +496,25 @@ function popup(text, color, sub = '') {
   el.innerHTML = text + (sub ? `<small>${sub}</small>` : '');
   $('popups').appendChild(el);
   setTimeout(() => el.remove(), 1200);
+}
+
+// Splitter cannonball: two extra balls fan out from the impact point.
+function splitBall(pos, vel) {
+  const kind = ballById('splitter');
+  for (const ang of [-0.5, 0.5]) {
+    const v = new CANNON.Vec3(vel.x * Math.cos(ang) - vel.z * Math.sin(ang), Math.abs(vel.y) * 0.3 + 3, vel.x * Math.sin(ang) + vel.z * Math.cos(ang));
+    v.scale(0.55, v);
+    const body = new CANNON.Body({ mass: 10, material: ballMat, shape: new CANNON.Sphere(0.3), linearDamping: 0.01 });
+    body.userData = { ball: true, burst: false, bomb: false, kind: 'splitter', child: true };
+    body.position.set(pos.x, pos.y + 0.4, pos.z);
+    body.velocity.copy(v);
+    world.addBody(body);
+    const mesh = new THREE.Mesh(ballGeo, ballMaterial(kind));
+    mesh.scale.setScalar(0.8);
+    scene.add(mesh);
+    state.balls.push({ body, mesh, age: 0, splashed: false });
+  }
+  popup('SPLIT!', '#2fb3a5');
 }
 
 function blocksRemaining() {
@@ -557,6 +597,7 @@ function tryFire() {
     if (!raycaster.ray.intersectPlane(aimPlane, target)) return;
   }
   if (target.z > cannon.root.position.z - 2.5) return; // don't shoot backwards at the pier
+  target.y += 0.3; // aim a touch high so shots at the bottom row clear the raft's front lip
 
   fire(target);
 }
@@ -575,28 +616,31 @@ function fire(target, extra = false) {
   if (!extra) hideHint();
   const vel = aimAt(target);
   const bomb = !extra && state.bombReady;
+  const kind = ballById(save.armory.ball);
   if (bomb) {
     state.bombReady = false;
     state.charge = 0;
   }
   const body = new CANNON.Body({
-    mass: 14,
+    mass: bomb ? 14 : kind.mass,
     material: ballMat,
     shape: new CANNON.Sphere(bomb ? 0.6 : 0.38),
     linearDamping: 0.01,
   });
-  body.userData = { ball: true, burst: false, bomb };
+  body.userData = { ball: true, burst: false, bomb, kind: kind.id, child: false };
   body.position.set(tipPos.x, tipPos.y, tipPos.z);
   body.velocity.set(vel.x, vel.y, vel.z);
   body.ccdSpeedThreshold = 1;
   world.addBody(body);
-  const mesh = new THREE.Mesh(bomb ? bombGeo : ballGeo, bomb ? bombMatVis : ballMatVis);
+  const mesh = new THREE.Mesh(bomb ? bombGeo : ballGeo, bomb ? bombMatVis : ballMaterial(kind));
   mesh.castShadow = true;
   addOutline(mesh, 0.05);
   scene.add(mesh);
   state.balls.push({ body, mesh, age: 0, splashed: false });
 
   if (extra) return;
+  stat('shots');
+  if (bomb) stat('bombs');
   state.shots--;
   state.shotsFired++;
   recoil = 1;
@@ -653,6 +697,9 @@ const particles = (() => {
           -18
         );
       }
+    },
+    trail(pos) {
+      if (Math.random() < 0.5) spawn(fireMat, pos, new THREE.Vector3((Math.random() - 0.5) * 0.6, 0.6, (Math.random() - 0.5) * 0.6), 0.25, 1.2 + Math.random(), 0);
     },
     fireball(pos) {
       for (let i = 0; i < 26; i++) {
@@ -834,7 +881,7 @@ function updateGame(dt) {
 // UI
 // ======================================================================
 const $ = (id) => document.getElementById(id);
-const screens = ['home', 'win', 'fail', 'settings', 'nolives', 'daily', 'boosters'];
+const screens = ['home', 'win', 'fail', 'settings', 'nolives', 'daily', 'boosters', 'armory', 'goals'];
 function show(id) {
   for (const s of screens) $(s).classList.toggle('hidden', s !== id);
   if (id) $('hint').classList.add('hidden'); // tutorial hint only shows during play
@@ -863,6 +910,7 @@ function updateHome() {
   if (save.lives >= MAX_LIVES) label.textContent = 'FULL';
   else label.textContent = fmtTime(HEART_REGEN_MS - (Date.now() - save.lifeTimer));
   $('home-level').textContent = save.level;
+  $('goals-badge').classList.toggle('hidden', claimableGoals() === 0);
 }
 
 function fmtTime(ms) {
@@ -919,6 +967,99 @@ function renderMap() {
     map.appendChild(el);
   });
 }
+
+// ---- Armory: unlock + equip cannonballs and cannon paint ----
+const hex = (n) => '#' + n.toString(16).padStart(6, '0');
+function renderArmory() {
+  document.querySelectorAll('#armory .coins').forEach((el) => (el.textContent = save.coins));
+  const a = save.armory;
+  const tile = (item, owned, equipped, swatch, extra = '') =>
+    `<button class="shop-item ${owned ? 'owned' : save.coins < item.cost ? 'locked' : ''} ${equipped ? 'equipped' : ''}" data-id="${item.id}">
+      ${swatch}<b>${item.name}</b>${extra}
+      <span class="tag">${equipped ? 'Equipped' : owned ? 'Equip' : `<span class="coin-icon small"></span>${item.cost}`}</span></button>`;
+  $('shop-balls').innerHTML = BALLS.map((b) =>
+    tile(b, a.balls.includes(b.id), a.ball === b.id, `<span class="swatch" style="background:radial-gradient(circle at 35% 30%, #fff8, ${hex(b.color)} 55%)"></span>`, `<span class="desc">${b.desc}</span>`)
+  ).join('');
+  $('shop-skins').innerHTML = SKINS.map((k) =>
+    tile(k, a.skins.includes(k.id), a.skin === k.id, `<span class="swatch skin" style="background:linear-gradient(135deg, ${hex(k.barrel)} 55%, ${hex(k.carriage)} 55%)"></span>`)
+  ).join('');
+  $('shop-balls').querySelectorAll('.shop-item').forEach((el) => el.addEventListener('click', () => buyOrEquip('ball', el.dataset.id)));
+  $('shop-skins').querySelectorAll('.shop-item').forEach((el) => el.addEventListener('click', () => buyOrEquip('skin', el.dataset.id)));
+}
+function buyOrEquip(type, id) {
+  const a = save.armory;
+  const list = type === 'ball' ? a.balls : a.skins;
+  const item = type === 'ball' ? ballById(id) : skinById(id);
+  if (!list.includes(id)) {
+    if (save.coins < item.cost) return toast('Not enough coins');
+    save.coins -= item.cost;
+    list.push(id);
+    sfx.sfxCoin();
+    celebrate(1200);
+  } else sfx.sfxClick();
+  if (type === 'ball') a.ball = id;
+  else {
+    a.skin = id;
+    cannon.setSkin(skinById(id));
+  }
+  persist();
+  renderArmory();
+  updateHome();
+}
+$('btn-armory').addEventListener('click', () => {
+  sfx.unlockAudio();
+  sfx.sfxClick();
+  renderArmory();
+  $('armory').classList.remove('hidden');
+});
+$('btn-armory-close').addEventListener('click', () => {
+  sfx.sfxClick();
+  stopCelebrate();
+  $('armory').classList.add('hidden');
+});
+
+// ---- Goals (achievements) ----
+function statValue(key) {
+  if (key === 'stars') return Object.values(save.stars || {}).reduce((t, n) => t + n, 0);
+  if (key === 'streak') return (save.daily && save.daily.streak) || 0;
+  return save.stats[key] || 0;
+}
+function claimableGoals() {
+  return ACHIEVEMENTS.filter(([id, , key, goal]) => !save.claimed[id] && statValue(key) >= goal).length;
+}
+function renderGoals() {
+  $('goal-list').innerHTML = ACHIEVEMENTS.map(([id, title, key, goal, reward]) => {
+    const v = Math.min(goal, statValue(key));
+    const done = v >= goal;
+    const claimed = save.claimed[id];
+    return `<div class="goal ${claimed ? 'claimed' : ''}"><span>${title}<br><small>${v} / ${goal}</small></span>
+      <button data-id="${id}" ${!done || claimed ? 'disabled' : ''}>${claimed ? 'Done' : `<span class="coin-icon small"></span>${reward}`}</button>
+      <div class="gbar"><i style="width:${(v / goal) * 100}%"></i></div></div>`;
+  }).join('');
+  $('goal-list').querySelectorAll('button:not(:disabled)').forEach((btn) =>
+    btn.addEventListener('click', () => {
+      const ach = ACHIEVEMENTS.find((x) => x[0] === btn.dataset.id);
+      save.claimed[ach[0]] = true;
+      save.coins += ach[4];
+      persist();
+      sfx.sfxCoin();
+      celebrate(1500);
+      renderGoals();
+      updateHome();
+    })
+  );
+}
+$('btn-goals').addEventListener('click', () => {
+  sfx.unlockAudio();
+  sfx.sfxClick();
+  renderGoals();
+  $('goals').classList.remove('hidden');
+});
+$('btn-goals-close').addEventListener('click', () => {
+  sfx.sfxClick();
+  stopCelebrate();
+  $('goals').classList.add('hidden');
+});
 
 // ---- daily reward (7-day streak) ----
 const DAILY = [50, 75, 100, 150, 200, 250, 500];
@@ -1034,7 +1175,11 @@ function onWin() {
   const ratio = used / state.startShots;
   const stars = ratio <= 0.4 ? 3 : ratio <= 0.7 ? 2 : 1;
   let reward = 20 + state.shots * 2 + (stars - 1) * 10 + (state.bonus || 0);
-  if (state.level % 10 === 0) reward *= 2; // boss bonus
+  if (state.level % 10 === 0) {
+    reward *= 2; // boss bonus
+    stat('bosses');
+  }
+  stat('wins');
   save.coins += reward;
   save.stars = save.stars || {};
   save.stars[state.level] = Math.max(save.stars[state.level] || 0, stars);
@@ -1174,6 +1319,9 @@ function frame() {
     stepPhysics(dt);
     syncMeshes();
     updateGame(dt);
+  }
+  for (const ball of state.balls) {
+    if (ball.body.userData.kind === 'fire' && ball.age < 1.5 && ball.body.position.y > 0) particles.trail(ball.body.position);
   }
   particles.update(dt);
   env.water.update(elapsed);

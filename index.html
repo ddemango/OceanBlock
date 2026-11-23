@@ -43,6 +43,10 @@
         <div class="logo-sub">sink the cargo · save the cannonballs</div>
       </div>
       <div id="levelmap"></div>
+      <div class="home-actions">
+        <button id="btn-armory" class="side-btn"><span class="si si-armory"></span>Armory</button>
+        <button id="btn-goals" class="side-btn"><span class="si si-goals"></span>Goals<i class="badge hidden" id="goals-badge"></i></button>
+      </div>
       <button id="btn-play" class="big-btn">Play<small>Level <span id="home-level">1</span></small></button>
     </div>
 
@@ -64,6 +68,28 @@
 
     <!-- Tutorial hint -->
     <div id="hint" class="hidden"><div class="hand"></div><div class="hint-text">Hold to fire!<small>Drag to aim</small></div></div>
+
+    <!-- Armory -->
+    <div id="armory" class="screen hidden dim">
+      <div class="card wide">
+        <div class="ribbon">Armory</div>
+        <div class="detail"><span class="coin-icon small"></span> <span class="coins">0</span> coins</div>
+        <div class="section-title">Cannonballs</div>
+        <div class="shop-grid" id="shop-balls"></div>
+        <div class="section-title">Cannon Paint</div>
+        <div class="shop-grid" id="shop-skins"></div>
+        <button class="big-btn" id="btn-armory-close">Done</button>
+      </div>
+    </div>
+
+    <!-- Goals / achievements -->
+    <div id="goals" class="screen hidden dim">
+      <div class="card wide">
+        <div class="ribbon">Goals</div>
+        <div class="goal-list" id="goal-list"></div>
+        <button class="big-btn" id="btn-goals-close">Done</button>
+      </div>
+    </div>
 
     <!-- Daily reward -->
     <div id="daily" class="screen hidden dim">

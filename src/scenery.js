@@ -301,7 +301,13 @@ export function buildCannon() {
   root.traverse((o) => {
     if (o.isMesh) o.castShadow = true;
   });
-  return { root, yaw, pitch, tip, barrel };
+  // Recolor the cannon (paint jobs from the Armory).
+  function setSkin({ barrel: b, bands, carriage }) {
+    bronze.color.set(b);
+    darkBronze.color.set(bands);
+    carriageMat.color.set(carriage);
+  }
+  return { root, yaw, pitch, tip, barrel, setSkin };
 }
 
 // ---------- raft: logs lashed together, sitting on the water ----------
