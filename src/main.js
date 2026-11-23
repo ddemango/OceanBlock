@@ -207,6 +207,11 @@ function loadLevel(n) {
   state.shots = def.shots;
   state.startShots = state.shots;
   state.shotsFired = 0;
+  state.charge = 0;
+  state.bombReady = false;
+  state.combo = { count: 0, timer: 0, shown: 0 };
+  state.bonus = 0;
+  state.totalBlocks = def.blocks.length;
   state.extraUsed = false;
   state.endTimer = 0;
   state.firstHit = false;
@@ -256,7 +261,7 @@ function onBlockCollide(block, e) {
   const ud = e.body.userData;
   if (ud?.ball && !ud.burst) {
     ud.burst = true;
-    queueBurst(e.body.position.clone(), e.body.velocity.clone());
+    queueBurst(e.body.position.clone(), e.body.velocity.clone(), ud.bomb);
   }
   if (!state.firstHit && e.body.userData?.ball) {
     // First cannonball impact wakes the whole level so supports collapse naturally.
@@ -268,20 +273,22 @@ function onBlockCollide(block, e) {
 // A cannonball hit bursts the nearby cargo apart (applied after the physics step).
 const pendingBursts = [];
 let shake = 0;
-function queueBurst(pos, vel) {
-  pendingBursts.push({ pos, vel });
+function queueBurst(pos, vel, bomb = false) {
+  pendingBursts.push({ pos, vel, bomb });
 }
 function applyBursts() {
   while (pendingBursts.length) {
-    const { pos, vel } = pendingBursts.pop();
+    const { pos, vel, bomb } = pendingBursts.pop();
+    const R = bomb ? 5 : 2.6;
+    const P = bomb ? 1.8 : 1;
     const dir = new CANNON.Vec3(vel.x, 0, vel.z);
     dir.normalize();
     for (const b of state.blocks) {
       if (b.cleared) continue;
       const d = b.body.position.vsub(pos);
       const dist = d.length();
-      if (dist > 2.6) continue;
-      const k = (1 - dist / 2.6) * 1.0;
+      if (dist > R) continue;
+      const k = (1 - dist / R) * P;
       d.normalize();
       // push outward + along the shot + a little upward
       const imp = new CANNON.Vec3(
@@ -294,9 +301,49 @@ function applyBursts() {
       b.body.angularVelocity.set((Math.random() - 0.5) * 8 * k, (Math.random() - 0.5) * 8 * k, (Math.random() - 0.5) * 8 * k);
     }
     particles.sparks(new THREE.Vector3(pos.x, pos.y, pos.z));
-    shake = Math.min(1, shake + 0.5);
+    if (bomb) {
+      particles.sparks(new THREE.Vector3(pos.x, pos.y + 1, pos.z));
+      particles.splash(pos, 1.5);
+      sfx.sfxFire();
+      popup('BOOM!', '#ff7a3c');
+    }
+    shake = Math.min(1, shake + (bomb ? 1 : 0.5));
     vibrate(12);
   }
+}
+
+const BOMB_CHARGE = 10; // cargo pieces needed to charge a bomb
+function onCargoCleared() {
+  if (state.mode !== 'play') return;
+  if (!state.bombReady) {
+    state.charge = Math.min(1, state.charge + 1 / BOMB_CHARGE);
+    if (state.charge >= 1) {
+      state.bombReady = true;
+      sfx.sfxCoin();
+      vibrate(30);
+    }
+  }
+  const c = state.combo;
+  c.count++;
+  c.timer = 1.2;
+  const tiers = [[12, 'AMAZING!', '#ff5a8a', 30], [8, 'AWESOME!', '#b98cff', 20], [5, 'GREAT!', '#5bc8ff', 10], [3, 'NICE!', '#ffc93c', 5]];
+  for (const [n, word, color, coins] of tiers) {
+    if (c.count >= n && c.shown < n) {
+      c.shown = n;
+      state.bonus += coins;
+      popup(word, color, `+${coins} coins`);
+      break;
+    }
+  }
+}
+
+function popup(text, color, sub = '') {
+  const el = document.createElement('div');
+  el.className = 'popup';
+  el.style.color = color;
+  el.innerHTML = text + (sub ? `<small>${sub}</small>` : '');
+  $('popups').appendChild(el);
+  setTimeout(() => el.remove(), 1200);
 }
 
 function blocksRemaining() {
@@ -383,20 +430,28 @@ function tryFire() {
   fire(target);
 }
 
+const bombMatVis = new THREE.MeshStandardMaterial({ color: 0xe0352b, emissive: 0xff5a1a, emissiveIntensity: 0.9, roughness: 0.4 });
+const bombGeo = new THREE.SphereGeometry(0.6, 20, 14);
+
 function fire(target) {
   const vel = aimAt(target);
+  const bomb = state.bombReady;
+  if (bomb) {
+    state.bombReady = false;
+    state.charge = 0;
+  }
   const body = new CANNON.Body({
     mass: 14,
     material: ballMat,
-    shape: new CANNON.Sphere(0.38),
+    shape: new CANNON.Sphere(bomb ? 0.6 : 0.38),
     linearDamping: 0.01,
   });
-  body.userData = { ball: true, burst: false };
+  body.userData = { ball: true, burst: false, bomb };
   body.position.set(tipPos.x, tipPos.y, tipPos.z);
   body.velocity.set(vel.x, vel.y, vel.z);
   body.ccdSpeedThreshold = 1;
   world.addBody(body);
-  const mesh = new THREE.Mesh(ballGeo, ballMatVis);
+  const mesh = new THREE.Mesh(bomb ? bombGeo : ballGeo, bomb ? bombMatVis : ballMatVis);
   mesh.castShadow = true;
   scene.add(mesh);
   state.balls.push({ body, mesh, age: 0, splashed: false });
@@ -576,6 +631,7 @@ function updateGame(dt) {
     const y = b.body.position.y;
     if (!b.cleared && y < RAFT_TOP - 0.9) {
       b.cleared = true;
+      onCargoCleared();
       updateHud();
     }
     if (y < -5) {
@@ -594,6 +650,11 @@ function updateGame(dt) {
       scene.remove(ball.mesh);
       state.balls.splice(i, 1);
     }
+  }
+
+  if (state.combo && state.combo.timer > 0) {
+    state.combo.timer -= dt;
+    if (state.combo.timer <= 0) state.combo = { count: 0, timer: 0, shown: 0 };
   }
 
   if (state.mode !== 'play') return;
@@ -621,13 +682,20 @@ const $ = (id) => document.getElementById(id);
 const screens = ['home', 'win', 'fail', 'settings', 'nolives'];
 function show(id) {
   for (const s of screens) $(s).classList.toggle('hidden', s !== id);
-  $('hud').classList.toggle('hidden', !(state.mode === 'play' || state.mode === 'paused' || id === 'fail'));
+  const hudOn = state.mode === 'play' || state.mode === 'paused' || id === 'fail';
+  $('hud').classList.toggle('hidden', !hudOn);
+  $('hud-progress').classList.toggle('hidden', !hudOn);
 }
 
 function updateHud() {
   $('hud-level').textContent = state.level;
   $('hud-shots').textContent = state.shots;
-  $('hud-left').textContent = blocksRemaining();
+  const left = blocksRemaining();
+  $('hud-left').textContent = left;
+  const total = state.totalBlocks || 1;
+  $('progress-fill').style.width = `${Math.round(((total - left) / total) * 100)}%`;
+  $('bomb-fill').style.width = `${Math.round((state.charge || 0) * 100)}%`;
+  $('bomb-pill').classList.toggle('ready', !!state.bombReady);
   document.querySelector('.ammo-pill').classList.toggle('low', state.shots <= 3 && state.mode === 'play');
 }
 
@@ -686,7 +754,7 @@ function onWin() {
   const used = state.shotsFired;
   const ratio = used / state.startShots;
   const stars = ratio <= 0.4 ? 3 : ratio <= 0.7 ? 2 : 1;
-  const reward = 20 + state.shots * 2 + (stars - 1) * 10;
+  const reward = 20 + state.shots * 2 + (stars - 1) * 10 + (state.bonus || 0);
   save.coins += reward;
   save.level = state.level + 1;
   persist();
