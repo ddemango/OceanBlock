@@ -450,3 +450,8 @@ body.flash #fx-overlay { background: rgba(255, 255, 255, 0.75); transition: none
 }
 #win-title-word { display: inline-block; animation: titleBounce 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
 @keyframes titleBounce { 0% { transform: scale(0.2); } 100% { transform: scale(1); } }
+
+/* ---------- iPad / tablets: scale the interface up (the 3D view already fills the screen) ---------- */
+@media (min-width: 700px) and (min-height: 900px) {
+  #hud, #hud-progress, #popups, #powerbar, #wind, #hint, #toast, .screen > * { zoom: 1.45; }
+}
