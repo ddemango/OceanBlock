@@ -404,3 +404,49 @@ html, body {
 .goal.claimed { opacity: .5; }
 #home .big-btn { margin-bottom: 7vh; }
 #levelmap { height: 128px; }
+
+/* ---------- home: 4 side buttons ---------- */
+.home-actions { flex-wrap: wrap; gap: 10px; max-width: 420px; margin-left: auto; margin-right: auto; }
+.home-actions .side-btn { min-width: 78px; padding: 7px 8px; font-size: 14px; }
+.si-spin { background: conic-gradient(#ff7a59 0 25%, #ffc93c 0 50%, #2fb3a5 0 75%, #5b7fe0 0); }
+.si-daily { background: linear-gradient(#ff5a5a 0 32%, #fff 0); border-radius: 8px; position: relative; }
+.si-daily::after { content: '★'; position: absolute; inset: 6px 0 0; text-align: center; font-size: 15px; color: var(--ink); }
+
+/* ---------- power-ups ---------- */
+#powerbar { position: fixed; left: 12px; bottom: calc(18px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; z-index: 6; }
+.pu { position: relative; width: 56px; height: 56px; border-radius: 50%; border: 3px solid var(--ink); background: #fff8e6; box-shadow: 0 4px 0 var(--ink); font-size: 26px; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.pu b { position: absolute; right: -6px; bottom: -4px; min-width: 22px; height: 22px; border-radius: 11px; background: var(--gold); border: 2px solid var(--ink); font-size: 13px; line-height: 18px; color: var(--ink); }
+.pu.empty, .pu.used { opacity: 0.45; filter: grayscale(0.7); }
+.pu:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+/* ---------- ocean events ---------- */
+#wind { position: fixed; top: calc(118px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); padding: 4px 14px; border-radius: 14px; background: rgba(29,38,56,0.7); color: #e6f2ff; font-weight: 900; font-size: 15px; letter-spacing: 1px; z-index: 6; pointer-events: none; }
+#fx-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 4; transition: background 0.25s, box-shadow 0.25s; }
+body.slowmo #fx-overlay { box-shadow: inset 0 0 120px 30px rgba(40, 160, 255, 0.45); }
+body.flash #fx-overlay { background: rgba(255, 255, 255, 0.75); transition: none; }
+
+/* ---------- lucky spin ---------- */
+.wheel-wrap { position: relative; width: min(290px, 72vw); aspect-ratio: 1; margin: 6px auto; }
+#wheel { position: absolute; inset: 0; border-radius: 50%; border: 6px solid var(--ink); box-shadow: 0 6px 0 var(--ink), inset 0 0 0 6px #fff8e6; transition: transform 4s cubic-bezier(0.15, 0.85, 0.2, 1); }
+#wheel span { position: absolute; left: 50%; top: 0; width: 64px; margin-left: -32px; height: 50%; transform-origin: 50% 100%; display: flex; flex-direction: column; align-items: center; padding-top: 10px; box-sizing: border-box; font-weight: 900; font-size: 11px; line-height: 1.1; color: #1d2638; text-align: center; }
+#wheel span em { font-style: normal; font-size: 20px; }
+.wheel-pointer { position: absolute; left: 50%; top: -14px; transform: translateX(-50%); width: 0; height: 0; border-left: 16px solid transparent; border-right: 16px solid transparent; border-top: 30px solid #ff4f6d; z-index: 2; filter: drop-shadow(0 3px 0 var(--ink)); }
+.wheel-hub { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--gold); border: 5px solid var(--ink); }
+#spin-result { min-height: 22px; }
+
+/* ---------- daily challenge ---------- */
+.ch-box { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px; border-radius: 16px; background: #fff3d6; border: 3px solid var(--ink); width: 100%; }
+.ch-best { display: flex; flex-direction: column; align-items: center; font-weight: 800; }
+.ch-best b { font-size: 32px; color: #e85d75; }
+.gift { color: #1f8a5a; }
+
+/* ---------- win celebration ---------- */
+#coin-shower { position: fixed; inset: 0; pointer-events: none; z-index: 30; }
+#coin-shower i { position: absolute; width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff4b0, #ffc93c 55%, #c98a10); border: 3px solid var(--ink); opacity: 0; animation: coinFly 0.9s ease-in forwards; }
+@keyframes coinFly {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.3); }
+  20% { opacity: 1; transform: translate(calc(var(--dx) * -0.1), -60px) scale(1.15); }
+  100% { opacity: 1; transform: translate(var(--dx), var(--dy)) scale(0.6); }
+}
+#win-title-word { display: inline-block; animation: titleBounce 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+@keyframes titleBounce { 0% { transform: scale(0.2); } 100% { transform: scale(1); } }

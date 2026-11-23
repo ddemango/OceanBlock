@@ -4,6 +4,8 @@ Uses the ASC API key stored in GitHub secrets (never printed) to manage TestFlig
 Actions:
   status       - show builds, processing and beta-review state, groups and testers
   add-testers  - add the given emails to the app's internal TestFlight group
+  invite       - resend TestFlight invitations
+  gamecenter   - enable Game Center and create the Daily Challenge leaderboard
 """
 import json, os, sys, time, urllib.request, urllib.error
 import jwt  # PyJWT
@@ -102,10 +104,51 @@ def invite(emails):
             print('Invitation sent to' if r is not None else 'Invite failed for', email)
 
 
+LEADERBOARD_ID = 'tidebreaker.daily'
+
+
+def gamecenter():
+    det = call('GET', f'/apps/{APP_ID}/gameCenterDetail')
+    if not det or not det.get('data'):
+        print('Enabling Game Center for the app')
+        det = call('POST', '/gameCenterDetails', {'data': {'type': 'gameCenterDetails', 'relationships': {
+            'app': {'data': {'type': 'apps', 'id': APP_ID}}}}})
+        if not det:
+            return
+    gid = det['data']['id']
+    print('Game Center detail:', gid)
+    boards = call('GET', f'/gameCenterDetails/{gid}/gameCenterLeaderboards?limit=50') or {'data': []}
+    for b in boards['data']:
+        if b['attributes'].get('vendorIdentifier') == LEADERBOARD_ID:
+            print('Leaderboard already exists:', b['id'], b['attributes'])
+            return
+    base = {'defaultFormatter': 'INTEGER', 'referenceName': 'Daily Challenge', 'vendorIdentifier': LEADERBOARD_ID,
+            'submissionType': 'BEST_SCORE', 'scoreSortType': 'DESC', 'scoreRangeStart': '0', 'scoreRangeEnd': '100000000'}
+    rel = {'gameCenterDetail': {'data': {'type': 'gameCenterDetails', 'id': gid}}}
+    # a leaderboard that resets every day; fall back to an all-time board if recurring isn't accepted
+    start = time.strftime('%Y-%m-%dT00:00:00Z', time.gmtime(time.time() + 86400))
+    r = call('POST', '/gameCenterLeaderboards', {'data': {'type': 'gameCenterLeaderboards', 'attributes': {
+        **base, 'recurrenceStartDate': start, 'recurrenceDuration': 'P1D', 'recurrenceRule': 'FREQ=DAILY;INTERVAL=1'},
+        'relationships': rel}})
+    if not r:
+        print('Recurring leaderboard refused; creating an all-time leaderboard instead')
+        r = call('POST', '/gameCenterLeaderboards', {'data': {'type': 'gameCenterLeaderboards', 'attributes': base, 'relationships': rel}})
+    if not r:
+        return
+    lid = r['data']['id']
+    print('Created leaderboard', lid)
+    loc = call('POST', '/gameCenterLeaderboardLocalizations', {'data': {'type': 'gameCenterLeaderboardLocalizations',
+        'attributes': {'locale': 'en-US', 'name': 'Daily Challenge', 'formatterSuffix': ' pts', 'formatterSuffixSingular': ' pt'},
+        'relationships': {'gameCenterLeaderboard': {'data': {'type': 'gameCenterLeaderboards', 'id': lid}}}}})
+    print('Added English name' if loc else 'Localization failed')
+
+
 if __name__ == '__main__':
     action = sys.argv[1] if len(sys.argv) > 1 else 'status'
     if action == 'add-testers':
         add_testers([e.strip() for e in sys.argv[2].split(',') if e.strip()])
     if action == 'invite':
         invite([e.strip() for e in sys.argv[2].split(',') if e.strip()])
+    if action == 'gamecenter':
+        gamecenter()
     status()

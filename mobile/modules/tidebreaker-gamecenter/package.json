@@ -1,0 +1,8 @@
+{
+  "name": "tidebreaker-gamecenter",
+  "version": "1.0.0",
+  "description": "Apple Game Center bridge for Tidebreaker",
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "private": true
+}

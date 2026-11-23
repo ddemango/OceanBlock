@@ -1,13 +1,14 @@
 import './style.css';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { getLevel, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
+import { getLevel, getChallenge, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
 import { buildEnvironment, buildCannon, buildRaft, THEMES, themeForLevel } from './scenery.js';
-import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture, ironTexture, tntTexture } from './textures.js';
+import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture, ironTexture, tntTexture, iceTexture, balloonTexture } from './textures.js';
 import * as sfx from './audio.js';
 import { BALLS, SKINS, ACHIEVEMENTS, ballById, skinById } from './armory.js';
 import { celebrate, stop as stopCelebrate, countUp } from './celebrate.js';
-import { isNative, isEmbedded, initNative, nativeVibrate } from './native.js';
+import { isNative, isEmbedded, initNative, nativeVibrate, gameCenter } from './native.js';
+import { POWERUPS, powerupById } from './armory.js';
 
 // ======================================================================
 // Save data
@@ -19,7 +20,8 @@ const HEART_REGEN_MS = 15 * 60 * 1000;
 const save = loadSave();
 function loadSave() {
   const fallback = { level: 1, coins: 100, lives: MAX_LIVES, lifeTimer: 0, sound: true, vibe: true, music: true, stars: {}, daily: { last: '', streak: 0 },
-    armory: { balls: ['standard'], ball: 'standard', skins: ['bronze'], skin: 'bronze' }, stats: {}, claimed: {} };
+    armory: { balls: ['standard'], ball: 'standard', skins: ['bronze'], skin: 'bronze' }, stats: {}, claimed: {},
+    powerups: { blast: 1, slowmo: 1, laser: 1 }, boosters: { shots: 0, bomb: 0, triple: 0 }, spin: '', challenge: { day: '', best: 0, done: false } };
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     return raw ? { ...fallback, ...JSON.parse(raw) } : fallback;
@@ -57,6 +59,9 @@ sfx.audio.enabled = save.sound;
 save.armory = save.armory || { balls: ['standard'], ball: 'standard', skins: ['bronze'], skin: 'bronze' };
 save.stats = save.stats || {};
 save.claimed = save.claimed || {};
+save.powerups = save.powerups || { blast: 1, slowmo: 1, laser: 1 };
+save.boosters = save.boosters || { shots: 0, bomb: 0, triple: 0 };
+save.challenge = save.challenge || { day: '', best: 0, done: false };
 function stat(key, n = 1) {
   save.stats[key] = (save.stats[key] || 0) + n;
 }
@@ -158,6 +163,7 @@ function blockVisual(type, variant) {
   if (!geoCache[type]) {
     if (spec.shape === 'box') geoCache[type] = new THREE.BoxGeometry(spec.w, spec.h, spec.d);
     else if (spec.shape === 'cyl') geoCache[type] = new THREE.CylinderGeometry(spec.r, spec.r, spec.h, 20);
+    else if (spec.shape === 'sphere') geoCache[type] = new THREE.SphereGeometry(spec.r, 20, 16).scale(1, 1.12, 1);
     else geoCache[type] = new THREE.CylinderGeometry(spec.rTop, spec.r, spec.h, 18);
   }
   if (!matCache[key]) {
@@ -184,6 +190,10 @@ function blockVisual(type, variant) {
       const side = new THREE.MeshStandardMaterial({ map: tntTexture(), roughness: 0.4, emissive: 0x3a0800 });
       const lid = new THREE.MeshStandardMaterial({ color: 0xb02520, roughness: 0.5 });
       matCache[key] = [side, lid, lid];
+    } else if (type === 'ice') {
+      matCache[key] = new THREE.MeshStandardMaterial({ map: iceTexture(), roughness: 0.1, metalness: 0.1, emissive: 0x2a6a80 });
+    } else if (type === 'balloon') {
+      matCache[key] = new THREE.MeshStandardMaterial({ map: balloonTexture(BALLOON_COLORS[variant % BALLOON_COLORS.length]), roughness: 0.3 });
     } else if (type === 'buoy') {
       matCache[key] = new THREE.MeshStandardMaterial({ map: buoyTexture(), roughness: 0.45 });
     } else {
@@ -193,15 +203,29 @@ function blockVisual(type, variant) {
   }
   if (!matCache[key].toon) {
     const toon = toToon(matCache[key]);
+    if (type === 'ice') {
+      toon.transparent = true;
+      toon.opacity = 0.82;
+    }
     matCache[key] = toon;
     (Array.isArray(toon) ? toon : [toon]).forEach((m) => (m.toon = true));
   }
-  return addOutline(new THREE.Mesh(geoCache[type], matCache[key]));
+  const mesh = addOutline(new THREE.Mesh(geoCache[type], matCache[key]));
+  if (type === 'balloon') {
+    // knot + dangling string
+    const str = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.3, 4), stringMat);
+    str.position.y = -spec.h / 2 - 0.65;
+    mesh.add(str);
+  }
+  return mesh;
 }
+const BALLOON_COLORS = ['#ff5a8a', '#ffc93c', '#5bc8ff', '#7ee081', '#b98cff'];
+const stringMat = new THREE.MeshBasicMaterial({ color: 0xf6f1e3 });
 
 function blockShape(spec) {
   if (spec.shape === 'box') return new CANNON.Box(new CANNON.Vec3(spec.w / 2, spec.h / 2, spec.d / 2));
   if (spec.shape === 'cyl') return new CANNON.Cylinder(spec.r, spec.r, spec.h, 12);
+  if (spec.shape === 'sphere') return new CANNON.Sphere(spec.r);
   return new CANNON.Cylinder(spec.rTop, spec.r, spec.h, 10);
 }
 
@@ -253,12 +277,14 @@ function clearLevel() {
   particles.clear();
 }
 
-function loadLevel(n) {
+function loadLevel(n, def = getLevel(n)) {
   clearLevel();
-  const def = getLevel(n);
   state.level = n;
-  state.theme = themeForLevel(n);
+  state.def = def;
+  state.event = def.event || null;
+  state.theme = state.event === 'storm' ? 'storm' : def.theme || themeForLevel(n);
   env.setTheme(state.theme);
+  stopEvent();
   state.shots = def.shots;
   state.startShots = state.shots;
   state.shotsFired = 0;
@@ -270,16 +296,24 @@ function loadLevel(n) {
   state.extraUsed = false;
   state.endTimer = 0;
   state.firstHit = false;
+  state.puUsed = {};
+  state.megaShots = 0;
+  state.laser = false;
+  state.challenge = !!def.challenge;
+  timeScale = 1;
+  slowT = 0;
+  document.body.classList.remove('slowmo');
 
   for (const r of def.rafts) {
-    const body = new CANNON.Body({ mass: 0, material: raftMat, type: r.drift ? CANNON.Body.KINEMATIC : CANNON.Body.STATIC });
+    const body = new CANNON.Body({ mass: 0, material: raftMat, type: CANNON.Body.KINEMATIC }); // kinematic so events can set it moving
+    body.allowSleep = false;
     body.addShape(new CANNON.Box(new CANNON.Vec3(r.w / 2, 0.5, r.d / 2)));
     body.position.set(r.x, RAFT_TOP - 0.5, r.z);
     world.addBody(body);
     const mesh = buildRaft(r);
     mesh.children.slice().forEach((c) => c.isMesh && addOutline(c, 0.04));
     scene.add(mesh);
-    state.rafts.push({ body, mesh, def: r });
+    state.rafts.push({ body, mesh, def: r, amp: 0, ampTarget: r.drift || 0, mode: r.mode || 'side', t: 0 });
   }
 
   let variant = 0;
@@ -288,8 +322,8 @@ function loadLevel(n) {
     const body = new CANNON.Body({
       mass: spec.mass,
       material: blockMat,
-      linearDamping: 0.05,
-      angularDamping: 0.12,
+      linearDamping: spec.floats ? 0.6 : 0.05,
+      angularDamping: spec.floats ? 0.6 : 0.12,
       sleepSpeedLimit: 0.2,
       sleepTimeLimit: 0.4,
     });
@@ -302,7 +336,7 @@ function loadLevel(n) {
     body.position.set(b.x, b.y + 0.001, b.z);
     if (b.ry) body.quaternion.setFromEuler(0, b.ry, 0);
     world.addBody(body);
-    body.sleep(); // towers stay perfectly still until something hits them
+    if (!spec.floats) body.sleep(); // towers stay perfectly still until something hits them
 
     const mesh = blockVisual(b.type, variant++ % 3);
     mesh.castShadow = true;
@@ -310,6 +344,12 @@ function loadLevel(n) {
     scene.add(mesh);
     const raftIdx = state.rafts.reduce((best, r, i) => (Math.abs(r.def.x - b.x) < Math.abs(state.rafts[best].def.x - b.x) ? i : best), 0);
     const block = { body, mesh, cleared: false, sunk: false, spec, type: b.type, hp: spec.hp || 0, raft: raftIdx, lastBall: -1 };
+    if (spec.floats) {
+      // balloons remember where they hover, relative to their raft
+      const r = state.rafts[raftIdx].body.position;
+      block.offset = new CANNON.Vec3(b.x - r.x, b.y, b.z - r.z);
+      body.wakeUp();
+    }
     body.addEventListener('collide', (e) => onBlockCollide(block, e));
     state.blocks.push(block);
   }
@@ -321,6 +361,10 @@ function onBlockCollide(block, e) {
   const impact = Math.abs(e.contact.getImpactVelocityAlongNormal());
   if (impact > 2.5 && state.mode === 'play') sfx.sfxHit(impact / 12, block.type);
   const ud = e.body.userData;
+  if (ud?.ball && (block.spec.fragile || block.spec.floats) && !block.breaking) {
+    block.breaking = true;
+    pendingBreaks.push(block);
+  }
   if (ud?.ball && block.hp > 0 && block.lastBall !== e.body.id) {
     block.lastBall = e.body.id;
     damageIron(block, ud.bomb ? 2 : 1);
@@ -342,8 +386,52 @@ function onBlockCollide(block, e) {
 
 // ---- special cargo -------------------------------------------------------
 const pendingExplosions = [];
-let crackedIron = null;
+const pendingBreaks = []; // ice shattering / balloons popping (removed after the physics step)
+function applyBreaks() {
+  while (pendingBreaks.length) {
+    const block = pendingBreaks.pop();
+    if (block.removed) continue;
+    const pos = new THREE.Vector3().copy(block.body.position);
+    if (!block.cleared) {
+      block.cleared = true;
+      onCargoCleared();
+    }
+    world.removeBody(block.body);
+    scene.remove(block.mesh);
+    block.removed = true;
+    if (block.spec.floats) {
+      particles.confetti(pos);
+      sfx.sfxPop();
+      stat('balloons');
+    } else {
+      particles.shards(pos);
+      sfx.sfxShatter();
+      stat('ice');
+    }
+    updateHud();
+  }
+}
+// Balloons hover at their spot (riding their raft) until popped or knocked loose.
+function floatBalloons(dt) {
+  // Velocity-driven (not forces) so it stays stable whatever the frame rate; +g*dt cancels gravity.
+  const lift = -world.gravity.y * dt;
+  for (const b of state.blocks) {
+    if (!b.spec.floats || b.removed) continue;
+    const body = b.body;
+    if (b.loose) {
+      // tether snapped: drift up and away on the breeze
+      body.velocity.set(body.velocity.x * 0.95 + wind.x * 0.05, Math.min(4, body.velocity.y + lift + 0.15), body.velocity.z * 0.95);
+      continue;
+    }
+    const r = state.rafts[b.raft].body.position;
+    const tx = r.x + b.offset.x, ty = b.offset.y + Math.sin(elapsed * 1.6 + b.offset.x) * 0.12, tz = r.z + b.offset.z;
+    const p = body.position;
+    body.velocity.set((tx - p.x) * 4 + wind.x * 0.3, (ty - p.y) * 4 + lift, (tz - p.z) * 4);
+    body.angularVelocity.scale(0.9, body.angularVelocity);
+  }
+}
 
+let crackedIron = null;
 function damageIron(block, amount) {
   block.hp = Math.max(0, block.hp - amount);
   particles.sparks(new THREE.Vector3().copy(block.body.position));
@@ -397,19 +485,33 @@ function applyExplosions() {
   }
 }
 
-// Move drifting rafts (and anything sleeping or armored on them) side to side.
+// Moving platforms: rafts sway side to side, or loop around (orbit). Untouched stacks ride along.
 function driftRafts(dt) {
   for (let i = 0; i < state.rafts.length; i++) {
     const r = state.rafts[i];
-    if (!r.def.drift) continue;
-    const w = 0.85;
-    const targetX = r.def.x + Math.sin(elapsed * w + r.def.phase) * r.def.drift;
-    const vx = (targetX - r.body.position.x) / Math.max(dt, 1 / 120);
-    r.body.velocity.set(vx, 0, 0);
+    r.amp += (r.ampTarget - r.amp) * Math.min(1, dt * 0.8);
+    if (r.amp < 0.001) {
+      r.body.velocity.set(0, 0, 0);
+      continue;
+    }
+    r.t += dt;
+    const w = r.mode === 'orbit' ? 0.7 : 0.85;
+    const a = r.t * w; // all rafts move in step so neighbours never bump into each other
+    const tx = r.def.x + Math.sin(a) * r.amp;
+    const tz = r.mode === 'orbit' ? r.def.z + (Math.cos(a) - 1) * r.amp * 0.7 : r.def.z;
+    const k = 1 / Math.max(dt, 1 / 120);
+    const vx = (tx - r.body.position.x) * k;
+    const vz = (tz - r.body.position.z) * k;
+    r.body.velocity.set(vx, 0, vz);
     for (const b of state.blocks) {
-      if (b.raft !== i || b.removed || b.cleared) continue;
-      if (b.hp > 0) b.body.velocity.set(vx, 0, 0); // armored cargo rides along
-      else if (b.body.sleepState === CANNON.Body.SLEEPING) b.body.position.x += vx * dt; // untouched stacks ride along
+      if (b.raft !== i || b.removed || b.cleared || b.spec.floats) continue;
+      if (b.hp > 0) b.body.velocity.set(vx, 0, vz); // armored cargo rides along
+      else if (b.body.sleepState === CANNON.Body.SLEEPING || !state.firstHit) {
+        // until the first cannonball lands, the whole stack rides its raft as one piece
+        b.body.position.x += vx * dt;
+        b.body.position.z += vz * dt;
+        if (!state.firstHit) b.body.sleep();
+      }
     }
   }
 }
@@ -424,8 +526,13 @@ function applyBursts() {
   while (pendingBursts.length) {
     const { pos, vel, bomb, ud } = pendingBursts.pop();
     const kind = ballById(ud?.kind);
-    const R = bomb ? 5 : kind.radius;
-    const P = bomb ? 1.8 : kind.power;
+    const mega = ud?.mega;
+    let R = bomb ? 5 : kind.radius;
+    let P = bomb ? 1.8 : kind.power;
+    if (mega) {
+      R *= 1.8;
+      P *= 1.6;
+    }
     if (ud && kind.split && !ud.child && !bomb) splitBall(pos, vel);
     const dir = new CANNON.Vec3(vel.x, 0, vel.z);
     dir.normalize();
@@ -435,7 +542,20 @@ function applyBursts() {
       const dist = d.length();
       if (dist > R) continue;
       if (b.hp > 0) {
-        if (bomb && dist < R * 0.6) damageIron(b, 2);
+        if ((bomb || mega) && dist < R * 0.6) damageIron(b, 2);
+        continue;
+      }
+      if (b.spec.fragile && dist < R * 0.55 && !b.breaking) {
+        b.breaking = true;
+        pendingBreaks.push(b);
+        continue;
+      }
+      if (b.spec.floats) {
+        b.loose = true;
+        if (dist < 1.5 && !b.breaking) {
+          b.breaking = true;
+          pendingBreaks.push(b);
+        }
         continue;
       }
       const k = (1 - dist / R) * P;
@@ -451,14 +571,16 @@ function applyBursts() {
       b.body.angularVelocity.set((Math.random() - 0.5) * 8 * k, (Math.random() - 0.5) * 8 * k, (Math.random() - 0.5) * 8 * k);
     }
     particles.sparks(new THREE.Vector3(pos.x, pos.y, pos.z));
-    if (bomb) {
+    if (bomb || mega) {
       particles.sparks(new THREE.Vector3(pos.x, pos.y + 1, pos.z));
       particles.splash(pos, 1.5);
+      if (mega) particles.fireball(new THREE.Vector3(pos.x, pos.y, pos.z));
       sfx.sfxFire();
-      popup('BOOM!', '#ff7a3c');
+      sfx.sfxBoom();
+      popup(mega ? 'MEGA BLAST!' : 'BOOM!', '#ff7a3c');
     }
-    shake = Math.min(1, shake + (bomb ? 1 : 0.5));
-    vibrate(12);
+    shake = Math.min(1.6, shake + (bomb || mega ? 1.4 : 0.7));
+    vibrate(bomb || mega ? 50 : 14);
   }
 }
 
@@ -474,6 +596,12 @@ function onCargoCleared() {
     }
   }
   stat('sunk');
+  const left = blocksRemaining();
+  if (left === 0) {
+    // final piece: dramatic slow motion
+    slowMo(0.25, 1.3);
+    shake = 1.6;
+  } else if (left === 1 && state.totalBlocks > 3) popup('LAST ONE!', '#fff1a8');
   const c = state.combo;
   c.count++;
   c.timer = 1.2;
@@ -566,6 +694,7 @@ const pointer = { down: false, x: 0, y: 0 };
 function onPointerDown(e) {
   sfx.unlockAudio();
   pointer.down = true;
+  pointer.inside = true;
   pointer.x = e.clientX;
   pointer.y = e.clientY;
   tryFire();
@@ -576,30 +705,36 @@ function onPointerMove(e) {
 }
 function onPointerUp() {
   pointer.down = false;
+  pointer.inside = false;
 }
 
 function tryFire() {
   if (state.mode !== 'play') return;
   if (state.shots <= 0) return;
+  if (!pointer.inside) return;
   const now = performance.now();
   if (now - lastFire < FIRE_INTERVAL) return;
   lastFire = now;
 
+  const target = pickTarget();
+  if (target) fire(target);
+}
+
+function pickTarget() {
   const rect = canvas.getBoundingClientRect();
   ndc.set(((pointer.x - rect.left) / rect.width) * 2 - 1, -((pointer.y - rect.top) / rect.height) * 2 + 1);
   raycaster.setFromCamera(ndc, camera);
-  const targets = [...state.blocks.filter((b) => !b.cleared).map((b) => b.mesh), ...state.rafts.map((r) => r.mesh)];
+  const targets = [...state.blocks.filter((b) => !b.cleared && !b.removed).map((b) => b.mesh), ...state.rafts.map((r) => r.mesh)];
   const hits = raycaster.intersectObjects(targets, true);
   let target;
   if (hits.length) target = hits[0].point.clone();
   else {
     target = new THREE.Vector3();
-    if (!raycaster.ray.intersectPlane(aimPlane, target)) return;
+    if (!raycaster.ray.intersectPlane(aimPlane, target)) return null;
   }
-  if (target.z > cannon.root.position.z - 2.5) return; // don't shoot backwards at the pier
+  if (target.z > cannon.root.position.z - 2.5) return null; // don't shoot backwards at the pier
   target.y += 0.3; // aim a touch high so shots at the bottom row clear the raft's front lip
-
-  fire(target);
+  return target;
 }
 
 const bombMatVis = new THREE.MeshStandardMaterial({ color: 0xe0352b, emissive: 0xff5a1a, emissiveIntensity: 0.9, roughness: 0.4 });
@@ -627,12 +762,15 @@ function fire(target, extra = false) {
     shape: new CANNON.Sphere(bomb ? 0.6 : 0.38),
     linearDamping: 0.01,
   });
-  body.userData = { ball: true, burst: false, bomb, kind: kind.id, child: false };
+  const mega = !extra && !bomb && state.megaShots > 0;
+  if (mega) state.megaShots--;
+  body.userData = { ball: true, burst: false, bomb, kind: kind.id, child: false, mega };
   body.position.set(tipPos.x, tipPos.y, tipPos.z);
   body.velocity.set(vel.x, vel.y, vel.z);
   body.ccdSpeedThreshold = 1;
   world.addBody(body);
-  const mesh = new THREE.Mesh(bomb ? bombGeo : ballGeo, bomb ? bombMatVis : ballMaterial(kind));
+  const mesh = new THREE.Mesh(bomb ? bombGeo : ballGeo, bomb || mega ? bombMatVis : ballMaterial(kind));
+  if (mega) mesh.scale.setScalar(1.25);
   mesh.castShadow = true;
   addOutline(mesh, 0.05);
   scene.add(mesh);
@@ -661,6 +799,8 @@ const particles = (() => {
   const smokeMat = new THREE.MeshBasicMaterial({ color: 0xf2ece0, transparent: true, depthWrite: false });
   const fireMat = new THREE.MeshBasicMaterial({ color: 0xffa834, transparent: true, depthWrite: false });
   const sparkMat = new THREE.MeshBasicMaterial({ color: 0xfff1a8, transparent: true, depthWrite: false });
+  const iceMat = new THREE.MeshBasicMaterial({ color: 0xc9f3ff, transparent: true, depthWrite: false });
+  const rainbow = [0xff5a8a, 0xffc93c, 0x5bc8ff, 0x7ee081, 0xb98cff].map((c) => new THREE.MeshBasicMaterial({ color: c, transparent: true, depthWrite: false }));
   const live = [];
   let flash = null;
 
@@ -710,6 +850,18 @@ const particles = (() => {
       if (flash) {
         flash.position.copy(pos);
         flash.intensity = 140;
+      }
+    },
+    shards(pos) {
+      for (let i = 0; i < 22; i++) {
+        const v = new THREE.Vector3(Math.random() - 0.5, Math.random() * 0.8 + 0.2, Math.random() - 0.5).normalize().multiplyScalar(4 + Math.random() * 6);
+        spawn(iceMat, pos, v, 0.6 + Math.random() * 0.5, 0.7 + Math.random() * 1.3, -18);
+      }
+    },
+    confetti(pos) {
+      for (let i = 0; i < 26; i++) {
+        const v = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.3, Math.random() - 0.5).normalize().multiplyScalar(3 + Math.random() * 5);
+        spawn(rainbow[i % rainbow.length], pos, v, 0.7 + Math.random() * 0.6, 0.6 + Math.random() * 0.8, -6);
       }
     },
     sparks(pos) {
@@ -778,6 +930,279 @@ const particles = (() => {
   };
 })();
 
+
+// ======================================================================
+// Time scale (slow motion), ocean events and power-ups
+// ======================================================================
+let timeScale = 1;
+let slowT = 0;
+let slowZoom = 0;
+function slowMo(scale, seconds, zoom = true) {
+  timeScale = Math.min(timeScale, scale);
+  slowT = Math.max(slowT, seconds);
+  if (zoom) slowZoom = 1;
+  document.body.classList.add('slowmo');
+  sfx.sfxWhoosh();
+}
+function updateTime(dt) {
+  if (slowT > 0) {
+    slowT -= dt;
+    if (slowT <= 0) {
+      timeScale = 1;
+      document.body.classList.remove('slowmo');
+    }
+  }
+  slowZoom = Math.max(0, slowZoom - dt * (slowT > 0 ? 0 : 1.5));
+  const z = 1 + (slowT > 0 ? Math.min(1, slowZoom) : slowZoom) * 0.12;
+  if (Math.abs(camera.zoom - z) > 0.001) {
+    camera.zoom = z;
+    camera.updateProjectionMatrix();
+  }
+}
+
+// ---- ocean events: storms, sharks and whirlpools that change the level mid-play ----
+const wind = { x: 0 };
+const ev = { kind: null, t: 0, objs: [], rain: null, shark: null, pool: null, jump: null, nextJump: 3, nextFlash: 4 };
+function stopEvent() {
+  for (const o of ev.objs) scene.remove(o);
+  ev.objs = [];
+  ev.kind = null;
+  ev.rain = ev.shark = ev.pool = ev.jump = null;
+  wind.x = 0;
+  $('wind').classList.add('hidden');
+}
+const sharkMat = new THREE.MeshToonMaterial({ color: 0x5d7488, gradientMap: toonRamp });
+const bellyMat = new THREE.MeshToonMaterial({ color: 0xe6edf2, gradientMap: toonRamp });
+function buildShark() {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 12).scale(1, 0.75, 2.6), sharkMat);
+  const belly = new THREE.Mesh(new THREE.SphereGeometry(0.62, 14, 10).scale(1, 0.6, 2.3), bellyMat);
+  belly.position.y = -0.18;
+  const fin = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.1, 4).scale(0.35, 1, 1.4), sharkMat);
+  fin.position.set(0, 0.85, -0.25);
+  fin.rotation.x = -0.35;
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.0, 4).scale(0.25, 1, 1), sharkMat);
+  tail.position.set(0, 0.25, -1.95);
+  tail.rotation.x = -0.9;
+  for (const m of [body, fin, tail]) addOutline(m, 0.04);
+  g.add(body, belly, fin, tail);
+  return g;
+}
+function whirlTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d');
+  g.translate(128, 128);
+  for (let arm = 0; arm < 4; arm++) {
+    g.beginPath();
+    for (let i = 0; i < 120; i++) {
+      const t = i / 120;
+      const a = arm * (Math.PI / 2) + t * 9;
+      const r = 8 + t * 116;
+      g.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    g.strokeStyle = 'rgba(235,252,255,0.85)';
+    g.lineWidth = 9;
+    g.stroke();
+  }
+  const grd = g.createRadialGradient(0, 0, 0, 0, 0, 128);
+  grd.addColorStop(0, 'rgba(4,30,60,0.85)');
+  grd.addColorStop(0.6, 'rgba(10,70,110,0.35)');
+  grd.addColorStop(1, 'rgba(10,70,110,0)');
+  g.fillStyle = grd;
+  g.fillRect(-128, -128, 256, 256);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function startEvent(kind) {
+  if (!kind || state.mode !== 'play' || ev.kind) return;
+  ev.kind = kind;
+  ev.t = 0;
+  if (kind === 'storm') {
+    const n = 500;
+    const pos = new Float32Array(n * 6);
+    for (let i = 0; i < n; i++) {
+      const x = (Math.random() - 0.5) * 30, y = Math.random() * 16, z = -22 + Math.random() * 28;
+      pos.set([x, y, z, x + 0.15, y - 0.7, z], i * 6);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    ev.rain = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0xdbe8f5, transparent: true, opacity: 0.55 }));
+    scene.add(ev.rain);
+    ev.objs.push(ev.rain);
+    $('wind').classList.remove('hidden');
+    popup('STORM!', '#cfe3ff', 'wind bends your shots');
+    sfx.sfxThunder();
+  } else if (kind === 'shark') {
+    ev.shark = buildShark();
+    scene.add(ev.shark);
+    ev.objs.push(ev.shark);
+    ev.nextJump = 2.5;
+    popup('SHARK WATERS!', '#9fd6ff', 'it may help you out');
+  } else if (kind === 'whirlpool') {
+    ev.pool = new THREE.Mesh(new THREE.CircleGeometry(4.5, 40), new THREE.MeshBasicMaterial({ map: whirlTexture(), transparent: true, depthWrite: false }));
+    ev.pool.rotation.x = -Math.PI / 2;
+    ev.pool.position.set(0, 0.32, RAFT_Z + 1.5);
+    ev.pool.renderOrder = 2;
+    ev.pool.scale.setScalar(0.01);
+    scene.add(ev.pool);
+    ev.objs.push(ev.pool);
+    for (const r of state.rafts) {
+      r.mode = 'orbit';
+      r.ampTarget = Math.max(r.ampTarget, 1.0);
+    }
+    popup('WHIRLPOOL!', '#7fe3f5', 'the rafts start to spin');
+    sfx.sfxWhoosh();
+  }
+}
+function updateEvent(dt) {
+  if (!ev.kind) return;
+  ev.t += dt;
+  if (ev.kind === 'storm') {
+    wind.x = Math.sin(ev.t * 0.45) * 2.4 + Math.sin(ev.t * 1.3) * 0.5;
+    const a = ev.rain.geometry.attributes.position.array;
+    for (let i = 0; i < a.length; i += 6) {
+      a[i + 1] -= dt * 22;
+      a[i + 4] -= dt * 22;
+      a[i] += wind.x * dt * 2;
+      a[i + 3] = a[i] + 0.15 + wind.x * 0.08;
+      if (a[i + 1] < 0) {
+        a[i + 1] = 16;
+        a[i + 4] = 15.3;
+      }
+    }
+    ev.rain.geometry.attributes.position.needsUpdate = true;
+    const w = $('wind');
+    w.textContent = (wind.x < 0 ? '◀ ' : '') + 'WIND ' + Math.abs(wind.x).toFixed(1) + (wind.x >= 0 ? ' ▶' : '');
+    ev.nextFlash -= dt;
+    if (ev.nextFlash <= 0) {
+      ev.nextFlash = 5 + Math.random() * 5;
+      document.body.classList.add('flash');
+      setTimeout(() => document.body.classList.remove('flash'), 140);
+      setTimeout(() => sfx.sfxThunder(), 250);
+      shake = Math.min(1.6, shake + 0.4);
+    }
+  } else if (ev.kind === 'shark') {
+    const sh = ev.shark;
+    if (ev.jump) {
+      const j = ev.jump;
+      j.t += dt;
+      const k = Math.min(1, j.t / 0.9);
+      sh.position.lerpVectors(j.from, j.to, k);
+      sh.position.y = Math.sin(k * Math.PI) * j.h - 0.4;
+      sh.rotation.set(-Math.cos(k * Math.PI) * 0.8, j.yaw, 0);
+      if (!j.hit && k > 0.5) {
+        j.hit = true;
+        const b = j.target;
+        if (!b.removed && !b.cleared) queueBurst(new CANNON.Vec3(b.body.position.x, b.body.position.y, b.body.position.z + 0.5), new CANNON.Vec3(j.to.x - j.from.x, 0, j.to.z - j.from.z), false, { kind: 'anchor' });
+        particles.splash(j.from, 1.2);
+        popup('CHOMP!', '#9fd6ff');
+        stat('sharks');
+      }
+      if (k >= 1) {
+        particles.splash(sh.position, 1.4);
+        sfx.sfxSplash(1);
+        ev.jump = null;
+      }
+    } else {
+      // circle in front of the rafts with just the fin showing
+      const a = ev.t * 0.5;
+      sh.position.set(Math.sin(a) * 8.5, -0.55, RAFT_Z + 2.6 + Math.cos(a) * 2.2);
+      sh.rotation.set(0, Math.atan2(Math.cos(a) * 8.5, -Math.sin(a) * 2.2), 0); // face along the path
+      ev.nextJump -= dt;
+      const targets = state.blocks.filter((b) => !b.cleared && !b.removed && b.hp === 0 && !b.spec.floats);
+      if (ev.nextJump <= 0 && targets.length) {
+        ev.nextJump = 6 + Math.random() * 3;
+        const target = targets[Math.floor(Math.random() * targets.length)];
+        const to = new THREE.Vector3(target.body.position.x, 0, target.body.position.z - 2.5);
+        const from = new THREE.Vector3(to.x + (Math.random() < 0.5 ? -3 : 3), 0, target.body.position.z + 3.5);
+        ev.jump = { from, to, t: 0, h: target.body.position.y + 0.6, target, yaw: Math.atan2(to.x - from.x, to.z - from.z), hit: false };
+        sfx.sfxSplash(1);
+      }
+    }
+  } else if (ev.kind === 'whirlpool') {
+    ev.pool.rotation.z -= dt * 1.8;
+    ev.pool.scale.setScalar(Math.min(1, ev.pool.scale.x + dt * 0.6));
+  }
+}
+
+// ---- power-ups: one use each per level ----
+function renderPowerbar() {
+  $('powerbar').innerHTML = POWERUPS.map((pu) => {
+    const n = save.powerups[pu.id] || 0;
+    const used = state.puUsed && state.puUsed[pu.id];
+    return `<button class="pu ${used ? 'used' : ''} ${n ? '' : 'empty'}" data-id="${pu.id}" aria-label="${pu.name}"><span>${pu.icon}</span><b>${n}</b></button>`;
+  }).join('');
+  $('powerbar').querySelectorAll('.pu').forEach((el) => el.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    usePowerup(el.dataset.id);
+  }));
+}
+function usePowerup(id) {
+  if (state.mode !== 'play') return;
+  const pu = powerupById(id);
+  if (state.puUsed[id]) return toast(`${pu.name} already used this level`);
+  if (!(save.powerups[id] > 0)) return toast(`No ${pu.name} left — win them on the Lucky Spin!`);
+  save.powerups[id]--;
+  state.puUsed[id] = true;
+  stat('powerups');
+  persist();
+  sfx.sfxCoin();
+  vibrate(30);
+  if (id === 'blast') {
+    state.megaShots = 3;
+    popup('MEGA BLAST!', '#ff7a3c', 'next 3 shots');
+  } else if (id === 'slowmo') {
+    slowMo(0.35, 6, false);
+    popup('SLOW-MO!', '#7fe3f5', '6 seconds');
+  } else if (id === 'laser') {
+    state.laser = true;
+    popup('LASER AIM!', '#ff5a5a', 'drag to aim');
+  }
+  renderPowerbar();
+}
+function grantPowerup(id, n = 1) {
+  save.powerups[id] = (save.powerups[id] || 0) + n;
+}
+const randomPowerup = () => POWERUPS[Math.floor(Math.random() * POWERUPS.length)].id;
+
+// laser aim: dashed trajectory + target ring
+const laser = (() => {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(40 * 3), 3));
+  const line = new THREE.Line(geo, new THREE.LineDashedMaterial({ color: 0xff3b3b, dashSize: 0.35, gapSize: 0.25, transparent: true, opacity: 0.9, depthTest: false }));
+  line.renderOrder = 10;
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.35, 0.5, 24), new THREE.MeshBasicMaterial({ color: 0xff3b3b, transparent: true, opacity: 0.9, depthTest: false, side: THREE.DoubleSide }));
+  ring.renderOrder = 10;
+  line.visible = ring.visible = false;
+  scene.add(line, ring);
+  return { line, ring };
+})();
+function updateLaser() {
+  const on = state.mode === 'play' && state.laser;
+  laser.line.visible = laser.ring.visible = false;
+  if (!on) return;
+  const target = pickTarget();
+  if (!target) return;
+  const vel = aimAt(target);
+  const a = laser.line.geometry.attributes.position.array;
+  const g = world.gravity.y;
+  const dist = tipPos.distanceTo(target);
+  const T = 0.2 + dist / 85;
+  for (let i = 0; i < 40; i++) {
+    const t = (i / 39) * T;
+    a[i * 3] = tipPos.x + vel.x * t;
+    a[i * 3 + 1] = tipPos.y + vel.y * t + 0.5 * g * t * t;
+    a[i * 3 + 2] = tipPos.z + vel.z * t;
+  }
+  laser.line.geometry.attributes.position.needsUpdate = true;
+  laser.line.computeLineDistances();
+  laser.ring.position.copy(target);
+  laser.ring.lookAt(camera.position);
+  laser.line.visible = laser.ring.visible = true;
+}
+
 // ======================================================================
 // Simulation step
 // ======================================================================
@@ -808,9 +1233,14 @@ function stepPhysics(dt) {
       ball.body.linearDamping = 0.9;
     }
   }
+  for (const ball of state.balls) {
+    if (wind.x && ball.body.position.y > 0) ball.body.applyForce(new CANNON.Vec3(wind.x * ball.body.mass * 1.6, 0, 0), ball.body.position);
+  }
   driftRafts(dt);
-  world.step(1 / 60, dt, 4);
+  floatBalloons(dt);
+  world.step(1 / 60, dt, 6);
   applyUnlocks();
+  applyBreaks();
   applyExplosions();
   applyBursts();
 }
@@ -831,7 +1261,18 @@ function updateGame(dt) {
   for (let i = state.blocks.length - 1; i >= 0; i--) {
     const b = state.blocks[i];
     const y = b.body.position.y;
-    if (!b.cleared && y < RAFT_TOP - 0.9) {
+    if (!b.cleared && b.spec.floats && b.loose && y > 11) {
+      b.cleared = true;
+      popup('FLOATED AWAY!', '#5bc8ff');
+      onCargoCleared();
+      updateHud();
+    }
+    if (b.spec.floats && y > 16) {
+      world.removeBody(b.body);
+      scene.remove(b.mesh);
+      b.removed = true;
+    }
+    if (!b.cleared && !b.spec.floats && y < RAFT_TOP - 0.9) {
       b.cleared = true;
       onCargoCleared();
       updateHud();
@@ -868,7 +1309,11 @@ function updateGame(dt) {
   }
   if (state.shots <= 0) {
     // wait until balls are gone and things have settled before declaring failure
-    const moving = state.blocks.some((b) => !b.cleared && b.body.velocity.length() > 0.35);
+    const moving = state.blocks.some((b) => {
+      if (b.cleared || b.spec.floats) return false;
+      const rv = state.rafts[b.raft].body.velocity; // motion relative to the raft it rides
+      return Math.hypot(b.body.velocity.x - rv.x, b.body.velocity.y, b.body.velocity.z - rv.z) > 0.35;
+    });
     const ballsFlying = state.balls.some((b) => b.body.position.y > 0 && b.age < 4);
     if (!moving && !ballsFlying) {
       state.endTimer += dt;
@@ -881,17 +1326,18 @@ function updateGame(dt) {
 // UI
 // ======================================================================
 const $ = (id) => document.getElementById(id);
-const screens = ['home', 'win', 'fail', 'settings', 'nolives', 'daily', 'boosters', 'armory', 'goals'];
+const screens = ['home', 'win', 'fail', 'settings', 'nolives', 'daily', 'boosters', 'armory', 'goals', 'spin', 'challenge'];
 function show(id) {
   for (const s of screens) $(s).classList.toggle('hidden', s !== id);
   if (id) $('hint').classList.add('hidden'); // tutorial hint only shows during play
   const hudOn = state.mode === 'play' || state.mode === 'paused' || id === 'fail';
   $('hud').classList.toggle('hidden', !hudOn);
   $('hud-progress').classList.toggle('hidden', !hudOn);
+  $('powerbar').classList.toggle('hidden', !hudOn);
 }
 
 function updateHud() {
-  $('hud-level').textContent = state.level;
+  $('hud-level').textContent = state.challenge ? 'Daily' : state.level;
   $('hud-shots').textContent = state.shots;
   const left = blocksRemaining();
   $('hud-left').textContent = left;
@@ -911,6 +1357,8 @@ function updateHome() {
   else label.textContent = fmtTime(HEART_REGEN_MS - (Date.now() - save.lifeTimer));
   $('home-level').textContent = save.level;
   $('goals-badge').classList.toggle('hidden', claimableGoals() === 0);
+  $('spin-badge').classList.toggle('hidden', save.spin === dayKey());
+  $('challenge-badge').classList.toggle('hidden', save.challenge.day === dayKey() && save.challenge.done);
 }
 
 function fmtTime(ms) {
@@ -935,6 +1383,8 @@ function vibrate(ms) {
 
 function goHome() {
   state.mode = 'home';
+  runId++;
+  stopEvent();
   loadLevel(save.level); // show the next level's cargo behind the menu
   updateHome();
   renderMap();
@@ -1061,6 +1511,201 @@ $('btn-goals-close').addEventListener('click', () => {
   $('goals').classList.add('hidden');
 });
 
+
+// ---- win celebration: coins burst out of the medal and fly to the coin counter ----
+function coinShower(stars) {
+  const layer = $('coin-shower');
+  layer.innerHTML = '';
+  const n = 8 + stars * 4;
+  const target = document.querySelector('#win .coin-pill').getBoundingClientRect();
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('i');
+    const x0 = window.innerWidth / 2 + (Math.random() - 0.5) * 140;
+    const y0 = window.innerHeight * 0.48 + (Math.random() - 0.5) * 80;
+    c.style.left = x0 + 'px';
+    c.style.top = y0 + 'px';
+    c.style.setProperty('--dx', target.left + 14 - x0 + 'px');
+    c.style.setProperty('--dy', target.top + 14 - y0 + 'px');
+    c.style.animationDelay = 0.5 + i * 0.06 + 's';
+    layer.appendChild(c);
+    setTimeout(() => sfx.sfxTick(), 1150 + i * 60);
+  }
+  setTimeout(() => (layer.innerHTML = ''), 2600 + n * 60);
+}
+
+// ---- Lucky Spin: a free spin every day ----
+const WHEEL = [
+  { label: '50', icon: '🪙', give: () => coins(50) },
+  { label: 'Slow-Mo', icon: '⏳', give: () => (grantPowerup('slowmo'), 'Slow-Mo power-up') },
+  { label: '+5 Shots', icon: '🎯', give: () => booster('shots', '+5 Shots booster') },
+  { label: '150', icon: '🪙', give: () => coins(150) },
+  { label: 'Mega Blast', icon: '💥', give: () => (grantPowerup('blast'), 'Mega Blast power-up') },
+  { label: 'Bomb', icon: '💣', give: () => booster('bomb', 'Start-with-Bomb booster') },
+  { label: 'Paint', icon: '🎨', give: () => paint() },
+  { label: 'Laser', icon: '🔴', give: () => (grantPowerup('laser'), 'Laser Aim power-up') },
+  { label: '300', icon: '🪙', give: () => coins(300) },
+  { label: 'Triple', icon: '✨', give: () => booster('triple', 'Triple Shot booster') },
+];
+const WHEEL_WEIGHTS = [16, 11, 11, 12, 9, 9, 3, 9, 6, 9];
+const SPIN_COST = 150;
+function coins(n) {
+  save.coins += n;
+  return `${n} coins`;
+}
+function booster(id, name) {
+  save.boosters[id] = (save.boosters[id] || 0) + 1;
+  return name;
+}
+function paint() {
+  const locked = SKINS.filter((k) => !save.armory.skins.includes(k.id));
+  if (!locked.length) return coins(500);
+  const k = locked[Math.floor(Math.random() * locked.length)];
+  save.armory.skins.push(k.id);
+  return `${k.name} cannon paint!`;
+}
+let wheelAngle = 0;
+let spinning = false;
+function renderSpin() {
+  const n = WHEEL.length;
+  const colors = ['#ff7a59', '#ffc93c', '#2fb3a5', '#5b7fe0', '#e85d75'];
+  $('wheel').style.background = `conic-gradient(${WHEEL.map((_, i) => `${colors[i % colors.length]} ${(i / n) * 360}deg ${((i + 1) / n) * 360}deg`).join(',')})`;
+  $('wheel').innerHTML = WHEEL.map((w, i) => `<span style="transform: rotate(${(i + 0.5) * (360 / n)}deg)"><em>${w.icon}</em>${w.label}</span>`).join('');
+  refreshSpinButton();
+}
+function refreshSpinButton() {
+  const free = save.spin !== dayKey();
+  $('btn-spin').innerHTML = free ? 'Spin!<small>free today</small>' : `Spin again<small><span class="coin-icon small"></span> ${SPIN_COST}</small>`;
+  $('btn-spin').disabled = spinning || (!free && save.coins < SPIN_COST);
+  document.querySelectorAll('#spin .coins').forEach((el) => (el.textContent = save.coins));
+}
+function doSpin() {
+  if (spinning) return;
+  const free = save.spin !== dayKey();
+  if (!free) {
+    if (save.coins < SPIN_COST) return toast('Not enough coins');
+    save.coins -= SPIN_COST;
+  }
+  save.spin = dayKey();
+  persist();
+  spinning = true;
+  $('spin-result').textContent = '';
+  // weighted pick
+  let r = Math.random() * WHEEL_WEIGHTS.reduce((a, b) => a + b, 0);
+  let idx = 0;
+  while ((r -= WHEEL_WEIGHTS[idx]) > 0) idx++;
+  const seg = 360 / WHEEL.length;
+  const stopAt = 360 - (idx + 0.5) * seg + (Math.random() - 0.5) * seg * 0.6;
+  wheelAngle += 360 * 5 + ((stopAt - (wheelAngle % 360)) + 360) % 360;
+  $('wheel').style.transform = `rotate(${wheelAngle}deg)`;
+  refreshSpinButton();
+  let ticks = 0;
+  const tick = setInterval(() => (++ticks < 22 ? sfx.sfxTick() : clearInterval(tick)), 160);
+  setTimeout(() => {
+    spinning = false;
+    const what = WHEEL[idx].give();
+    persist();
+    stat('spins');
+    sfx.sfxWin();
+    celebrate(1600);
+    vibrate([30, 40, 30]);
+    $('spin-result').innerHTML = `You won <b>${what}</b>`;
+    refreshSpinButton();
+    updateHome();
+  }, 4200);
+}
+$('btn-spin').addEventListener('click', () => {
+  sfx.unlockAudio();
+  doSpin();
+});
+$('btn-spinwheel').addEventListener('click', () => {
+  sfx.unlockAudio();
+  sfx.sfxClick();
+  renderSpin();
+  $('spin-result').textContent = '';
+  $('spin').classList.remove('hidden');
+});
+$('btn-spin-close').addEventListener('click', () => {
+  if (spinning) return;
+  sfx.sfxClick();
+  stopCelebrate();
+  $('spin').classList.add('hidden');
+});
+
+// ---- Daily Challenge: one special level per day + Game Center leaderboard ----
+const dayNumber = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+function challengeState() {
+  if (save.challenge.day !== dayKey()) save.challenge = { day: dayKey(), best: 0, done: false };
+  return save.challenge;
+}
+function renderChallenge() {
+  const c = challengeState();
+  const def = getChallenge(dayNumber());
+  const names = { storm: 'Storm', shark: 'Shark Waters', whirlpool: 'Whirlpool' };
+  $('ch-info').innerHTML = `${def.blocks.length} cargo · ${def.shots} shots · ${names[def.event] || 'Calm seas'}`;
+  $('ch-best').textContent = c.best ? c.best.toLocaleString() : '—';
+  $('ch-reward').classList.toggle('hidden', c.done);
+  $('btn-leaderboard').classList.toggle('hidden', !gameCenter.available);
+  const ms = 86400000 - ((Date.now() - new Date().getTimezoneOffset() * 60000) % 86400000);
+  $('ch-timer').textContent = `New challenge in ${Math.floor(ms / 3600000)}h ${Math.floor((ms % 3600000) / 60000)}m`;
+}
+function startChallenge() {
+  stopCelebrate();
+  beginLevel({}, getChallenge(dayNumber()));
+}
+function challengeScore(stars) {
+  const sunk = state.totalBlocks;
+  return sunk * 100 + state.shots * 150 + (state.bonus || 0) * 10 + stars * 250;
+}
+function onChallengeWin(stars) {
+  const c = challengeState();
+  const score = challengeScore(stars);
+  const isBest = score > c.best;
+  c.best = Math.max(c.best, score);
+  let reward = 0;
+  const gifts = [];
+  if (!c.done) {
+    c.done = true;
+    reward = 150;
+    gifts.push(randomPowerup());
+    gifts.forEach((id) => grantPowerup(id));
+    stat('challenges');
+  }
+  save.coins += reward;
+  persist();
+  gameCenter.submit(c.best);
+  countUp($('win-coins'), reward);
+  $('win-title-word').textContent = isBest ? 'NEW BEST!' : 'COMPLETE!';
+  $('win-level-label').textContent = 'Daily Challenge';
+  $('win-detail').innerHTML = `Score <b>${score.toLocaleString()}</b> · best today ${c.best.toLocaleString()}` +
+    (gifts.length ? `<br><b class="gift">+ ${gifts.map((id) => powerupById(id).icon + ' ' + powerupById(id).name).join(', ')}</b>` : '');
+  document.querySelectorAll('.stars span').forEach((s, i) => s.classList.toggle('on', i < stars));
+  updateHome();
+  celebrate();
+  coinShower(stars);
+  sfx.sfxWin();
+  vibrate([30, 40, 30]);
+  show('win');
+}
+$('btn-challenge').addEventListener('click', () => {
+  sfx.unlockAudio();
+  sfx.sfxClick();
+  renderChallenge();
+  gameCenter.login();
+  $('challenge').classList.remove('hidden');
+});
+$('btn-ch-play').addEventListener('click', () => {
+  sfx.sfxClick();
+  startChallenge();
+});
+$('btn-leaderboard').addEventListener('click', () => {
+  sfx.sfxClick();
+  gameCenter.show();
+});
+$('btn-ch-close').addEventListener('click', () => {
+  sfx.sfxClick();
+  $('challenge').classList.add('hidden');
+});
+
 // ---- daily reward (7-day streak) ----
 const DAILY = [50, 75, 100, 150, 200, 250, 500];
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
@@ -1112,13 +1757,17 @@ function showBoosters() {
   refreshBoosters();
   show('boosters');
 }
+const boostCost = (id) => (save.boosters[id] > 0 ? 0 : +document.querySelector(`.boost[data-id="${id}"]`).dataset.cost);
 function refreshBoosters() {
-  const spent = [...picked].reduce((t, id) => t + +document.querySelector(`.boost[data-id="${id}"]`).dataset.cost, 0);
+  const spent = [...picked].reduce((t, id) => t + boostCost(id), 0);
   const left = save.coins - spent;
   document.querySelectorAll('.boost').forEach((el) => {
-    const on = picked.has(el.dataset.id);
+    const id = el.dataset.id;
+    const on = picked.has(id);
     el.classList.toggle('on', on);
-    el.disabled = !on && +el.dataset.cost > left;
+    el.disabled = !on && boostCost(id) > left;
+    const free = save.boosters[id] || 0;
+    el.querySelector('small').innerHTML = free ? `Free ×${free}` : `<span class="coin-icon small"></span>${el.dataset.cost}`;
   });
   document.querySelectorAll('#boosters .coins').forEach((el) => (el.textContent = left));
 }
@@ -1133,9 +1782,12 @@ document.querySelectorAll('.boost').forEach((el) =>
 $('btn-start').addEventListener('click', () => {
   sfx.sfxClick();
   let cost = 0;
-  picked.forEach((id) => (cost += +document.querySelector(`.boost[data-id="${id}"]`).dataset.cost));
+  picked.forEach((id) => (cost += boostCost(id)));
   if (cost > save.coins) return;
   save.coins -= cost;
+  picked.forEach((id) => {
+    if (save.boosters[id] > 0) save.boosters[id]--;
+  });
   persist();
   beginLevel(Object.fromEntries([...picked].map((id) => [id, true])));
 });
@@ -1144,8 +1796,10 @@ $('btn-boost-back').addEventListener('click', () => {
   goHome();
 });
 
-function beginLevel(boosts) {
-  loadLevel(save.level);
+let runId = 0;
+function beginLevel(boosts, def) {
+  if (def) loadLevel(0, def);
+  else loadLevel(save.level);
   if (boosts.shots) state.shots = state.startShots = state.shots + 5;
   if (boosts.bomb) {
     state.bombReady = true;
@@ -1156,10 +1810,16 @@ function beginLevel(boosts) {
   show(null);
   updateHud();
   const lv = state.level;
-  if (lv % 10 === 0) setTimeout(() => popup('BOSS LEVEL!', '#ff5a3c', 'double coins'), 300);
+  if (state.challenge) {
+    /* the challenge has its own intro popup */
+  } else if (lv % 10 === 0) setTimeout(() => popup('BOSS LEVEL!', '#ff5a3c', 'double coins'), 300);
   else if (lv % 5 === 1 && lv > 1) setTimeout(() => popup(THEMES[state.theme].label, '#ffe7b8', `Chapter ${Math.floor((lv - 1) / 5) + 1}`), 300);
   if (boosts.triple) setTimeout(() => popup('TRIPLE SHOT!', '#5bc8ff', '10 shots'), lv % 5 === 1 || lv % 10 === 0 ? 1400 : 300);
   if (lv === 1 && !save.tutorialDone) $('hint').classList.remove('hidden');
+  if (state.challenge) setTimeout(() => popup('DAILY CHALLENGE', '#ffc93c', 'beat your best score'), 300);
+  renderPowerbar();
+  const id = ++runId;
+  if (state.event) setTimeout(() => runId === id && startEvent(state.event), 2600);
 }
 
 function hideHint() {
@@ -1171,9 +1831,11 @@ function hideHint() {
 
 function onWin() {
   state.mode = 'won';
+  stopEvent();
   const used = state.shotsFired;
   const ratio = used / state.startShots;
   const stars = ratio <= 0.4 ? 3 : ratio <= 0.7 ? 2 : 1;
+  if (state.challenge) return onChallengeWin(stars);
   let reward = 20 + state.shots * 2 + (stars - 1) * 10 + (state.bonus || 0);
   if (state.level % 10 === 0) {
     reward *= 2; // boss bonus
@@ -1181,15 +1843,23 @@ function onWin() {
   }
   stat('wins');
   save.coins += reward;
+  // power-up rewards: 3-star wins have a 50% chance, bosses give one of each
+  const gifts = [];
+  if (state.level % 10 === 0) POWERUPS.forEach((pu) => gifts.push(pu.id));
+  else if (stars === 3 && Math.random() < 0.5) gifts.push(randomPowerup());
+  gifts.forEach((id) => grantPowerup(id));
   save.stars = save.stars || {};
   save.stars[state.level] = Math.max(save.stars[state.level] || 0, stars);
   save.level = state.level + 1;
   persist();
   countUp($('win-coins'), reward);
-  $('win-level').textContent = state.level;
   updateHome(); // refresh the coin + heart counters in the top bar
   celebrate();
-  $('win-detail').textContent = `Cleared with ${used} shot${used === 1 ? '' : 's'} · ${state.shots} spare`;
+  $('win-detail').innerHTML = `Cleared with ${used} shot${used === 1 ? '' : 's'} · ${state.shots} spare` +
+    (gifts.length ? `<br><b class="gift">+ ${gifts.map((id) => powerupById(id).icon + ' ' + powerupById(id).name).join(', ')}</b>` : '');
+  $('win-title-word').textContent = stars === 3 ? 'PERFECT!' : 'CLEARED!';
+  $('win-level-label').textContent = 'Level ' + state.level;
+  coinShower(stars);
   document.querySelectorAll('.stars span').forEach((s, i) => s.classList.toggle('on', i < stars));
   sfx.sfxWin();
   setTimeout(sfx.sfxCoin, 450);
@@ -1199,6 +1869,7 @@ function onWin() {
 
 function onFail() {
   state.mode = 'failed';
+  stopEvent();
   $('fail-left').textContent = blocksRemaining();
   $('btn-extra').classList.toggle('hidden', state.extraUsed);
   sfx.sfxFail();
@@ -1238,7 +1909,7 @@ $('btn-extra').addEventListener('click', () => {
 });
 $('btn-retry').addEventListener('click', () => {
   sfx.sfxClick();
-  loseLife();
+  if (!state.challenge) loseLife(); // the daily challenge is free to retry
   goHome();
 });
 $('btn-settings').addEventListener('click', () => {
@@ -1254,12 +1925,13 @@ $('btn-resume').addEventListener('click', () => {
 });
 $('btn-restart').addEventListener('click', () => {
   sfx.sfxClick();
+  if (state.challenge) return startChallenge();
   if (state.shotsFired > 0) loseLife();
   startLevel();
 });
 $('btn-home').addEventListener('click', () => {
   sfx.sfxClick();
-  if (state.shotsFired > 0) loseLife();
+  if (state.shotsFired > 0 && !state.challenge) loseLife();
   goHome();
 });
 $('btn-refill').addEventListener('click', () => {
@@ -1312,16 +1984,20 @@ let elapsed = 0;
 let uiTick = 0;
 
 function frame() {
-  const dt = Math.min(clock.getDelta(), 1 / 20);
+  const realDt = Math.min(clock.getDelta(), 1 / 20);
+  updateTime(realDt);
+  const dt = realDt * timeScale;
   elapsed += dt;
 
   if (state.mode !== 'paused') {
     stepPhysics(dt);
     syncMeshes();
     updateGame(dt);
+    updateEvent(dt);
   }
+  updateLaser();
   for (const ball of state.balls) {
-    if (ball.body.userData.kind === 'fire' && ball.age < 1.5 && ball.body.position.y > 0) particles.trail(ball.body.position);
+    if ((ball.body.userData.kind === 'fire' || ball.body.userData.mega) && ball.age < 1.5 && ball.body.position.y > 0) particles.trail(ball.body.position);
   }
   particles.update(dt);
   env.water.update(elapsed);
@@ -1341,11 +2017,13 @@ function frame() {
   if (pointer.down) tryFire();
 
   // idle camera sway + impact shake
-  shake = Math.max(0, shake - dt * 3);
-  const sx = (Math.random() - 0.5) * shake * 0.25;
-  const sy = (Math.random() - 0.5) * shake * 0.25;
+  shake = Math.max(0, shake - realDt * 2.6);
+  const sk = shake * shake;
+  const sx = (Math.random() - 0.5) * sk * 0.5;
+  const sy = (Math.random() - 0.5) * sk * 0.5;
   camera.position.set(CAM_POS.x + Math.sin(elapsed * 0.3) * 0.12 + sx, CAM_POS.y + Math.sin(elapsed * 0.5) * 0.06 + sy, CAM_POS.z);
   camera.lookAt(CAM_LOOK);
+  camera.rotation.z += (Math.random() - 0.5) * sk * 0.025;
 
   uiTick += dt;
   if (uiTick > 0.5) {
@@ -1370,7 +2048,7 @@ function frame() {
 }
 
 // Debug / test hook
-window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save };
+window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save, startChallenge, usePowerup, startEvent, getLevel };
 
 goHome();
 frame();

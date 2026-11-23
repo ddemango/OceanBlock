@@ -189,3 +189,35 @@ export function setMusic(on) {
     music.timer = setInterval(scheduleMusic, 100);
   }
 }
+
+// ---------- extra effects ----------
+export function sfxPop() {
+  noise(0.08, 'highpass', 1800, 0.8, 0.5);
+  tone(900, 300, 0.08, 'triangle', 0.25);
+}
+
+export function sfxShatter() {
+  const c = ensure();
+  if (!c) return;
+  noise(0.35, 'highpass', 5000, 0.6, 0.35);
+  for (let i = 0; i < 5; i++) tone(2400 + Math.random() * 1800, 2000, 0.12, 'sine', 0.06, i * 0.03);
+}
+
+export function sfxBoom() {
+  noise(0.9, 'lowpass', 600, 0.7, 0.9);
+  tone(80, 30, 0.7, 'sine', 0.9);
+}
+
+export function sfxWhoosh() {
+  const f = noise(0.6, 'bandpass', 400, 1.2, 0.3);
+  if (f) f.frequency.exponentialRampToValueAtTime(2400, ctx.currentTime + 0.5);
+}
+
+export function sfxTick() {
+  tone(1500, 1400, 0.03, 'square', 0.06);
+}
+
+export function sfxThunder() {
+  noise(1.6, 'lowpass', 300, 0.5, 0.7);
+  noise(0.3, 'lowpass', 900, 0.5, 0.4, 0.05);
+}

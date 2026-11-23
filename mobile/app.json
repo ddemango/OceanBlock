@@ -10,7 +10,7 @@
     "backgroundColor": "#8fd7ee",
     "ios": {
       "bundleIdentifier": "com.tidebreaker.game",
-      "supportsTablet": false,
+      "supportsTablet": true,
       "requireFullScreen": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,

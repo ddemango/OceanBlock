@@ -32,3 +32,18 @@ export function nativeVibrate(pattern) {
   }
   Haptics.impact({ style: ms > 40 ? ImpactStyle.Heavy : ImpactStyle.Medium }).catch(() => {});
 }
+
+// Apple Game Center (only inside the iOS app). Daily-challenge leaderboard.
+export const LEADERBOARD_DAILY = 'tidebreaker.daily';
+export const gameCenter = {
+  available: !!rnBridge,
+  submit(score) {
+    if (rnBridge) rnBridge.postMessage(JSON.stringify({ type: 'gc-score', leaderboard: LEADERBOARD_DAILY, score: Math.round(score) }));
+  },
+  show() {
+    if (rnBridge) rnBridge.postMessage(JSON.stringify({ type: 'gc-show', leaderboard: LEADERBOARD_DAILY }));
+  },
+  login() {
+    if (rnBridge) rnBridge.postMessage(JSON.stringify({ type: 'gc-login' }));
+  },
+};

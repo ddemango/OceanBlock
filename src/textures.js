@@ -299,3 +299,35 @@ export function tntTexture() {
   }
   return toTexture(c);
 }
+
+// Frosty ice block: pale blue with bright highlights and crack lines.
+export function iceTexture() {
+  const [c, g] = canvas(256, 256);
+  const grd = g.createLinearGradient(0, 0, 256, 256);
+  grd.addColorStop(0, '#e9fbff');
+  grd.addColorStop(0.5, '#9fe2f5');
+  grd.addColorStop(1, '#6cc6e8');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 256, 256);
+  g.strokeStyle = 'rgba(255,255,255,0.9)';
+  g.lineWidth = 10;
+  g.strokeRect(5, 5, 246, 246);
+  g.lineWidth = 3;
+  g.strokeStyle = 'rgba(255,255,255,0.75)';
+  for (const [a, b, cc, d] of [[40, 60, 120, 110], [120, 110, 150, 40], [120, 110, 200, 190], [70, 200, 120, 110]]) {
+    g.beginPath(); g.moveTo(a, b); g.lineTo(cc, d); g.stroke();
+  }
+  g.fillStyle = 'rgba(255,255,255,0.8)';
+  g.beginPath(); g.ellipse(70, 50, 34, 10, -0.6, 0, Math.PI * 2); g.fill();
+  return toTexture(c);
+}
+
+// Striped party balloon.
+export function balloonTexture(color = '#ff5a8a') {
+  const [c, g] = canvas(256, 128);
+  g.fillStyle = color;
+  g.fillRect(0, 0, 256, 128);
+  g.fillStyle = 'rgba(255,255,255,0.28)';
+  for (let x = 0; x < 256; x += 64) g.fillRect(x, 0, 28, 128);
+  return toTexture(c);
+}

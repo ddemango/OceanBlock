@@ -32,4 +32,16 @@ export const ACHIEVEMENTS = [
   ['tnt20', 'Powder Monkey', 'tnt', 20, 250],
   ['stars30', 'Star Collector', 'stars', 30, 400],
   ['streak7', 'Loyal Sailor', 'streak', 7, 700],
+  ['ice50', 'Ice Breaker', 'ice', 50, 300],
+  ['balloon30', 'Party Popper', 'balloons', 30, 300],
+  ['challenge5', 'Daily Challenger', 'challenges', 5, 500],
+  ['power20', 'Power Player', 'powerups', 20, 400],
 ];
+
+// One-use-per-level power-ups (earned from the spin wheel, 3-star wins and the daily challenge).
+export const POWERUPS = [
+  { id: 'blast', name: 'Mega Blast', desc: 'Next 3 shots blow up huge', icon: '💥' },
+  { id: 'slowmo', name: 'Slow-Mo', desc: 'Slows time for 6 seconds', icon: '⏳' },
+  { id: 'laser', name: 'Laser Aim', desc: 'Shows exactly where shots land', icon: '🎯' },
+];
+export const powerupById = (id) => POWERUPS.find((p) => p.id === id);

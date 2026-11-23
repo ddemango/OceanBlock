@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: status | add-testers | invite
+        description: status | add-testers | invite | gamecenter
         default: status
       emails:
         description: Comma-separated tester emails (for add-testers)
