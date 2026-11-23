@@ -225,8 +225,8 @@ export function stoneTexture() {
 export function skyTexture() {
   const [c, g] = canvas(4, 512);
   const grad = g.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, '#3a9fe0');
-  grad.addColorStop(0.55, '#8fd3f2');
+  grad.addColorStop(0, '#2b8fe6');
+  grad.addColorStop(0.55, '#7fd0f7');
   grad.addColorStop(1, '#e6f8ff');
   g.fillStyle = grad;
   g.fillRect(0, 0, 4, 512);

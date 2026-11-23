@@ -25,6 +25,7 @@ export function buildEnvironment(scene) {
   scene.add(water.mesh);
 
   buildIslands(scene);
+  buildSunRays(scene);
   const clouds = buildClouds(scene);
   buildPier(scene);
 
@@ -313,4 +314,29 @@ export function buildRaft({ x, z, w, d }) {
   }
   g.position.set(x, 0, z);
   return g;
+}
+
+// Soft light shafts slanting down from the top of the sky.
+function buildSunRays(scene) {
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 256;
+  const g = c.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, 'rgba(255,255,240,0.55)');
+  grad.addColorStop(1, 'rgba(255,255,240,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 64, 256);
+  const side = g.createLinearGradient(0, 0, 64, 0);
+  side.addColorStop(0, 'rgba(0,0,0,1)'); side.addColorStop(0.5, 'rgba(0,0,0,0)'); side.addColorStop(1, 'rgba(0,0,0,1)');
+  g.globalCompositeOperation = 'destination-out';
+  g.fillStyle = side;
+  g.fillRect(0, 0, 64, 256);
+  const tex = new THREE.CanvasTexture(c);
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, opacity: 0.55 });
+  for (let i = 0; i < 6; i++) {
+    const ray = new THREE.Mesh(new THREE.PlaneGeometry(3 + Math.random() * 4, 40), mat);
+    ray.position.set(-14 + i * 5.5, 18, -30 - i * 3);
+    ray.rotation.z = -0.35;
+    scene.add(ray);
+  }
 }

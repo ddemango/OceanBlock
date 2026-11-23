@@ -56,81 +56,113 @@ class Builder {
   }
 }
 
+// ---- structure helpers -------------------------------------------------
+const W = (type) => (BLOCKS[type].w ?? BLOCKS[type].r * 2);
+
+// One horizontal row of n blocks centered on cx. Returns the top height.
+function row(b, cx, z, n, type, base, gap = 0.03) {
+  const step = W(type) + gap;
+  const start = cx - ((n - 1) * step) / 2;
+  for (let i = 0; i < n; i++) b.put(type, start + i * step, base, z);
+  return base + BLOCKS[type].h;
+}
+
+// Stepped tower: each tier is [type, count]. Counts should shrink going up.
+function tiers(b, cx, z, list, base = RAFT_TOP) {
+  let y = base;
+  for (const [type, n] of list) y = row(b, cx, z, n, type, y);
+  return y;
+}
+
+// Two pillars joined by a beam, with a small turret on top.
+function gate(b, cx, z, pillarH, base = RAFT_TOP) {
+  const span = 1.25;
+  let top = 0;
+  for (const sx of [-span, span]) {
+    const types = [];
+    for (let i = 0; i < pillarH; i++) types.push(i % 2 ? 'drum' : 'crate');
+    top = Math.max(top, b.col(cx + sx, z, types, base));
+  }
+  const y = b.put('beam', cx, top, z);
+  return tiers(b, cx, z, [['crate', 2], ['buoy', 1]], y);
+}
+
+// Tall lighthouse spire.
+function spire(b, cx, z, base = RAFT_TOP) {
+  return b.col(cx, z, ['tallCrate', 'tallDrum', 'drum', 'buoy'], base);
+}
+
 const HAND_MADE = [
-  // 1 — a friendly crate pyramid
+  // 1 — mixed pyramid
   () => {
-    const b = new Builder().raft(0, 0, 7.6);
-    b.pyramid(0, 0, 5);
-    return b.build(20);
+    const b = new Builder().raft(0, 0, 7.8);
+    const y = tiers(b, 0, 0, [['crate', 5], ['drum', 4], ['crate', 3], ['drum', 2]]);
+    b.put('buoy', 0, y);
+    return b.build(14);
   },
-  // 2 — drum towers with a beam bridge
+  // 2 — harbor gate
   () => {
-    const b = new Builder().raft(0, 0, 6.4);
-    const top = Math.max(b.col(-1.4, 0, ['drum', 'drum']), b.col(1.4, 0, ['drum', 'drum']));
-    const y = b.put('beam', 0, top);
-    b.col(-0.62, 0, ['crate'], y);
-    b.col(0.62, 0, ['crate'], y);
-    b.put('buoy', 0, y + 1.2);
+    const b = new Builder().raft(0, 0, 8.2);
+    row(b, 0, 0, 6, 'crate', RAFT_TOP);
+    gate(b, 0, 0, 2, RAFT_TOP + 1.2);
+    for (const x of [-3, 3]) b.col(x, 0, ['tallDrum', 'buoy'], RAFT_TOP + 1.2);
+    return b.build(16);
+  },
+  // 3 — twin pyramids
+  () => {
+    const b = new Builder().raft(-3.5, 0, 6.2).raft(3.5, 0, 6.2);
+    for (const cx of [-3.5, 3.5]) {
+      const y = tiers(b, cx, 0, [['crate', 4], ['drum', 3], ['crate', 2]]);
+      b.put('buoy', cx, y);
+    }
     return b.build(18);
   },
-  // 3 — lighthouse fort: tall drum spires + crate keep
+  // 4 — twin fortresses
   () => {
-    const b = new Builder().raft(0, 0, 7.4);
-    for (const x of [-2.7, 2.7]) b.col(x, 0, ['tallCrate', 'buoy']);
-    for (const x of [-1.5, 1.5]) b.col(x, 0, ['tallDrum', 'tallDrum', 'buoy']);
-    b.col(0, 0, ['crate', 'crate', 'drum', 'tallDrum', 'buoy']);
-    return b.build(26);
+    const b = new Builder().raft(-3.5, 0, 6.2).raft(3.5, 0, 6.2);
+    for (const cx of [-3.5, 3.5]) {
+      const y = row(b, cx, 0, 4, 'crate', RAFT_TOP);
+      const y2 = row(b, cx, 0, 4, 'drum', y);
+      gate(b, cx, 0, 1, y2);
+    }
+    return b.build(20);
   },
-  // 4 — twin rafts
+  // 5 — deep double-row wall
   () => {
-    const b = new Builder().raft(-4, 0, 5.2).raft(4, 0, 5.2);
-    for (const cx of [-4, 4]) {
-      const top = b.pyramid(cx, 0, 3, 'drum', 0.06);
-      b.put('buoy', cx, top);
+    const b = new Builder().raft(0, 0, 8.4, 4.2);
+    for (const z of [-0.65, 0.65]) tiers(b, 0, z, [['crate', 6], ['drum', 5], ['crate', 4], ['drum', 3]]);
+    spire(b, 0, 0, RAFT_TOP + 4.7);
+    return b.build(24);
+  },
+  // 6 — lighthouse twins
+  () => {
+    const b = new Builder().raft(-3.5, 0, 6.2).raft(3.5, 0, 6.2);
+    for (const cx of [-3.5, 3.5]) {
+      const y = tiers(b, cx, 0, [['crate', 4], ['crate', 3]]);
+      spire(b, cx, 0, y);
+      for (const sx of [-2.45, 2.45]) b.col(cx + sx, 0, ['drum', 'buoy'], RAFT_TOP + 1.2);
     }
     return b.build(22);
   },
-  // 5 — deep stack, two rows
+  // 7 — the great wall (two rafts, two rows deep)
   () => {
-    const b = new Builder().raft(0, 0, 6.4, 4.2);
-    for (const z of [-0.65, 0.65]) b.pyramid(0, z, 4, 'crate');
-    return b.build(24);
-  },
-  // 6 — the gate
-  () => {
-    const b = new Builder().raft(0, 0, 7.6);
-    const h = Math.max(b.col(-2.6, 0, ['tallCrate', 'crate']), b.col(2.6, 0, ['tallCrate', 'crate']));
-    b.col(-1.3, 0, ['drum', 'drum', 'drum']);
-    b.col(1.3, 0, ['drum', 'drum', 'drum']);
-    b.col(0, 0, ['crate', 'crate', 'crate']);
-    const y = b.put('wideBeam', 0, h);
-    for (const x of [-2.4, -1.2, 0, 1.2, 2.4]) b.put(x % 2.4 === 0 ? 'buoy' : 'drum', x, y);
+    const b = new Builder().raft(-3.5, 0, 6.2, 4.2).raft(3.5, 0, 6.2, 4.2);
+    for (const cx of [-3.5, 3.5]) {
+      for (const z of [-0.65, 0.65]) tiers(b, cx, z, [['crate', 4], ['drum', 4], ['crate', 3]]);
+      b.put('buoy', cx, RAFT_TOP + 3.55, 0);
+    }
     return b.build(28);
   },
-  // 7 — twin towers on twin rafts
+  // 8 — citadel
   () => {
-    const b = new Builder().raft(-4.2, 0, 5.4).raft(4.2, 0, 5.4);
-    for (const cx of [-4.2, 4.2]) {
-      b.col(cx - 1.95, 0, ['tallDrum', 'buoy']);
-      b.col(cx + 1.95, 0, ['tallDrum', 'buoy']);
-      const t = Math.max(b.col(cx - 0.62, 0, ['drum', 'drum']), b.col(cx + 0.62, 0, ['drum', 'drum']));
-      const y = b.put('plank', cx, t);
-      b.col(cx, 0, ['crate', 'crate', 'buoy'], y);
-    }
-    return b.build(30);
-  },
-  // 8 — big harbor citadel
-  () => {
-    const b = new Builder().raft(0, 0, 8.2, 4.2);
+    const b = new Builder().raft(0, 0, 9, 4.2);
     for (const z of [-0.65, 0.65]) {
-      b.col(-3.3, z, ['tallCrate']);
-      b.col(3.3, z, ['tallCrate']);
-      b.pyramid(0, z, 4, 'crate');
+      row(b, 0, z, 7, 'crate', RAFT_TOP);
+      for (const x of [-3, 3]) b.col(x, z, ['tallCrate'], RAFT_TOP + 1.2);
     }
-    b.col(-3.3, 0, ['buoy'], RAFT_TOP + 2.4);
-    b.col(3.3, 0, ['buoy'], RAFT_TOP + 2.4);
-    b.col(0, 0, ['tallDrum', 'buoy'], RAFT_TOP + 4.8);
-    return b.build(32);
+    gate(b, 0, 0, 3, RAFT_TOP + 1.2);
+    for (const x of [-3, 3]) b.put('buoy', x, RAFT_TOP + 3.6, 0);
+    return b.build(26);
   },
 ];
 
@@ -143,33 +175,28 @@ function rng(seed) {
   };
 }
 
-const MODULES = [
-  (b, cx, r) => b.pyramid(cx, 0, 2, r() < 0.5 ? 'crate' : 'drum', 0.06),
+// Structures that fit on a 6.2-wide raft (one per raft).
+const RAFT_STRUCTURES = [
+  (b, cx, r) => { const y = tiers(b, cx, 0, [['crate', 4], [r() < 0.5 ? 'drum' : 'crate', 3], ['drum', 2]]); b.put('buoy', cx, y); },
+  (b, cx) => { const y = row(b, cx, 0, 4, 'crate', RAFT_TOP); gate(b, cx, 0, 2, y); },
+  (b, cx) => { const y = tiers(b, cx, 0, [['crate', 4], ['crate', 3]]); spire(b, cx, 0, y); },
+  (b, cx) => { for (const z of [-0.65, 0.65]) tiers(b, cx, z, [['drum', 5], ['crate', 4], ['drum', 3]]); },
   (b, cx) => {
-    const t = Math.max(b.col(cx - 0.62, 0, ['drum', 'drum']), b.col(cx + 0.62, 0, ['drum', 'drum']));
-    const y = b.put('plank', cx, t);
-    b.col(cx, 0, ['crate', 'buoy'], y);
-    return y + 2;
-  },
-  (b, cx, r) => b.col(cx, 0, r() < 0.5 ? ['tallCrate', 'drum', 'buoy'] : ['tallDrum', 'crate', 'buoy']),
-  (b, cx) => {
-    b.col(cx - 0.62, 0, ['crate', 'crate', 'crate']);
-    return b.col(cx + 0.62, 0, ['drum', 'drum', 'drum', 'buoy']);
+    const y = row(b, cx, 0, 4, 'drum', RAFT_TOP);
+    for (const sx of [-1.28, 1.28]) b.col(cx + sx, 0, ['tallCrate', 'buoy'], y);
+    b.col(cx, 0, ['crate', 'crate', 'crate', 'buoy'], y);
   },
 ];
 
 function procedural(level) {
   const r = rng(level * 7919);
   const b = new Builder();
-  const twin = r() < 0.45;
-  const rafts = twin ? [-4.2, 4.2] : [0];
-  for (const rx of rafts) {
-    const w = twin ? 5.4 : 8;
-    b.raft(rx, 0, w);
-    const slots = twin ? [rx - 1.3, rx + 1.3] : [rx - 2.6, rx, rx + 2.6];
-    for (const sx of slots) MODULES[Math.floor(r() * MODULES.length)](b, sx, r);
+  const deep = r() < 0.35;
+  for (const cx of [-3.5, 3.5]) {
+    b.raft(cx, 0, 6.2, deep ? 4.2 : 3.2);
+    RAFT_STRUCTURES[Math.floor(r() * RAFT_STRUCTURES.length)](b, cx, r);
   }
-  const shots = Math.min(34, 14 + Math.round(b.blocks.length * 0.9));
+  const shots = Math.max(18, Math.min(32, Math.round(b.blocks.length * 0.5) + 4));
   return b.build(shots);
 }
 

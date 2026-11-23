@@ -43,14 +43,21 @@
     </div>
 
     <!-- Win screen -->
-    <div id="win" class="screen hidden dim">
-      <div class="card">
-        <div class="ribbon">Cargo Sunk!</div>
-        <div class="stars"><span></span><span></span><span></span></div>
-        <div class="reward"><span class="coin-icon"></span>+<span id="win-coins">0</span></div>
-        <div class="detail" id="win-detail"></div>
-        <button id="btn-next" class="big-btn">Continue</button>
+    <div id="win" class="screen hidden">
+      <div class="topbar">
+        <div class="pill coin-pill"><span class="coin-icon"></span><span class="coins">0</span></div>
+        <div class="pill heart-pill"><span class="heart-icon"><span class="lives">5</span></span><span class="lives-label">FULL</span></div>
       </div>
+      <div class="win-title"><small>Level <span id="win-level">1</span></small>CLEARED!</div>
+      <div class="stars"><span></span><span></span><span></span></div>
+      <div class="medal">
+        <div class="medal-glow"></div>
+        <div class="medal-coins"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="medal-face"><svg viewBox="0 0 100 100"><g fill="none" stroke="#7a4a10" stroke-width="7" stroke-linecap="round"><circle cx="50" cy="24" r="8"/><path d="M50 32v44M36 44h28M24 58c4 14 14 20 26 20s22-6 26-20"/></g></svg></div>
+      </div>
+      <div class="reward"><span class="coin-icon"></span>+<span id="win-coins">0</span></div>
+      <div class="detail light" id="win-detail"></div>
+      <button id="btn-next" class="big-btn">Continue</button>
     </div>
 
     <!-- Fail screen -->

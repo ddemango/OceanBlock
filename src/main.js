@@ -62,7 +62,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 1.12;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 400);
@@ -204,8 +204,7 @@ function loadLevel(n) {
   clearLevel();
   const def = getLevel(n);
   state.level = n;
-  // rapid fire burns through shots, so every level gets a generous supply
-  state.shots = def.shots + 8;
+  state.shots = def.shots;
   state.startShots = state.shots;
   state.shotsFired = 0;
   state.extraUsed = false;
@@ -622,7 +621,7 @@ const $ = (id) => document.getElementById(id);
 const screens = ['home', 'win', 'fail', 'settings', 'nolives'];
 function show(id) {
   for (const s of screens) $(s).classList.toggle('hidden', s !== id);
-  $('hud').classList.toggle('hidden', !(state.mode === 'play' || state.mode === 'paused' || id === 'fail' || id === 'win'));
+  $('hud').classList.toggle('hidden', !(state.mode === 'play' || state.mode === 'paused' || id === 'fail'));
 }
 
 function updateHud() {
@@ -692,6 +691,8 @@ function onWin() {
   save.level = state.level + 1;
   persist();
   countUp($('win-coins'), reward);
+  $('win-level').textContent = state.level;
+  updateHome(); // refresh the coin + heart counters in the top bar
   celebrate();
   $('win-detail').textContent = `Cleared with ${used} shot${used === 1 ? '' : 's'} · ${state.shots} spare`;
   document.querySelectorAll('.stars span').forEach((s, i) => s.classList.toggle('on', i < stars));
