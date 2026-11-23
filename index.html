@@ -42,7 +42,18 @@
         <div class="logo-bottom">BREAKER</div>
         <div class="logo-sub">sink the cargo · save the cannonballs</div>
       </div>
+      <div id="levelmap"></div>
       <button id="btn-play" class="big-btn">Play<small>Level <span id="home-level">1</span></small></button>
+    </div>
+
+    <!-- Daily reward -->
+    <div id="daily" class="screen hidden dim">
+      <div class="card">
+        <div class="ribbon">Daily Reward</div>
+        <div class="detail">Come back every day for bigger rewards!</div>
+        <div class="daily-grid" id="daily-grid"></div>
+        <button id="btn-claim" class="big-btn green">Claim<small><span class="coin-icon small"></span> <span id="daily-amount">50</span></small></button>
+      </div>
     </div>
 
     <!-- Win screen -->
@@ -88,6 +99,7 @@
       <div class="card">
         <div class="ribbon">Settings</div>
         <label class="toggle"><span>Sound</span><input type="checkbox" id="opt-sound" checked /><i></i></label>
+        <label class="toggle"><span>Music</span><input type="checkbox" id="opt-music" checked /><i></i></label>
         <label class="toggle"><span>Vibration</span><input type="checkbox" id="opt-vibe" checked /><i></i></label>
         <button id="btn-resume" class="big-btn">Resume</button>
         <button id="btn-restart" class="text-btn">Restart level (−1 <span class="heart-mini"></span>)</button>

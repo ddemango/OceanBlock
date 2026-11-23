@@ -243,3 +243,59 @@ function shade(hex, amt) {
   const b = clamp((n & 255) + amt);
   return '#' + ((r << 16) | (gg << 8) | b).toString(16).padStart(6, '0');
 }
+
+// Riveted iron crate (takes two hits). `cracked` draws the damaged state.
+export function ironTexture(cracked = false) {
+  const [c, g] = canvas(256, 256);
+  const grad = g.createLinearGradient(0, 0, 256, 256);
+  grad.addColorStop(0, '#9fb0c2');
+  grad.addColorStop(1, '#5f7186');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 256, 256);
+  g.strokeStyle = '#3c4a5c';
+  g.lineWidth = 20;
+  g.strokeRect(10, 10, 236, 236);
+  g.lineWidth = 14;
+  g.beginPath(); g.moveTo(20, 20); g.lineTo(236, 236); g.moveTo(236, 20); g.lineTo(20, 236); g.stroke();
+  g.fillStyle = '#d7e0ea';
+  for (const x of [26, 128, 230]) for (const y of [26, 128, 230]) {
+    if (x === 128 && y === 128) continue;
+    g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill();
+  }
+  if (cracked) {
+    g.strokeStyle = '#1d2530';
+    g.lineWidth = 6;
+    g.lineJoin = 'round';
+    g.beginPath();
+    g.moveTo(70, 40); g.lineTo(110, 100); g.lineTo(92, 140); g.lineTo(140, 190); g.lineTo(128, 230);
+    g.moveTo(110, 100); g.lineTo(170, 90); g.lineTo(200, 60);
+    g.stroke();
+  }
+  return toTexture(c);
+}
+
+// Red explosive barrel with hazard stripes and a flame badge.
+export function tntTexture() {
+  const [c, g] = canvas(512, 256);
+  g.fillStyle = '#d8312a';
+  g.fillRect(0, 0, 512, 256);
+  for (const y of [0, 216]) {
+    g.fillStyle = '#ffd23c';
+    g.fillRect(0, y, 512, 40);
+    g.fillStyle = '#23324a';
+    for (let x = -40; x < 520; x += 40) {
+      g.beginPath(); g.moveTo(x, y + 40); g.lineTo(x + 20, y + 40); g.lineTo(x + 40, y); g.lineTo(x + 20, y); g.closePath(); g.fill();
+    }
+  }
+  for (const cx of [128, 384]) {
+    g.fillStyle = '#fff4e0';
+    g.beginPath(); g.arc(cx, 128, 58, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ff8a1a';
+    g.beginPath();
+    g.moveTo(cx, 82); g.bezierCurveTo(cx + 40, 120, cx + 34, 168, cx, 170); g.bezierCurveTo(cx - 34, 168, cx - 40, 130, cx - 10, 104);
+    g.bezierCurveTo(cx - 6, 124, cx + 4, 128, cx, 82); g.fill();
+    g.fillStyle = '#ffd23c';
+    g.beginPath(); g.ellipse(cx, 150, 13, 18, 0, 0, Math.PI * 2); g.fill();
+  }
+  return toTexture(c);
+}

@@ -296,3 +296,38 @@ html, body {
   70% { transform: translate(-50%, -10px) scale(1); opacity: 1; }
   100% { transform: translate(-50%, -50px) scale(.9); opacity: 0; }
 }
+
+/* ---------- level map ---------- */
+#levelmap {
+  position: relative; width: min(380px, 100%); height: 150px; margin: 0 auto;
+}
+#levelmap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.lv-node {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 54px; height: 54px; border-radius: 50%; border: 4px solid var(--ink);
+  display: grid; place-items: center; font-weight: 900; font-size: 20px; color: #fff;
+  text-shadow: 0 2px 0 var(--ink); box-shadow: 0 4px 0 var(--ink); background: var(--leaf);
+}
+.lv-node.current { width: 70px; height: 70px; font-size: 26px; background: var(--coral); animation: lvPulse .7s infinite alternate; cursor: pointer; }
+@keyframes lvPulse { from { transform: translate(-50%, -50%) scale(1); } to { transform: translate(-50%, -50%) scale(1.08); } }
+.lv-node.locked { background: #8b97a8; color: #dfe6ef; }
+.lv-node .lv-stars { position: absolute; bottom: -16px; display: flex; gap: 1px; }
+.lv-node .lv-stars i {
+  width: 14px; height: 14px; background: #4a5568;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.lv-node .lv-stars i.on { background: var(--gold); }
+.lv-node.locked::after { content: "\1F512"; position: absolute; font-size: 14px; bottom: -8px; right: -6px; text-shadow: none; }
+#home .big-btn { margin-bottom: 9vh; }
+.logo { margin-top: -2vh; }
+
+/* ---------- daily reward ---------- */
+.daily-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
+.daily-day {
+  border: 3px solid var(--ink); border-radius: 12px; background: #fff3d6; padding: 6px 2px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 800; font-size: 12px;
+}
+.daily-day b { font-size: 15px; display: flex; align-items: center; gap: 3px; }
+.daily-day.done { opacity: .45; }
+.daily-day.today { background: #ffe08a; transform: scale(1.06); box-shadow: 0 0 0 3px var(--gold); }
+.daily-day.big { grid-column: span 2; }

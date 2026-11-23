@@ -13,6 +13,9 @@ export const BLOCKS = {
   beam:      { shape: 'box', w: 3.7, h: 0.55, d: 1.2, mass: 2.4 },
   wideBeam:  { shape: 'box', w: 6.1, h: 0.55, d: 1.2, mass: 3.6 },
   buoy:      { shape: 'cone', rTop: 0.14, r: 0.55, h: 0.9, mass: 0.6 },
+  // special cargo
+  iron:      { shape: 'box', w: 1.2, h: 1.2, d: 1.2, mass: 3.2, hp: 2 }, // needs two hits
+  tnt:       { shape: 'cyl', r: 0.55, h: 1.15, mass: 1.4, explosive: true },
 };
 
 // Helper that stacks blocks on top of each other from a base height.
@@ -21,8 +24,9 @@ class Builder {
     this.blocks = [];
     this.rafts = [];
   }
-  raft(x, z, w, d = 3.2) {
-    this.rafts.push({ x, z: RAFT_Z + z, w, d });
+  raft(x, z, w, d = 3.2, drift = 0) {
+    // drift = side-to-side amplitude in world units (0 = still)
+    this.rafts.push({ x, z: RAFT_Z + z, w, d, drift, phase: this.rafts.length * 1.7 });
     return this;
   }
   // stack a column; returns height of the top surface
@@ -153,6 +157,47 @@ const HAND_MADE = [
     }
     return b.build(28);
   },
+  // 9 — iron foundations
+  () => {
+    const b = new Builder().raft(0, 0, 8.2);
+    const step = W('crate') + 0.03;
+    for (let i = 0; i < 6; i++) b.put(i % 2 ? 'crate' : 'iron', (i - 2.5) * step, RAFT_TOP);
+    tiers(b, 0, 0, [['drum', 5], ['crate', 4], ['drum', 3], ['crate', 2]], RAFT_TOP + 1.2);
+    return b.build(22);
+  },
+  // 10 — powder kegs
+  () => {
+    const b = new Builder().raft(-3.5, 0, 6.2).raft(3.5, 0, 6.2);
+    for (const cx of [-3.5, 3.5]) {
+      const y = row(b, cx, 0, 4, 'crate', RAFT_TOP);
+      const step = W('drum') + 0.03;
+      for (let i = 0; i < 4; i++) b.put(i === 1 || i === 2 ? 'tnt' : 'drum', cx + (i - 1.5) * step, y);
+      tiers(b, cx, 0, [['crate', 3], ['crate', 2], ['buoy', 1]], y + 1.15);
+    }
+    return b.build(18);
+  },
+  // 11 — drifting rafts
+  () => {
+    const b = new Builder().raft(-3.5, 0, 6.2, 3.2, 1.1).raft(3.5, 0, 6.2, 3.2, 1.1);
+    for (const cx of [-3.5, 3.5]) {
+      const y = tiers(b, cx, 0, [['crate', 4], ['drum', 3], ['crate', 2]]);
+      b.put('buoy', cx, y);
+    }
+    return b.build(22);
+  },
+  // 12 — the armory: drifting, armored and explosive
+  () => {
+    const b = new Builder().raft(-3.5, 0, 6.2, 3.2, 0.9).raft(3.5, 0, 6.2, 3.2, 0.9);
+    for (const cx of [-3.5, 3.5]) {
+      const step = W('crate') + 0.03;
+      for (let i = 0; i < 4; i++) b.put(i === 0 || i === 3 ? 'iron' : 'crate', cx + (i - 1.5) * step, RAFT_TOP);
+      const y = RAFT_TOP + 1.2;
+      const ds = W('drum') + 0.03;
+      for (let i = 0; i < 3; i++) b.put(i === 1 ? 'tnt' : 'drum', cx + (i - 1) * ds, y);
+      tiers(b, cx, 0, [['crate', 2], ['buoy', 1]], y + 1.15);
+    }
+    return b.build(24);
+  },
   // 8 — citadel
   () => {
     const b = new Builder().raft(0, 0, 9, 4.2);
@@ -192,9 +237,16 @@ function procedural(level) {
   const r = rng(level * 7919);
   const b = new Builder();
   const deep = r() < 0.35;
+  const drift = r() < 0.45 ? 0.7 + r() * 0.6 : 0;
   for (const cx of [-3.5, 3.5]) {
-    b.raft(cx, 0, 6.2, deep ? 4.2 : 3.2);
+    b.raft(cx, 0, 6.2, deep ? 4.2 : 3.2, drift);
     RAFT_STRUCTURES[Math.floor(r() * RAFT_STRUCTURES.length)](b, cx, r);
+  }
+  // sprinkle special cargo: iron in the bottom row, explosive barrels among drums
+  for (const blk of b.blocks) {
+    const bottom = Math.abs(blk.y - (RAFT_TOP + BLOCKS[blk.type].h / 2)) < 0.01;
+    if (blk.type === 'crate' && bottom && r() < 0.3) blk.type = 'iron';
+    else if (blk.type === 'drum' && r() < 0.2) blk.type = 'tnt';
   }
   const shots = Math.max(18, Math.min(32, Math.round(b.blocks.length * 0.5) + 4));
   return b.build(shots);

@@ -72,14 +72,25 @@ export function sfxSplash(strength = 1) {
 }
 
 let lastHit = 0;
-export function sfxHit(strength = 1) {
+export function sfxHit(strength = 1, type = 'crate') {
   const c = ensure();
   if (!c) return;
   if (c.currentTime - lastHit < 0.045) return;
   lastHit = c.currentTime;
   const s = Math.min(1, strength);
-  tone(320 + Math.random() * 200, 90, 0.12, 'triangle', 0.25 * s);
-  noise(0.08, 'bandpass', 1400, 2, 0.2 * s);
+  if (type.includes('drum') || type === 'tnt') {
+    // hollow metal drum: ringing ping
+    tone(520 + Math.random() * 160, 480, 0.22, 'triangle', 0.18 * s);
+    tone(1240 + Math.random() * 200, 1180, 0.12, 'sine', 0.08 * s);
+  } else if (type === 'iron') {
+    tone(300, 280, 0.25, 'square', 0.07 * s);
+  } else if (type === 'buoy') {
+    tone(700, 300, 0.1, 'sine', 0.2 * s);
+  } else {
+    // wooden crate: dull knock
+    tone(180 + Math.random() * 60, 70, 0.1, 'triangle', 0.3 * s);
+    noise(0.07, 'bandpass', 900, 2.5, 0.22 * s);
+  }
 }
 
 export function sfxWin() {
@@ -97,4 +108,84 @@ export function sfxCoin() {
 
 export function sfxClick() {
   tone(700, 500, 0.06, 'triangle', 0.2);
+}
+
+export function sfxClang() {
+  tone(880, 820, 0.35, 'square', 0.08);
+  tone(1320, 1250, 0.3, 'triangle', 0.12);
+  noise(0.06, 'highpass', 4000, 0.7, 0.15);
+}
+
+// ---------- background music: a gentle, original sea-shanty style loop ----------
+// Composed procedurally here (I-vi-IV-V style progression in D) — no audio files.
+const music = { on: false, timer: null, next: 0, step: 0, gain: null };
+const NOTE = (n) => 440 * Math.pow(2, (n - 69) / 12);
+// chord roots (MIDI) and arpeggio shapes
+const PROG = [[62, [0, 4, 7, 12]], [59, [0, 3, 7, 12]], [55, [0, 4, 7, 12]], [57, [0, 4, 7, 10]]];
+const MELODY = [74, 76, 78, 76, 74, 71, 69, 71, 74, 73, 71, 69, 67, 69, 71, 73];
+
+function musicNote(freq, when, dur, type, vol) {
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, when);
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.exponentialRampToValueAtTime(vol, when + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+  o.connect(g).connect(music.gain);
+  o.start(when);
+  o.stop(when + dur + 0.05);
+}
+
+function scheduleMusic() {
+  if (!music.on || !ctx) return;
+  const beat = 60 / 108 / 2; // eighth notes at 108 bpm
+  while (music.next < ctx.currentTime + 0.4) {
+    const i = music.step;
+    const bar = Math.floor(i / 8) % PROG.length;
+    const [root, shape] = PROG[bar];
+    const t = music.next;
+    // plucked arpeggio
+    musicNote(NOTE(root + shape[i % 4] + (i % 8 >= 4 ? 12 : 0)), t, beat * 1.6, 'triangle', 0.05);
+    // bass on beats 1 and 3
+    if (i % 4 === 0) musicNote(NOTE(root - 12), t, beat * 3, 'sine', 0.09);
+    // melody every other eighth, resting on some bars
+    if (i % 2 === 0 && Math.floor(i / 16) % 2 === 1) musicNote(NOTE(MELODY[(i / 2) % MELODY.length]), t, beat * 1.8, 'square', 0.018);
+    // soft shaker
+    if (i % 2 === 1) {
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuf;
+      const f = ctx.createBiquadFilter();
+      f.type = 'highpass';
+      f.frequency.value = 6000;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.025, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+      src.connect(f).connect(g).connect(music.gain);
+      src.start(t, Math.random(), 0.06);
+    }
+    music.step = (i + 1) % 64;
+    music.next += beat;
+  }
+}
+
+export function setMusic(on) {
+  music.on = on;
+  if (!on) {
+    if (music.gain && ctx) music.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.2);
+    clearInterval(music.timer);
+    music.timer = null;
+    return;
+  }
+  const c = ensure();
+  if (!c) return;
+  if (!music.gain) {
+    music.gain = c.createGain();
+    music.gain.connect(master);
+  }
+  music.gain.gain.setTargetAtTime(0.8, c.currentTime, 0.3);
+  if (!music.timer) {
+    music.next = c.currentTime + 0.1;
+    music.timer = setInterval(scheduleMusic, 100);
+  }
 }

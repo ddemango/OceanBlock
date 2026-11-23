@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { getLevel, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
 import { buildEnvironment, buildCannon, buildRaft } from './scenery.js';
-import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture } from './textures.js';
+import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture, ironTexture, tntTexture } from './textures.js';
 import * as sfx from './audio.js';
 import { celebrate, stop as stopCelebrate, countUp } from './celebrate.js';
 import { isNative, isEmbedded, initNative, nativeVibrate } from './native.js';
@@ -17,7 +17,7 @@ const HEART_REGEN_MS = 15 * 60 * 1000;
 
 const save = loadSave();
 function loadSave() {
-  const fallback = { level: 1, coins: 100, lives: MAX_LIVES, lifeTimer: 0, sound: true, vibe: true };
+  const fallback = { level: 1, coins: 100, lives: MAX_LIVES, lifeTimer: 0, sound: true, vibe: true, music: true, stars: {}, daily: { last: '', streak: 0 } };
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     return raw ? { ...fallback, ...JSON.parse(raw) } : fallback;
@@ -95,7 +95,7 @@ resize();
 // Physics
 // ======================================================================
 const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -20, 0) });
-world.broadphase = new CANNON.SAPBroadphase(world);
+world.broadphase = new CANNON.NaiveBroadphase(); // SAP missed hits on edge objects; ~60 bodies is cheap to check pairwise
 world.allowSleep = true;
 world.solver.iterations = 18;
 world.solver.tolerance = 0.0005;
@@ -119,6 +119,30 @@ const DRUM_COLORS = [
   ['#5b7fe0', '#fff4d6', '#ffc93c'],
   ['#e85d75', '#fff1e6', '#2a4a7a'],
 ];
+// Cartoon look: 3-band toon shading and a dark outline shell around each piece.
+const toonRamp = (() => {
+  const data = new Uint8Array([90, 170, 255]);
+  const t = new THREE.DataTexture(data, 3, 1, THREE.RedFormat);
+  t.minFilter = t.magFilter = THREE.NearestFilter;
+  t.needsUpdate = true;
+  return t;
+})();
+function toToon(m) {
+  if (Array.isArray(m)) return m.map(toToon);
+  return new THREE.MeshToonMaterial({ map: m.map || null, color: m.color, gradientMap: toonRamp, emissive: m.emissive || new THREE.Color(0) });
+}
+const outlineMat = new THREE.MeshBasicMaterial({ color: 0x1d2638, side: THREE.BackSide });
+function addOutline(mesh, thickness = 0.06) {
+  const shell = new THREE.Mesh(mesh.geometry, outlineMat);
+  mesh.geometry.computeBoundingBox();
+  const size = new THREE.Vector3();
+  mesh.geometry.boundingBox.getSize(size);
+  shell.scale.set(1 + thickness * 2 / size.x, 1 + thickness * 2 / size.y, 1 + thickness * 2 / size.z);
+  shell.castShadow = false;
+  mesh.add(shell);
+  return mesh;
+}
+
 function blockVisual(type, variant) {
   const spec = BLOCKS[type];
   const key = type + ':' + variant;
@@ -145,6 +169,12 @@ function blockVisual(type, variant) {
       });
       const lid = new THREE.MeshStandardMaterial({ map: drumLidTexture(base), roughness: 0.4, metalness: 0.3 });
       matCache[key] = [side, lid, lid];
+    } else if (type === 'iron') {
+      matCache[key] = new THREE.MeshStandardMaterial({ map: ironTexture(false), roughness: 0.45, metalness: 0.55 });
+    } else if (type === 'tnt') {
+      const side = new THREE.MeshStandardMaterial({ map: tntTexture(), roughness: 0.4, emissive: 0x3a0800 });
+      const lid = new THREE.MeshStandardMaterial({ color: 0xb02520, roughness: 0.5 });
+      matCache[key] = [side, lid, lid];
     } else if (type === 'buoy') {
       matCache[key] = new THREE.MeshStandardMaterial({ map: buoyTexture(), roughness: 0.45 });
     } else {
@@ -152,7 +182,12 @@ function blockVisual(type, variant) {
       matCache[key] = new THREE.MeshStandardMaterial({ map: t, roughness: 0.8 });
     }
   }
-  return new THREE.Mesh(geoCache[type], matCache[key]);
+  if (!matCache[key].toon) {
+    const toon = toToon(matCache[key]);
+    matCache[key] = toon;
+    (Array.isArray(toon) ? toon : [toon]).forEach((m) => (m.toon = true));
+  }
+  return addOutline(new THREE.Mesh(geoCache[type], matCache[key]));
 }
 
 function blockShape(spec) {
@@ -197,6 +232,8 @@ function clearLevel() {
   state.blocks = [];
   state.balls = [];
   state.rafts = [];
+  pendingExplosions.length = 0;
+  pendingUnlock.length = 0;
   particles.clear();
 }
 
@@ -217,11 +254,12 @@ function loadLevel(n) {
   state.firstHit = false;
 
   for (const r of def.rafts) {
-    const body = new CANNON.Body({ mass: 0, material: raftMat });
+    const body = new CANNON.Body({ mass: 0, material: raftMat, type: r.drift ? CANNON.Body.KINEMATIC : CANNON.Body.STATIC });
     body.addShape(new CANNON.Box(new CANNON.Vec3(r.w / 2, 0.5, r.d / 2)));
     body.position.set(r.x, RAFT_TOP - 0.5, r.z);
     world.addBody(body);
     const mesh = buildRaft(r);
+    mesh.children.slice().forEach((c) => c.isMesh && addOutline(c, 0.04));
     scene.add(mesh);
     state.rafts.push({ body, mesh, def: r });
   }
@@ -238,6 +276,11 @@ function loadLevel(n) {
       sleepTimeLimit: 0.4,
     });
     body.addShape(blockShape(spec));
+    if (spec.hp) {
+      // armored: far too heavy to budge until it has taken enough hits
+      body.mass = 200;
+      body.updateMassProperties();
+    }
     body.position.set(b.x, b.y + 0.001, b.z);
     if (b.ry) body.quaternion.setFromEuler(0, b.ry, 0);
     world.addBody(body);
@@ -247,7 +290,8 @@ function loadLevel(n) {
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     scene.add(mesh);
-    const block = { body, mesh, cleared: false, sunk: false, spec };
+    const raftIdx = state.rafts.reduce((best, r, i) => (Math.abs(r.def.x - b.x) < Math.abs(state.rafts[best].def.x - b.x) ? i : best), 0);
+    const block = { body, mesh, cleared: false, sunk: false, spec, type: b.type, hp: spec.hp || 0, raft: raftIdx, lastBall: -1 };
     body.addEventListener('collide', (e) => onBlockCollide(block, e));
     state.blocks.push(block);
   }
@@ -257,8 +301,16 @@ function loadLevel(n) {
 
 function onBlockCollide(block, e) {
   const impact = Math.abs(e.contact.getImpactVelocityAlongNormal());
-  if (impact > 2.5 && state.mode === 'play') sfx.sfxHit(impact / 12);
+  if (impact > 2.5 && state.mode === 'play') sfx.sfxHit(impact / 12, block.type);
   const ud = e.body.userData;
+  if (ud?.ball && block.hp > 0 && block.lastBall !== e.body.id) {
+    block.lastBall = e.body.id;
+    damageIron(block, ud.bomb ? 2 : 1);
+  }
+  if (block.spec.explosive && !block.exploding && (ud?.ball || impact > 7)) {
+    block.exploding = true;
+    pendingExplosions.push(block);
+  }
   if (ud?.ball && !ud.burst) {
     ud.burst = true;
     queueBurst(e.body.position.clone(), e.body.velocity.clone(), ud.bomb);
@@ -267,6 +319,79 @@ function onBlockCollide(block, e) {
     // First cannonball impact wakes the whole level so supports collapse naturally.
     state.firstHit = true;
     for (const b of state.blocks) b.body.wakeUp();
+  }
+}
+
+// ---- special cargo -------------------------------------------------------
+const pendingExplosions = [];
+let crackedIron = null;
+
+function damageIron(block, amount) {
+  block.hp = Math.max(0, block.hp - amount);
+  particles.sparks(new THREE.Vector3().copy(block.body.position));
+  sfx.sfxClang();
+  crackedIron = crackedIron || new THREE.MeshToonMaterial({ map: ironTexture(true), gradientMap: toonRamp });
+  block.mesh.material = crackedIron;
+  if (block.hp === 0) pendingUnlock.push(block); // free it so it can be knocked off
+}
+// type changes must happen outside the physics step
+const pendingUnlock = [];
+function applyUnlocks() {
+  while (pendingUnlock.length) {
+    const block = pendingUnlock.pop();
+    const b = block.body;
+    b.mass = block.spec.mass;
+    b.updateMassProperties();
+    b.velocity.set(0, 0, 0);
+    b.wakeUp();
+  }
+}
+
+function applyExplosions() {
+  const batch = pendingExplosions.splice(0);
+  for (const block of batch) {
+    if (block.removed) continue;
+    const pos = block.body.position.clone();
+    // remove the barrel itself
+    if (!block.cleared) {
+      block.cleared = true;
+      onCargoCleared();
+    }
+    world.removeBody(block.body);
+    scene.remove(block.mesh);
+    block.removed = true;
+    // big blast; nearby barrels go off a moment later (chain reaction)
+    queueBurst(pos, new CANNON.Vec3(0, 0, -1), true);
+    for (const other of state.blocks) {
+      if (other.removed || other.exploding || !other.spec.explosive) continue;
+      if (other.body.position.distanceTo(pos) < 4) {
+        other.exploding = true;
+        setTimeout(() => pendingExplosions.push(other), 180);
+      }
+      }
+    for (const other of state.blocks) {
+      if (other.hp > 0 && other.body.position.distanceTo(pos) < 3) damageIron(other, 2);
+    }
+    particles.fireball(new THREE.Vector3(pos.x, pos.y, pos.z));
+    popup('KABOOM!', '#ff5a3c');
+    updateHud();
+  }
+}
+
+// Move drifting rafts (and anything sleeping or armored on them) side to side.
+function driftRafts(dt) {
+  for (let i = 0; i < state.rafts.length; i++) {
+    const r = state.rafts[i];
+    if (!r.def.drift) continue;
+    const w = 0.85;
+    const targetX = r.def.x + Math.sin(elapsed * w + r.def.phase) * r.def.drift;
+    const vx = (targetX - r.body.position.x) / Math.max(dt, 1 / 120);
+    r.body.velocity.set(vx, 0, 0);
+    for (const b of state.blocks) {
+      if (b.raft !== i || b.removed || b.cleared) continue;
+      if (b.hp > 0) b.body.velocity.set(vx, 0, 0); // armored cargo rides along
+      else if (b.body.sleepState === CANNON.Body.SLEEPING) b.body.position.x += vx * dt; // untouched stacks ride along
+    }
   }
 }
 
@@ -288,6 +413,10 @@ function applyBursts() {
       const d = b.body.position.vsub(pos);
       const dist = d.length();
       if (dist > R) continue;
+      if (b.hp > 0) {
+        if (bomb && dist < R * 0.6) damageIron(b, 2);
+        continue;
+      }
       const k = (1 - dist / R) * P;
       d.normalize();
       // push outward + along the shot + a little upward
@@ -453,6 +582,7 @@ function fire(target) {
   world.addBody(body);
   const mesh = new THREE.Mesh(bomb ? bombGeo : ballGeo, bomb ? bombMatVis : ballMatVis);
   mesh.castShadow = true;
+  addOutline(mesh, 0.05);
   scene.add(mesh);
   state.balls.push({ body, mesh, age: 0, splashed: false });
 
@@ -511,6 +641,17 @@ const particles = (() => {
           0.8 + Math.random() * 1.2,
           -18
         );
+      }
+    },
+    fireball(pos) {
+      for (let i = 0; i < 26; i++) {
+        const v = new THREE.Vector3((Math.random() - 0.5), Math.random() * 0.9 + 0.1, (Math.random() - 0.5)).normalize().multiplyScalar(3 + Math.random() * 6);
+        spawn(i % 2 ? fireMat : smokeMat, pos, v, 0.5 + Math.random() * 0.5, 2 + Math.random() * 2.5, i % 2 ? -2 : 1.5);
+      }
+      this.sparks(pos);
+      if (flash) {
+        flash.position.copy(pos);
+        flash.intensity = 140;
       }
     },
     sparks(pos) {
@@ -609,7 +750,10 @@ function stepPhysics(dt) {
       ball.body.linearDamping = 0.9;
     }
   }
+  driftRafts(dt);
   world.step(1 / 60, dt, 4);
+  applyUnlocks();
+  applyExplosions();
   applyBursts();
 }
 
@@ -679,7 +823,7 @@ function updateGame(dt) {
 // UI
 // ======================================================================
 const $ = (id) => document.getElementById(id);
-const screens = ['home', 'win', 'fail', 'settings', 'nolives'];
+const screens = ['home', 'win', 'fail', 'settings', 'nolives', 'daily'];
 function show(id) {
   for (const s of screens) $(s).classList.toggle('hidden', s !== id);
   const hudOn = state.mode === 'play' || state.mode === 'paused' || id === 'fail';
@@ -733,8 +877,66 @@ function goHome() {
   state.mode = 'home';
   loadLevel(save.level); // show the next level's cargo behind the menu
   updateHome();
+  renderMap();
   show('home');
+  if (dailyDue()) setTimeout(showDaily, 400);
 }
+
+// ---- level map (a winding path of the levels around your current one) ----
+function renderMap() {
+  const map = $('levelmap');
+  const cur = save.level;
+  const first = Math.max(1, cur - 2);
+  const nodes = [];
+  for (let i = 0; i < 5; i++) nodes.push(first + i);
+  const pts = nodes.map((_, i) => ({ x: 10 + i * 20, y: i % 2 ? 30 : 65 }));
+  const path = pts.map((p, i) => (i ? 'L' : 'M') + p.x + ' ' + p.y).join(' ');
+  map.innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="${path}" stroke="#fff8e6" stroke-width="3" stroke-dasharray="4 3" fill="none" vector-effect="non-scaling-stroke" style="stroke-width:6px"/></svg>`;
+  nodes.forEach((lv, i) => {
+    const el = document.createElement('div');
+    const done = lv < cur;
+    el.className = 'lv-node' + (lv === cur ? ' current' : done ? '' : ' locked');
+    el.style.left = pts[i].x + '%';
+    el.style.top = pts[i].y + '%';
+    el.textContent = lv;
+    if (done) {
+      const st = (save.stars || {})[lv] || 1;
+      el.insertAdjacentHTML('beforeend', `<span class="lv-stars">${[1, 2, 3].map((n) => `<i class="${n <= st ? 'on' : ''}"></i>`).join('')}</span>`);
+    }
+    if (lv === cur) el.addEventListener('click', () => { sfx.unlockAudio(); sfx.sfxClick(); startLevel(); });
+    map.appendChild(el);
+  });
+}
+
+// ---- daily reward (7-day streak) ----
+const DAILY = [50, 75, 100, 150, 200, 250, 500];
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+function dailyDue() {
+  save.daily = save.daily || { last: '', streak: 0 };
+  return save.daily.last !== dayKey();
+}
+function showDaily() {
+  if (state.mode !== 'home' || !dailyDue()) return;
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  const continuing = save.daily.last === dayKey(y);
+  const day = continuing ? (save.daily.streak % 7) + 1 : 1; // 1..7
+  $('daily-grid').innerHTML = DAILY.map((c, i) => `<div class="daily-day ${i + 1 < day ? 'done' : ''} ${i + 1 === day ? 'today' : ''} ${i === 6 ? 'big' : ''}">Day ${i + 1}<b><span class="coin-icon small"></span>${c}</b></div>`).join('');
+  $('daily-amount').textContent = DAILY[day - 1];
+  $('daily').dataset.day = day;
+  $('daily').classList.remove('hidden');
+}
+$('btn-claim').addEventListener('click', () => {
+  const day = +$('daily').dataset.day || 1;
+  save.coins += DAILY[day - 1];
+  save.daily = { last: dayKey(), streak: day };
+  persist();
+  sfx.unlockAudio();
+  sfx.sfxCoin();
+  celebrate(1800);
+  $('daily').classList.add('hidden');
+  updateHome();
+});
 
 function startLevel() {
   regenLives();
@@ -756,6 +958,8 @@ function onWin() {
   const stars = ratio <= 0.4 ? 3 : ratio <= 0.7 ? 2 : 1;
   const reward = 20 + state.shots * 2 + (stars - 1) * 10 + (state.bonus || 0);
   save.coins += reward;
+  save.stars = save.stars || {};
+  save.stars[state.level] = Math.max(save.stars[state.level] || 0, stars);
   save.level = state.level + 1;
   persist();
   countUp($('win-coins'), reward);
@@ -855,8 +1059,18 @@ optSound.checked = save.sound;
 optVibe.checked = save.vibe;
 optSound.addEventListener('change', () => {
   save.sound = sfx.audio.enabled = optSound.checked;
+  sfx.setMusic(save.sound && save.music !== false);
   persist();
 });
+const optMusic = $('opt-music');
+optMusic.checked = save.music !== false;
+optMusic.addEventListener('change', () => {
+  save.music = optMusic.checked;
+  sfx.setMusic(save.sound && save.music);
+  persist();
+});
+// Phones only allow audio after a tap: start the music on the first one.
+window.addEventListener('pointerdown', () => sfx.setMusic(save.sound && save.music !== false), { once: true });
 optVibe.addEventListener('change', () => {
   save.vibe = optVibe.checked;
   persist();
@@ -889,6 +1103,7 @@ function frame() {
 
   // raft bob is purely cosmetic (physics deck stays put)
   for (const r of state.rafts) {
+    r.mesh.position.x = r.body.position.x;
     r.mesh.position.y = Math.sin(elapsed * 1.4 + r.def.x) * 0.04;
     r.mesh.rotation.z = Math.sin(elapsed * 1.1 + r.def.x) * 0.004;
   }
@@ -919,6 +1134,13 @@ function frame() {
 
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
+}
+
+// Outline the cannon (collect first so the new outline shells aren't outlined again)
+{
+  const parts = [];
+  cannon.root.traverse((o) => o.isMesh && o.geometry.type !== 'TorusGeometry' && parts.push(o));
+  parts.forEach((o) => addOutline(o, 0.035));
 }
 
 // Debug / test hook
