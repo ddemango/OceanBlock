@@ -563,6 +563,7 @@ const bombMatVis = new THREE.MeshStandardMaterial({ color: 0xe0352b, emissive: 0
 const bombGeo = new THREE.SphereGeometry(0.6, 20, 14);
 
 function fire(target) {
+  if (state.shots <= 0) return;
   const vel = aimAt(target);
   const bomb = state.bombReady;
   if (bomb) {
