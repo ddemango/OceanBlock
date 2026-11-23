@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: status | add-testers
+        description: status | add-testers | invite
         default: status
       emails:
         description: Comma-separated tester emails (for add-testers)

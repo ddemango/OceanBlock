@@ -66,7 +66,7 @@ def status():
     for g in groups['data']:
         ga = g['attributes']
         testers = call('GET', f"/betaGroups/{g['id']}/betaTesters?limit=50") or {'data': []}
-        emails = [t['attributes'].get('email') for t in testers['data']]
+        emails = [(t['attributes'].get('email'), t['attributes'].get('state')) for t in testers['data']]
         print(f"Group '{ga['name']}' internal={ga.get('isInternalGroup')} allBuilds={ga.get('hasAccessToAllBuilds')} testers={emails}")
 
 
@@ -92,8 +92,20 @@ def add_testers(emails):
                     print('Attached existing tester', email)
 
 
+def invite(emails):
+    for email in emails:
+        found = call('GET', f'/betaTesters?filter[email]={email}&filter[apps]={APP_ID}') or {'data': []}
+        for t in found['data']:
+            r = call('POST', '/betaTesterInvitations', {'data': {'type': 'betaTesterInvitations', 'relationships': {
+                'app': {'data': {'type': 'apps', 'id': APP_ID}},
+                'betaTester': {'data': {'type': 'betaTesters', 'id': t['id']}}}}})
+            print('Invitation sent to' if r is not None else 'Invite failed for', email)
+
+
 if __name__ == '__main__':
     action = sys.argv[1] if len(sys.argv) > 1 else 'status'
     if action == 'add-testers':
         add_testers([e.strip() for e in sys.argv[2].split(',') if e.strip()])
+    if action == 'invite':
+        invite([e.strip() for e in sys.argv[2].split(',') if e.strip()])
     status()
