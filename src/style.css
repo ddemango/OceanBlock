@@ -331,3 +331,33 @@ html, body {
 .daily-day.done { opacity: .45; }
 .daily-day.today { background: #ffe08a; transform: scale(1.06); box-shadow: 0 0 0 3px var(--gold); }
 .daily-day.big { grid-column: span 2; }
+
+/* ---------- boosters ---------- */
+.boost-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.boost {
+  display: grid; grid-template-columns: 48px 1fr auto; align-items: center; gap: 12px;
+  border: 3px solid var(--ink); border-radius: 16px; background: #fff3d6; padding: 8px 12px;
+  font: inherit; font-weight: 800; color: var(--ink); text-align: left; cursor: pointer;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.boost small { display: flex; align-items: center; gap: 4px; font-size: 15px; }
+.boost.on { background: #c9f2a8; box-shadow: 0 4px 0 var(--leaf-dark), inset 0 0 0 3px var(--leaf); }
+.boost.on b::after { content: " \2713"; color: var(--leaf-dark); }
+.boost:disabled { opacity: .45; }
+.b-ico { width: 44px; height: 44px; border-radius: 12px; border: 3px solid var(--ink); display: grid; place-items: center; font-weight: 900; color: #fff; text-shadow: 0 2px 0 var(--ink); }
+.b-shots { background: var(--sea); }
+.b-bomb { background: radial-gradient(circle at 35% 30%, #ff9a7a, #e0352b 60%, #7a1010); border-radius: 50%; }
+.b-triple { background: var(--ink); display: flex; gap: 3px; justify-content: center; }
+.b-triple i { width: 9px; height: 9px; border-radius: 50%; background: #c7d2e0; }
+
+/* ---------- tutorial hint ---------- */
+#hint { position: fixed; left: 50%; top: 52%; transform: translateX(-50%); pointer-events: none; text-align: center; z-index: 3; }
+#hint .hand {
+  width: 64px; height: 64px; margin: 0 auto 8px; border-radius: 50%;
+  background: rgba(255,255,255,.85); border: 4px solid var(--ink);
+  animation: tap 1.1s ease-in-out infinite;
+}
+@keyframes tap { 0%, 100% { transform: scale(1); } 40% { transform: scale(.75); box-shadow: 0 0 0 18px rgba(255,255,255,.35); } }
+.hint-text { font-weight: 900; font-size: 30px; color: #fff; -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--ink); }
+.hint-text small { display: block; font-size: 17px; }
+.boss-tag { color: #ff5a3c; }

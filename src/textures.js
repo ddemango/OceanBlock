@@ -222,12 +222,12 @@ export function stoneTexture() {
   return toTexture(c);
 }
 
-export function skyTexture() {
+export function skyTexture(stops = ['#2b8fe6', '#7fd0f7', '#e6f8ff']) {
   const [c, g] = canvas(4, 512);
   const grad = g.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, '#2b8fe6');
-  grad.addColorStop(0.55, '#7fd0f7');
-  grad.addColorStop(1, '#e6f8ff');
+  grad.addColorStop(0, stops[0]);
+  grad.addColorStop(0.55, stops[1]);
+  grad.addColorStop(1, stops[2]);
   g.fillStyle = grad;
   g.fillRect(0, 0, 4, 512);
   const t = new THREE.CanvasTexture(c);

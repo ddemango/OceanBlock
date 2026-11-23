@@ -2,7 +2,7 @@ import './style.css';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { getLevel, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
-import { buildEnvironment, buildCannon, buildRaft } from './scenery.js';
+import { buildEnvironment, buildCannon, buildRaft, THEMES, themeForLevel } from './scenery.js';
 import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture, ironTexture, tntTexture } from './textures.js';
 import * as sfx from './audio.js';
 import { celebrate, stop as stopCelebrate, countUp } from './celebrate.js';
@@ -241,6 +241,8 @@ function loadLevel(n) {
   clearLevel();
   const def = getLevel(n);
   state.level = n;
+  state.theme = themeForLevel(n);
+  env.setTheme(state.theme);
   state.shots = def.shots;
   state.startShots = state.shots;
   state.shotsFired = 0;
@@ -562,10 +564,17 @@ function tryFire() {
 const bombMatVis = new THREE.MeshStandardMaterial({ color: 0xe0352b, emissive: 0xff5a1a, emissiveIntensity: 0.9, roughness: 0.4 });
 const bombGeo = new THREE.SphereGeometry(0.6, 20, 14);
 
-function fire(target) {
-  if (state.shots <= 0) return;
+function fire(target, extra = false) {
+  if (!extra && state.shots <= 0) return;
+  if (!extra && state.triple > 0) {
+    // triple shot: two extra balls fanned out either side
+    state.triple--;
+    fire(target.clone().add(new THREE.Vector3(-1.4, 0.2, 0)), true);
+    fire(target.clone().add(new THREE.Vector3(1.4, 0.2, 0)), true);
+  }
+  if (!extra) hideHint();
   const vel = aimAt(target);
-  const bomb = state.bombReady;
+  const bomb = !extra && state.bombReady;
   if (bomb) {
     state.bombReady = false;
     state.charge = 0;
@@ -587,6 +596,7 @@ function fire(target) {
   scene.add(mesh);
   state.balls.push({ body, mesh, age: 0, splashed: false });
 
+  if (extra) return;
   state.shots--;
   state.shotsFired++;
   recoil = 1;
@@ -824,9 +834,10 @@ function updateGame(dt) {
 // UI
 // ======================================================================
 const $ = (id) => document.getElementById(id);
-const screens = ['home', 'win', 'fail', 'settings', 'nolives', 'daily'];
+const screens = ['home', 'win', 'fail', 'settings', 'nolives', 'daily', 'boosters'];
 function show(id) {
   for (const s of screens) $(s).classList.toggle('hidden', s !== id);
+  if (id) $('hint').classList.add('hidden'); // tutorial hint only shows during play
   const hudOn = state.mode === 'play' || state.mode === 'paused' || id === 'fail';
   $('hud').classList.toggle('hidden', !hudOn);
   $('hud-progress').classList.toggle('hidden', !hudOn);
@@ -946,10 +957,75 @@ function startLevel() {
     showNoLives();
     return;
   }
+  if (save.level >= 3) showBoosters();
+  else beginLevel({});
+}
+
+// ---- booster picker ----
+const picked = new Set();
+function showBoosters() {
+  picked.clear();
+  state.mode = 'boosters';
+  $('boost-title').innerHTML = `Level ${save.level}`;
+  if (save.level % 10 === 0) $('boost-title').innerHTML = `<span class="boss-tag">BOSS</span> Level ${save.level}`;
+  refreshBoosters();
+  show('boosters');
+}
+function refreshBoosters() {
+  const spent = [...picked].reduce((t, id) => t + +document.querySelector(`.boost[data-id="${id}"]`).dataset.cost, 0);
+  const left = save.coins - spent;
+  document.querySelectorAll('.boost').forEach((el) => {
+    const on = picked.has(el.dataset.id);
+    el.classList.toggle('on', on);
+    el.disabled = !on && +el.dataset.cost > left;
+  });
+  document.querySelectorAll('#boosters .coins').forEach((el) => (el.textContent = left));
+}
+document.querySelectorAll('.boost').forEach((el) =>
+  el.addEventListener('click', () => {
+    sfx.sfxClick();
+    const id = el.dataset.id;
+    picked.has(id) ? picked.delete(id) : picked.add(id);
+    refreshBoosters();
+  })
+);
+$('btn-start').addEventListener('click', () => {
+  sfx.sfxClick();
+  let cost = 0;
+  picked.forEach((id) => (cost += +document.querySelector(`.boost[data-id="${id}"]`).dataset.cost));
+  if (cost > save.coins) return;
+  save.coins -= cost;
+  persist();
+  beginLevel(Object.fromEntries([...picked].map((id) => [id, true])));
+});
+$('btn-boost-back').addEventListener('click', () => {
+  sfx.sfxClick();
+  goHome();
+});
+
+function beginLevel(boosts) {
   loadLevel(save.level);
+  if (boosts.shots) state.shots = state.startShots = state.shots + 5;
+  if (boosts.bomb) {
+    state.bombReady = true;
+    state.charge = 1;
+  }
+  state.triple = boosts.triple ? 10 : 0;
   state.mode = 'play';
   show(null);
   updateHud();
+  const lv = state.level;
+  if (lv % 10 === 0) setTimeout(() => popup('BOSS LEVEL!', '#ff5a3c', 'double coins'), 300);
+  else if (lv % 5 === 1 && lv > 1) setTimeout(() => popup(THEMES[state.theme].label, '#ffe7b8', `Chapter ${Math.floor((lv - 1) / 5) + 1}`), 300);
+  if (boosts.triple) setTimeout(() => popup('TRIPLE SHOT!', '#5bc8ff', '10 shots'), lv % 5 === 1 || lv % 10 === 0 ? 1400 : 300);
+  if (lv === 1 && !save.tutorialDone) $('hint').classList.remove('hidden');
+}
+
+function hideHint() {
+  if ($('hint').classList.contains('hidden')) return;
+  $('hint').classList.add('hidden');
+  save.tutorialDone = true;
+  persist();
 }
 
 function onWin() {
@@ -957,7 +1033,8 @@ function onWin() {
   const used = state.shotsFired;
   const ratio = used / state.startShots;
   const stars = ratio <= 0.4 ? 3 : ratio <= 0.7 ? 2 : 1;
-  const reward = 20 + state.shots * 2 + (stars - 1) * 10 + (state.bonus || 0);
+  let reward = 20 + state.shots * 2 + (stars - 1) * 10 + (state.bonus || 0);
+  if (state.level % 10 === 0) reward *= 2; // boss bonus
   save.coins += reward;
   save.stars = save.stars || {};
   save.stars[state.level] = Math.max(save.stars[state.level] || 0, stars);

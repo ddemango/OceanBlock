@@ -252,7 +252,29 @@ function procedural(level) {
   return b.build(shots);
 }
 
+// Every 10th level: a three-raft boss fortress.
+function boss(level) {
+  const r = rng(level * 104729);
+  const b = new Builder().raft(-4.7, 0, 4.2, 3.6, level >= 30 ? 0.5 : 0).raft(0, -1, 4.6, 4.2).raft(4.7, 0, 4.2, 3.6, level >= 30 ? 0.5 : 0);
+  // side towers
+  for (const cx of [-4.7, 4.7]) {
+    const y = tiers(b, cx, 0, [['crate', 3], [level >= 20 ? 'tnt' : 'drum', 2], ['crate', 1]]);
+    b.col(cx, 0, ['tallDrum', 'buoy'], y);
+  }
+  // central keep, two rows deep, with an iron base and a lighthouse
+  for (const z of [-0.65, 0.65]) {
+    const step = W('crate') + 0.03;
+    for (let i = 0; i < 3; i++) b.put(i === 1 || r() < 0.3 ? 'iron' : 'crate', (i - 1) * step, RAFT_TOP, -1 + z);
+    tiers(b, 0, -1 + z, [['drum', 3], ['crate', 2]], RAFT_TOP + 1.2);
+  }
+  spire(b, 0, -1, RAFT_TOP + 3.55);
+  const lv = b.build(Math.min(40, 30 + Math.floor(level / 10)));
+  lv.boss = true;
+  return lv;
+}
+
 export function getLevel(n) {
+  if (n % 10 === 0) return boss(n);
   if (n <= HAND_MADE.length) return HAND_MADE[n - 1]();
   return procedural(n);
 }

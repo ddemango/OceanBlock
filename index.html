@@ -46,6 +46,25 @@
       <button id="btn-play" class="big-btn">Play<small>Level <span id="home-level">1</span></small></button>
     </div>
 
+    <!-- Booster picker (before a level) -->
+    <div id="boosters" class="screen hidden dim">
+      <div class="card">
+        <div class="ribbon" id="boost-title">Level 1</div>
+        <div class="detail">Pick boosters for this level</div>
+        <div class="boost-list">
+          <button class="boost" data-id="shots" data-cost="80"><span class="b-ico b-shots">+5</span><b>+5 Shots</b><small><span class="coin-icon small"></span>80</small></button>
+          <button class="boost" data-id="bomb" data-cost="100"><span class="b-ico b-bomb"></span><b>Start with Bomb</b><small><span class="coin-icon small"></span>100</small></button>
+          <button class="boost" data-id="triple" data-cost="150"><span class="b-ico b-triple"><i></i><i></i><i></i></span><b>Triple Shot</b><small><span class="coin-icon small"></span>150</small></button>
+        </div>
+        <div class="detail"><span class="coin-icon small"></span> <span class="coins">0</span> coins</div>
+        <button id="btn-start" class="big-btn">Start!</button>
+        <button id="btn-boost-back" class="text-btn">Back</button>
+      </div>
+    </div>
+
+    <!-- Tutorial hint -->
+    <div id="hint" class="hidden"><div class="hand"></div><div class="hint-text">Hold to fire!<small>Drag to aim</small></div></div>
+
     <!-- Daily reward -->
     <div id="daily" class="screen hidden dim">
       <div class="card">

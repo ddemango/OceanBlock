@@ -25,12 +25,36 @@ export function buildEnvironment(scene) {
   scene.add(water.mesh);
 
   buildIslands(scene);
-  buildSunRays(scene);
+  const rays = buildSunRays(scene);
   const clouds = buildClouds(scene);
   buildPier(scene);
 
-  return { water, clouds };
+  // Swap the whole mood of the scene (sky, fog, light, water, clouds).
+  function setTheme(name) {
+    const t = THEMES[name] || THEMES.day;
+    if (scene.background) scene.background.dispose();
+    scene.background = skyTexture(t.sky);
+    scene.fog.color.set(t.fog);
+    hemi.color.set(t.hemiSky);
+    hemi.groundColor.set(t.hemiGround);
+    hemi.intensity = t.hemiI;
+    sun.color.set(t.sun);
+    sun.intensity = t.sunI;
+    water.setColors(t.water);
+    clouds.setTint(t.cloud);
+    rays.forEach((r) => (r.visible = t.rays));
+  }
+
+  return { water, clouds, setTheme };
 }
+
+export const THEMES = {
+  day:    { label: 'Sunny Bay',      sky: ['#2b8fe6', '#7fd0f7', '#e6f8ff'], fog: 0xbfe9f7, hemiSky: 0xdff6ff, hemiGround: 0x2a7da0, hemiI: 1.25, sun: 0xfff3dc, sunI: 2.2, water: [0x0b74b5, 0x14a6d6, 0x7fe3f5], cloud: 0xc8e6f5, rays: true },
+  sunset: { label: 'Golden Sunset',  sky: ['#4a3a8c', '#ff8a5c', '#ffd59a'], fog: 0xffb98a, hemiSky: 0xffd2b0, hemiGround: 0x5a3a6a, hemiI: 1.1,  sun: 0xffb070, sunI: 2.4, water: [0x2a3f8a, 0x3f7fc0, 0xffb98a], cloud: 0xffb08a, rays: true },
+  night:  { label: 'Moonlit Lagoon', sky: ['#0a1236', '#1f3a7a', '#3c6aa8'], fog: 0x23406e, hemiSky: 0x8fb0ff, hemiGround: 0x101a3a, hemiI: 0.9,  sun: 0xb8ccff, sunI: 1.6, water: [0x06204a, 0x0d3f78, 0x5f9ad8], cloud: 0x3a5288, rays: false },
+  storm:  { label: 'Storm Waters',   sky: ['#3d4a5c', '#6f7f93', '#a9b6c4'], fog: 0x8a97a6, hemiSky: 0xc4cfdb, hemiGround: 0x2a3440, hemiI: 1.05, sun: 0xdfe6ee, sunI: 1.5, water: [0x1d3a52, 0x2f5d78, 0x9fc0d0], cloud: 0x7d8a99, rays: false },
+};
+export const themeForLevel = (n) => ['day', 'sunset', 'night', 'storm'][Math.floor((n - 1) / 5) % 4];
 
 // ---------- water: animated vertex waves ----------
 function buildWater() {
@@ -58,6 +82,11 @@ function buildWater() {
   const deep = new THREE.Color(0x0b74b5);
   const mid = new THREE.Color(0x14a6d6);
   const crest = new THREE.Color(0x7fe3f5);
+  function setColors([d, m, c]) {
+    deep.set(d);
+    mid.set(m);
+    crest.set(c);
+  }
   const tmp = new THREE.Color();
 
   function update(t) {
@@ -81,7 +110,7 @@ function buildWater() {
     geo.computeVertexNormals();
   }
   update(0);
-  return { mesh, update };
+  return { mesh, update, setColors };
 }
 
 function buildIslands(scene) {
@@ -155,6 +184,9 @@ function buildClouds(scene) {
     clouds.push(g);
   }
   return {
+    setTint(hex) {
+      mat.emissive.set(hex);
+    },
     update(dt) {
       for (const c of clouds) {
         c.position.x += dt * 1.2;
@@ -333,10 +365,13 @@ function buildSunRays(scene) {
   g.fillRect(0, 0, 64, 256);
   const tex = new THREE.CanvasTexture(c);
   const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, opacity: 0.55 });
+  const rays = [];
   for (let i = 0; i < 6; i++) {
     const ray = new THREE.Mesh(new THREE.PlaneGeometry(3 + Math.random() * 4, 40), mat);
     ray.position.set(-14 + i * 5.5, 18, -30 - i * 3);
     ray.rotation.z = -0.35;
     scene.add(ray);
+    rays.push(ray);
   }
+  return rays;
 }
