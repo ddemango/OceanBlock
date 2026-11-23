@@ -1,0 +1,26 @@
+name: App Store Connect
+
+# Lets Claude manage TestFlight (testers, review status) using an ASC API key stored
+# as GitHub secrets: ASC_KEY_P8, ASC_KEY_ID, ASC_ISSUER_ID. The key is never printed.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: status | add-testers
+        default: status
+      emails:
+        description: Comma-separated tester emails (for add-testers)
+        default: d.s.demango@gmail.com,davide@advanta-ai.com
+
+jobs:
+  asc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pyjwt cryptography
+      - name: Run
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: python scripts/asc.py "${{ inputs.action }}" "${{ inputs.emails }}"

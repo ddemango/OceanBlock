@@ -5,9 +5,6 @@ name: iOS → TestFlight
 # - With the 4 Apple secrets set: signs the app and uploads it to TestFlight.
 on:
   workflow_dispatch:
-  push:
-    branches: [claude/brave-pascal-9p4n4t]
-    paths: ['src/**', 'ios/**', 'public/**', 'index.html', 'package.json', '.github/workflows/ios-testflight.yml']
 
 concurrency:
   group: ios-testflight
