@@ -152,7 +152,7 @@ target('pear', 'Pear', place(pear(40, '#d4b84a'), { x: 612, y: 1012 }));
 {
   const x = 1140, y = 1130;
   scene(shadow(x, y, 40, 8));
-  scene(place(sunflower(44, 110), { x: x - 22, y: y - 70, rot: -14 }), place(sunflower(40, 96), { x: x + 20, y: y - 70, rot: 12 }));
+  scene(place(cornStalk(120, 41, '#d4c07a'), { x: x - 14, y: y - 70 }), place(cornStalk(110, 42, '#c9b66a'), { x: x + 14, y: y - 70 }));
   target('sunflower', 'Sunflower', place(sunflower(56, 120), { x, y: y - 70 }));
   scene(ol(blob([[x - 28, y], [x - 30, y - 46], [x - 16, y - 62], [x - 18, y - 80], [x + 18, y - 80], [x + 16, y - 62], [x + 30, y - 46], [x + 28, y]], 0.5), '#b8c0c4', 1), sh(rect(x - 20, y - 86, 40, 8, 3), '#9aa2a8'), sh(rect(x - 30, y - 30, 60, 6), '#9aa2a8'));
 }
@@ -171,7 +171,7 @@ scene(place(potted(46, '#c8693f', 'daisy', '#b07ad0', 301), { x: 90, y: 1162 }),
 // crate of apples with a corn cob
 scene(shadow(540, 1300, 80, 10), place(crate(140, 62, '#c99a62'), { x: 540, y: 1300 }), place(appleHeap(120, 30, 21, ['#c8302a', '#e05a3a', '#8fb04a']), { x: 540, y: 1250 }));
 target('corn', 'Corn cob', place(cornCob(64), { x: 600, y: 1262, rot: 28 }));
-scene(place(cornCob(46), { x: 470, y: 1254, rot: -30 }));
+scene(place(apple(16, '#8fb04a'), { x: 470, y: 1236 }));
 
 // gourds in a basket
 scene(shadow(900, 1300, 80, 10), place(basket(140, 54, '#b8864a'), { x: 900, y: 1300 }));
@@ -191,7 +191,7 @@ target('gourd', 'Striped gourd', place(gourd(52, '#e8d070', '#5f8a45'), { x: 914
   for (let i = 0; i < 10; i++) { const x = g.range(0, W), y = g.range(1300, 1490); vine += curve([[x, y], [x + 40, y - 20], [x + 80, y + 6], [x + 120, y - 14]]); }
   scene(stroke(vine, '#6b7a3a', 3));
   let lv = '';
-  for (let i = 0; i < 24; i++) lv += blob([[0, 0], [14, -10], [26, 0], [14, 12]].map(([a, b]) => [a + g.range(0, W), b + g.range(1290, 1490)] as [number, number]), 0.8);
+  for (let i = 0; i < 24; i++) { const ox = g.range(0, W), oy = g.range(1290, 1490); lv += blob([[ox, oy], [ox + 14, oy - 10], [ox + 26, oy], [ox + 14, oy + 12]], 0.8); }
   scene(sh(lv, '#7a8a4a'));
   for (const [x, y, s, c] of spots) scene(shadow(x, y, s * 0.45, 8), place(pumpkin(s, c), { x, y }));
 }
@@ -200,8 +200,8 @@ target('carved-pumpkin', 'Carved pumpkin', place(carvedPumpkin(92), { x: 650, y:
 scene(place(pumpkin(60, '#e8862e'), { x: 690, y: 1470 }));
 
 // wheelbarrow of pumpkins
-scene(shadow(1000, 1230, 120, 10), place(pumpkin(60, '#e8862e'), { x: 960, y: 1196 }), place(pumpkin(50, '#efe2c4'), { x: 1010, y: 1194 }), place(pumpkin(44, '#d8642a'), { x: 1048, y: 1198 }));
-scene(place(wheelbarrow(170, '#7a8a6a'), { x: 1000, y: 1232 }));
+scene(shadow(1000, 1230, 120, 10), place(wheelbarrow(170, '#7a8a6a'), { x: 1000, y: 1232 }));
+scene(place(pumpkin(60, '#e8862e'), { x: 960, y: 1140 }), place(pumpkin(50, '#efe2c4'), { x: 1010, y: 1138 }), place(pumpkin(44, '#d8642a'), { x: 1050, y: 1140 }));
 
 // fallen leaves everywhere
 {
@@ -211,7 +211,6 @@ scene(place(wheelbarrow(170, '#7a8a6a'), { x: 1000, y: 1232 }));
     scene(place(mapleLeaf(g.range(14, 24), g.pick(LEAF_COLS)), { x, y, rot: g.range(-60, 60) }));
   }
   for (let i = 0; i < 10; i++) scene(place(mapleLeaf(g.range(10, 16), g.pick(LEAF_COLS)), { x: g.range(0, W), y: g.range(600, 1000), rot: g.range(-60, 60) }));
-  for (let i = 0; i < 4; i++) scene(place(acorn(18), { x: g.range(60, 1150), y: g.range(1300, 1480), rot: g.range(-40, 40) }));
 }
 target('acorn', 'Acorn', place(acorn(30), { x: 410, y: 1380, rot: 20 }));
 

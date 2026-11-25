@@ -8,7 +8,7 @@ import {
 } from './props-find';
 
 const ID = 'sports-find-3';
-const xfTee = (x: number, y: number, r: number) => poly([[x - 5, y - 2], [x + 5, y - 2], [x + 1, y + 16], [x - 1, y + 16]].map(([px, py]) => { const a = (r * Math.PI) / 180, dx = px - x, dy = py - y; return [x + dx * Math.cos(a) - dy * Math.sin(a), y + dx * Math.sin(a) + dy * Math.cos(a)] as [number, number]; }));
+const xfTee = (x: number, y: number, r: number) => poly([[x - 4, y - 2], [x + 4, y - 2], [x + 1, y + 12], [x - 1, y + 12]].map(([px, py]) => { const a = (r * Math.PI) / 180, dx = px - x, dy = py - y; return [x + dx * Math.cos(a) - dy * Math.sin(a), y + dx * Math.sin(a) + dy * Math.cos(a)] as [number, number]; }));
 const W = 1200;
 const items: FindItem[] = [];
 const scene = (...s: (Shape | Shape[])[]) => { items.push({ shapes: s.flat() }); };
@@ -98,9 +98,6 @@ scene(stroke(M(1200, 690) + Q(980, 660, 820, 700) + Q(700, 730, 560, 720), '#d8c
 target('golf-cart', 'Golf cart', place(golfCart(104, '#f4f1ea', P.teal), { x: 1080, y: 684 }));
 scene(place(golfCart(64, '#f4f1ea', P.red), { x: 600, y: 716 }));
 // flagpoles with club flags beyond the terrace
-for (const [x, c, y0] of [[1180, P.navy, 470]] as [number, string, number][]) {
-  scene(stroke(line([[x, y0 + 250], [x, y0]]), '#e8e2d4', 3), sh(circle(x, y0 - 2, 4), P.gold));
-}
 // more trees and little daisies in the rough
 for (const [x, y, h, c, sd] of [[980, 560, 90, '#4f7f42', 8], [300, 560, 70, '#6a9a52', 9]] as [number, number, number, string, number][]) scene(place(tree(h, c, sd), { x, y }));
 {
@@ -192,6 +189,14 @@ target('iced-tea', 'Iced tea with lemon', place(icedTea(56), { x: 600, y: TY - 4
 target('pitcher', 'Pitcher of iced tea', place(pitcher(74), { x: 520, y: TY - 8 }));
 target('sandwich', 'Club sandwich', place(clubSandwich(90), { x: 458, y: TY + 22 }));
 scene(place(sunglasses(48), { x: 560, y: TY + 30, rot: 8 }));
+// a member reading behind the right table
+{
+  const x = 905, sk = SKIN[2];
+  scene(sh(blob([[x - 46, 900], [x - 44, 852], [x - 26, 836], [x + 26, 836], [x + 44, 852], [x + 46, 900]], 0.5), '#e8c9d8'), sh(M(x - 12, 836) + L(x, 852) + L(x + 12, 836) + 'Z', '#fbfbf8'));
+  scene(sh(rect(x - 7, 818, 14, 20), shade(sk, -0.08)), place(face(22, sk, HAIR[5]), { x, y: 800 }));
+  scene(sh(ellipse(x, 784, 44, 9), '#f2efe6'), sh(M(x - 24, 786) + Q(x - 22, 760, x, 760) + Q(x + 22, 760, x + 24, 786) + 'Z', '#f2efe6'), sh(rect(x - 24, 778, 48, 7), P.teal));
+  scene(stroke(M(x - 40, 860) + Q(x - 52, 890, x - 40, 900) + M(x + 40, 860) + Q(x + 52, 890, x + 40, 900), '#e8c9d8', 14));
+}
 // things on the right table (top ~ 895)
 const TY2 = 1050 - 155;
 target('newspaper', 'Newspaper', place(newspaper(80), { x: 858, y: TY2 + 8, rot: -6 }));
@@ -217,11 +222,11 @@ scene(place(bistroChair(200, '#2f5a4a', '#d4a26c'), { x: 830, y: 1500 }));
 scene(place(cafeTable(300, '#f4f1ea', '#e3b23c'), { x: 660, y: 1560 }));
 {
   const ty = 1560 - 186;
-  scene(ol(ellipse(600, ty + 6, 60, 14), '#fbfbf8', 1, -0.15), sh(circle(580, ty - 4, 14) + circle(606, ty - 6, 14) + circle(626, ty + 2, 12), '#e0b072'), sh(circle(580, ty - 8, 5) + circle(606, ty - 10, 5), '#c8463a'), sh(ellipse(594, ty - 14, 10, 4), '#fbf4d8'));
-  for (const x of [690, 740]) scene(ol(ellipse(x, ty + 10, 24, 6), '#fbfbf8', 1, -0.15), ol(rect(x - 14, ty - 18, 28, 26, 6), '#fbfbf8', 1, -0.15), stroke(M(x + 14, ty - 12) + Q(x + 24, ty - 8, x + 14, ty), '#d8d4c8', 3), sh(ellipse(x, ty - 18, 13, 3), '#6b3a1a'));
+  scene(ol(ellipse(700, ty + 6, 60, 14), '#fbfbf8', 1, -0.15), sh(circle(680, ty - 4, 14) + circle(706, ty - 6, 14) + circle(726, ty + 2, 12), '#e0b072'), sh(circle(680, ty - 8, 5) + circle(706, ty - 10, 5), '#c8463a'), sh(ellipse(694, ty - 14, 10, 4), '#fbf4d8'));
+  for (const x of [782]) scene(ol(ellipse(x, ty + 10, 24, 6), '#fbfbf8', 1, -0.15), ol(rect(x - 14, ty - 18, 28, 26, 6), '#fbfbf8', 1, -0.15), stroke(M(x + 14, ty - 12) + Q(x + 24, ty - 8, x + 14, ty), '#d8d4c8', 3), sh(ellipse(x, ty - 18, 13, 3), '#6b3a1a'));
   scene(ol(rect(530, ty - 40, 26, 44, 8), '#9cc4dc', 1), sh(leaf(543, ty - 40, 30, 6, -110) + leaf(543, ty - 40, 26, 6, -70), '#5f9a4c'), sh(circle(536, ty - 72, 7) + circle(552, ty - 66, 7) + circle(544, ty - 80, 6), '#f2cf3a'));
 }
-target('glove-table', 'Golf glove', place(golfGlove(50), { x: 772, y: 1366, rot: -70 }));
+target('glove-table', 'Golf glove', place(golfGlove(52), { x: 600, y: 1372, rot: -70 }));
 // chalkboard menu by the door
 {
   const x = 300, y = 1200;
@@ -229,6 +234,20 @@ target('glove-table', 'Golf glove', place(golfGlove(50), { x: 772, y: 1366, rot:
   scene(ol(rect(x - 42, y - 150, 84, 110, 4), '#7a5232', 1), sh(rect(x - 34, y - 142, 68, 94), '#2f3a36'));
   scene(stroke(line([[x - 24, y - 124], [x + 20, y - 124]]) + line([[x - 24, y - 108], [x + 10, y - 108]]) + line([[x - 24, y - 92], [x + 16, y - 92]]) + line([[x - 24, y - 76], [x + 6, y - 76]]), '#e8e4d8', 2), sh(star(x, y - 60, 6, 2.6), '#f2cf3a'));
 }
+// fallen leaves and pebbles on the terrace
+{
+  const g = rng(303);
+  for (let i = 0; i < 10; i++) scene(sh(leaf(g.range(300, 1150), g.range(1150, 1480), g.range(12, 18), 5, g.range(0, 360)), g.pick(['#c9a24a', '#b8783a', '#8fae5a'])));
+}
+// ivy on the clubhouse
+{
+  const g = rng(55);
+  let a = '', b = '';
+  for (let i = 0; i < 30; i++) { const y = 1010 - i * 14, x = 236 + Math.sin(i * 0.7) * 10; const d = leaf(x, y, g.range(12, 18), 5, g.range(120, 240)); if (i % 2) a += d; else b += d; }
+  scene(stroke(curve(Array.from({ length: 16 }, (_, i) => [236 + Math.sin(i * 1.3) * 10, 1010 - i * 28] as [number, number])), '#5a4a32', 2), sh(a, '#4f7f42'), sh(b, '#6a9a52'));
+}
+// planters on the balustrade posts
+scene(place(flowerBox(40, 16, '#c9a77a', ['#e86a8a', '#f4f1ea'], 21), { x: 247, y: 714 }), place(flowerBox(40, 16, '#c9a77a', ['#f2cf3a', '#e86a6a'], 22), { x: 1167, y: 714 }));
 // large planters
 for (const [x, y, sd] of [[60, 1290, 1], [1160, 1500, 2]] as [number, number, number][]) {
   const g = rng(sd * 17);
@@ -242,7 +261,7 @@ scene(sh(poly([[1000, 1300], [1022, 1300], [1060, 1080], [1054, 1078]]), P.red),
 // scattered tees
 {
   const g = rng(9);
-  for (let i = 0; i < 6; i++) scene(sh(xfTee(g.range(500, 980), g.range(1240, 1300), g.range(0, 360)), g.pick([P.red, '#f4f1ea', '#f2cf3a', '#3a8fd0'])));
+  for (let i = 0; i < 6; i++) scene(sh(xfTee(g.range(300, 560), g.range(1400, 1440), g.pick([80, 100, 260, 280])), g.pick([P.red, '#f4f1ea', '#f2cf3a', '#3a8fd0'])));
 }
 // chair in front with tennis kit
 scene(place(bistroChair(230, '#2f5a4a', '#d4a26c'), { x: 220, y: 1500 }));
