@@ -8,6 +8,9 @@ on:
       action:
         description: status | add-testers | invite | gamecenter
         default: status
+      bundle_id:
+        description: Leave empty for Tidebreaker, or com.unwindstudio.app for Unwind Studio
+        default: ''
       emails:
         description: Comma-separated tester emails (for add-testers)
         default: d.s.demango@gmail.com,davide@advanta-ai.com
@@ -23,4 +26,5 @@ jobs:
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_BUNDLE_ID: ${{ inputs.bundle_id }}
         run: python scripts/asc.py "${{ inputs.action }}" "${{ inputs.emails }}"

@@ -1,6 +1,7 @@
 // SVG → bitmap helpers: thumbnails, jigsaw source images and PNG export.
 import { findSvg, illustrationSvg, paintSvg } from '../art/render';
 import type { Activity } from '../content/types';
+import { isNative } from './native';
 
 export function activitySvg(a: Activity, fills?: Record<string, string>): string {
   if (a.mode === 'puzzle') return illustrationSvg(a.art);
@@ -59,7 +60,7 @@ export async function exportPng(a: Activity, fills: Record<string, string> | und
   const filename = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.png';
   const file = new File([blob], filename, { type: 'image/png' });
   const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
-  if (coarse && navigator.canShare?.({ files: [file] })) {
+  if ((coarse || isNative) && navigator.canShare?.({ files: [file] })) {
     try { await navigator.share({ files: [file], title: name }); return 'shared'; } catch (e) { if ((e as Error).name === 'AbortError') return 'shared'; }
   }
   const url = URL.createObjectURL(blob);

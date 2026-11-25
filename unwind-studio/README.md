@@ -39,6 +39,39 @@ npm run build && npm run e2e   # plays every mode for real in a headless browser
 as a dependency; install `playwright` globally or run where it is provided).
 Screenshots from the run are written to `.preview/e2e/`.
 
+## iPhone and iPad app (TestFlight)
+
+The same web app is wrapped as a native iOS app with [Capacitor](https://capacitorjs.com)
+(project in `ios/`, bundle id `com.unwindstudio.app`). In the native app, haptics use the
+Taptic Engine, saving an image opens the share sheet, and all content is bundled so it
+works offline from first launch.
+
+**One-time setup in App Store Connect** (Apple does not allow this step to be automated):
+
+1. Go to App Store Connect → Apps → **+** → New App.
+2. Platform iOS, name "Unwind Studio" (or any available name), primary language, and
+   bundle ID `com.unwindstudio.app`. If that ID is not offered yet, register it first at
+   developer.apple.com → Identifiers → **+** → App IDs. SKU can be `unwind-studio`.
+
+**Upload a build:** GitHub → Actions → **Unwind Studio → TestFlight** → Run workflow.
+It uses the repository's existing Apple secrets (`ASC_KEY_P8`, `ASC_KEY_ID`,
+`ASC_ISSUER_ID`, `APPLE_TEAM_ID`), signs automatically, and uploads. The build appears
+in TestFlight 5–20 minutes later.
+
+**Add testers:** Actions → **App Store Connect** → Run workflow with action
+`add-testers`, bundle_id `com.unwindstudio.app` and the tester emails.
+
+Working on it locally (needs a Mac with Xcode):
+
+```bash
+npm run build && npx cap sync ios
+npx cap open ios              # then press Run in Xcode
+node scripts/ios-assets.mjs   # regenerate icon and launch image after changing public/icon.svg
+```
+
+To use a different bundle id, change `appId` in `capacitor.config.json` and
+`PRODUCT_BUNDLE_IDENTIFIER` in `ios/App/App.xcodeproj/project.pbxproj`.
+
 ## Architecture
 
 ```
@@ -124,4 +157,4 @@ numbers, so colour is never the only cue.
 - Free colouring fills regions; there is no freehand brush.
 - Artwork is flat vector illustration generated in code rather than painted
   or photographic imagery.
-- Progress lives in one browser profile; there is no sync between devices.
+- Progress lives on one device; there is no sync between devices.

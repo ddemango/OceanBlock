@@ -1,5 +1,6 @@
 // Optional sound (synthesised, no audio files) and haptics.
 import { getApp } from '../store/app';
+import { isNative, nativeHaptic } from './native';
 
 let ctx: AudioContext | null = null;
 
@@ -43,12 +44,16 @@ export function cue(c: Cue) {
   const { prefs } = getApp();
   if (prefs.sound) SOUNDS[c]();
   const v = VIBES[c];
-  if (prefs.haptics && v && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+  if (!prefs.haptics || !v) return;
+  if (isNative) {
+    const ms = Array.isArray(v) ? v.reduce((a, b) => a + b, 0) : v;
+    nativeHaptic(ms > 40 ? 'heavy' : ms > 10 ? 'medium' : 'light');
+  } else if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     try { navigator.vibrate(v); } catch { /* unsupported */ }
   }
 }
 
-export const hapticsSupported = () => typeof navigator !== 'undefined' && 'vibrate' in navigator;
+export const hapticsSupported = () => isNative || (typeof navigator !== 'undefined' && 'vibrate' in navigator);
 
 export function reducedMotion(): boolean {
   const m = getApp().prefs.motion;

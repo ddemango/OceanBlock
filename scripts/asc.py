@@ -143,7 +143,23 @@ def gamecenter():
     print('Added English name' if loc else 'Localization failed')
 
 
+def resolve_app():
+    """Optionally target another app by bundle id (ASC_BUNDLE_ID), e.g. Unwind Studio."""
+    global APP_ID
+    bundle = os.environ.get('ASC_BUNDLE_ID', '').strip()
+    if not bundle:
+        return True
+    r = call('GET', f'/apps?filter[bundleId]={bundle}&limit=1')
+    if not r or not r.get('data'):
+        print(f'No App Store Connect app found for bundle id {bundle}. Create the app record first.')
+        return False
+    APP_ID = r['data'][0]['id']
+    return True
+
+
 if __name__ == '__main__':
+    if not resolve_app():
+        sys.exit(1)
     action = sys.argv[1] if len(sys.argv) > 1 else 'status'
     if action == 'add-testers':
         add_testers([e.strip() for e in sys.argv[2].split(',') if e.strip()])

@@ -399,3 +399,7 @@ input[role='switch']:checked::after { transform: translateX(22px); }
 :root[data-motion='reduced'] *, :root[data-motion='reduced'] *::before, :root[data-motion='reduced'] *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; scroll-behavior: auto !important; }
 :root[data-motion='reduced'] .petals { display: none; }
 .sky-hills { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+
+/* inside the native app: no text selection or long-press callouts on the interface */
+.native, .native body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.native input { -webkit-user-select: text; user-select: text; }

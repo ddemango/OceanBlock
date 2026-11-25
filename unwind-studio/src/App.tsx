@@ -3,6 +3,7 @@ import { getActivity } from './content/catalog';
 import { FindPlayer } from './players/FindPlayer';
 import { JigsawPlayer } from './players/JigsawPlayer';
 import { PaintPlayer } from './players/PaintPlayer';
+import { setNativeTheme } from './lib/native';
 import { href, navigate, useRoute, type Route } from './router';
 import { ActivityPage, CollectionPage, NotFound } from './screens/Detail';
 import { Explore } from './screens/Explore';
@@ -63,6 +64,7 @@ export function App() {
     const root = document.documentElement;
     if (prefs.theme === 'system') delete root.dataset.theme; else root.dataset.theme = prefs.theme;
     if (prefs.motion === 'system') delete root.dataset.motion; else root.dataset.motion = prefs.motion;
+    setNativeTheme(prefs.theme === 'dark' || (prefs.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches));
   }, [prefs.theme, prefs.motion]);
   useEffect(() => { if (route.name !== 'play') window.scrollTo(0, 0); }, [route]);
 

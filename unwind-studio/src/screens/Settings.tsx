@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ACTIVITIES, MODE_LABEL } from '../content/catalog';
 import type { Mode } from '../content/types';
 import { hapticsSupported } from '../lib/feedback';
+import { isNative } from '../lib/native';
 import { TIPS } from '../players/shared';
 import { clearAllData, resetTutorials, savedDataSize, setPrefs, useApp, type Prefs } from '../store/app';
 import { Confirm, Dialog, toast } from '../ui/common';
@@ -31,6 +32,7 @@ export function Settings() {
   const [confirm, setConfirm] = useState(false);
   const [offline, setOffline] = useState<'checking' | 'ready' | 'no'>('checking');
   useEffect(() => {
+    if (isNative) { setOffline('ready'); return; }
     if (!('serviceWorker' in navigator)) { setOffline('no'); return; }
     navigator.serviceWorker.getRegistration().then((r) => setOffline(r?.active ? 'ready' : 'no')).catch(() => setOffline('no'));
   }, []);
