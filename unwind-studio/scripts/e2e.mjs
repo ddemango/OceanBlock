@@ -110,7 +110,7 @@ async function dragPiece(id, wx, wy) {
 const home = (id, dx = 0, dy = 0) => dragPiece(id, J.pieces[id].x + dx, J.pieces[id].y + dy);
 
 let s0 = await jstate();
-check('starts with all pieces shuffled in the tray', s0.tray.length === 36 && !eq(s0.tray, J.pieces.map((p) => p.id)));
+check('starts with the four corners in place and the rest shuffled in the tray', s0.tray.length === 32 && [0, 5, 30, 35].every((c) => groupOf(s0, c)?.locked));
 
 // 1. wrong cell does not snap
 await dragPiece(14, J.pieces[20].x + J.pw * 0.5, J.pieces[20].y + J.ph * 0.5);
@@ -120,12 +120,12 @@ check('a piece dropped in the wrong place does not snap or lock', groupOf(s, 14)
 const g14 = groupOf(s, 14);
 await dragPiece(15, J.pieces[15].x + g14.x, J.pieces[15].y + g14.y + J.ph * 1.3);
 s = await jstate();
-check('a misaligned neighbour does not join', s.groups.length === 2);
+check('a misaligned neighbour does not join', s.groups.filter((g) => !g.locked).length === 2);
 // 3. non-neighbour at the same offset must not join
-await dragPiece(0, J.pieces[0].x + g14.x, J.pieces[0].y + g14.y);
+await dragPiece(3, J.pieces[3].x + g14.x, J.pieces[3].y + g14.y);
 s = await jstate();
-check('a non-neighbouring piece does not join even at a matching offset', s.groups.length === 3 && groupOf(s, 0).pieces.length === 1);
-await home(0);
+check('a non-neighbouring piece does not join even at a matching offset', s.groups.filter((g) => !g.locked).length === 3 && groupOf(s, 3).pieces.length === 1);
+await home(3);
 // 4. aligned neighbour joins off its solved position
 await dragPiece(15, J.pieces[15].x + g14.x + 6, J.pieces[15].y + g14.y - 5);
 s = await jstate();
@@ -141,7 +141,7 @@ await home(14, 5, -4);
 s = await jstate();
 check('a group dropped near its solved position snaps and locks', groupOf(s, 14).locked && groupOf(s, 14).x === 0 && groupOf(s, 15).locked);
 // 7. place about a third, refresh, compare
-for (const id of [1, 2, 6, 7, 8, 12, 13, 30, 35]) await home(id, 4, 4);
+for (const id of [1, 2, 6, 7, 8, 12, 13, 31, 34]) await home(id, 4, 4);
 await dragPiece(22, J.pieces[22].x + 40, J.pieces[22].y + 140); // one loose piece too
 await saved();
 const before = await jstate();
@@ -374,7 +374,7 @@ await open('#/play/garden-puzzle/64');
 await page.waitForFunction(() => window.__jigsaw?.assets);
 const J2 = await page.evaluate(() => window.__jigsaw.geom.pieces.map((p) => ({ x: p.x, y: p.y })));
 Object.assign(J, await page.evaluate(() => ({ pw: window.__jigsaw.geom.pw, ph: window.__jigsaw.geom.ph })), { pieces: J2.map((p, id) => ({ id, ...p })) });
-for (const id of [0, 1, 2, 8, 9]) await home(id, 3, 3);
+for (const id of [1, 2, 8, 9, 10]) await home(id, 3, 3);
 await saved();
 const g64 = await jstate();
 await open('#/play/library-find/default');
@@ -418,14 +418,14 @@ await open('#/activity/coastal-puzzle');
 await page.locator('[data-variant="36"]').click();
 await page.getByTestId('restart').click();
 await page.waitForFunction(() => window.__jigsaw?.assets);
-check('replaying a finished activity starts fresh but keeps its gallery entry', (await jstate()).tray.length === 36 && await page.evaluate(() => window.__unwind.getApp().gallery.some((g) => g.id === 'coastal-puzzle|36')));
+check('replaying a finished activity starts fresh but keeps its gallery entry', (await jstate()).tray.length === 32 && await page.evaluate(() => window.__unwind.getApp().gallery.some((g) => g.id === 'coastal-puzzle|36')));
 // corrupted save is handled gracefully
 await saved();
 await page.evaluate(() => new Promise((res) => { const r = indexedDB.open('unwind-studio'); r.onsuccess = () => { const t = r.result.transaction('kv', 'readwrite'); const st = t.objectStore('kv'); const k = 'v1/progress/garden-puzzle|64'; const g = st.get(k); g.onsuccess = () => { const v = g.result; v.state = { v: 1, garbage: true }; st.put(v, k); }; t.oncomplete = res; }; }));
 await open('#/play/garden-puzzle/64');
 await page.reload();
 await page.waitForFunction(() => window.__jigsaw?.assets);
-check('a corrupted save is discarded gracefully and the activity starts fresh', (await jstate()).tray.length === 64 && (await page.locator('.notice').count()) === 1);
+check('a corrupted save is discarded gracefully and the activity starts fresh', (await jstate()).tray.length === 60 && (await page.locator('.notice').count()) === 1);
 
 // in-game "Play again" after finishing
 await open('#/play/coastal-find/default');
@@ -456,7 +456,7 @@ check('the fresh game is what gets saved', await page.evaluate(() => { const p =
   for (let i = 1; i <= 8; i++) await touch('touchMove', [{ x: sb2.x + 300 - i * 25, y: sb2.y + 50 }]);
   await touch('touchEnd', []);
   await tp.waitForTimeout(300);
-  check('touch: swiping the tray sideways scrolls it without lifting a piece', (await tp.evaluate(() => window.__jigsaw.st.tray.length)) === 36 && (await scroller.evaluate((e) => e.scrollLeft)) > 40);
+  check('touch: swiping the tray sideways scrolls it without lifting a piece', (await tp.evaluate(() => window.__jigsaw.st.tray.length)) === 32 && (await scroller.evaluate((e) => e.scrollLeft)) > 40);
   await scroller.evaluate((e) => { e.scrollLeft = 0; });
   await tp.waitForTimeout(150);
   // drag a piece up out of the tray to its place (the piece rides 44px above the finger)
@@ -473,6 +473,12 @@ check('the fresh game is what gets saved', await page.evaluate(() => { const p =
   await touch('touchEnd', []);
   await tp.waitForTimeout(200);
   check('touch: dragging a piece up from the tray places and locks it', await tp.evaluate((pid) => window.__jigsaw.st.groups.some((gr) => gr.locked && gr.pieces.includes(pid)), id));
+  // a quick tap on a tray piece sets it down on the table
+  const tapId = await tp.evaluate(() => window.__jigsaw.st.tray[0]);
+  const tb = await tp.locator(`[data-piece="${tapId}"]`).boundingBox();
+  await tp.touchscreen.tap(tb.x + tb.width / 2, tb.y + tb.height / 2);
+  await tp.waitForTimeout(200);
+  check('touch: tapping a tray piece sets it on the table', await tp.evaluate((pid) => !window.__jigsaw.st.tray.includes(pid) && window.__jigsaw.st.groups.some((g) => g.pieces.includes(pid) && !g.locked), tapId));
   // pinch on a find scene: zooms, registers no guess
   await topen('#/play/library-find/default');
   await tp.waitForFunction(() => window.__find);

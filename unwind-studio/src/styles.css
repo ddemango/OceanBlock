@@ -324,8 +324,8 @@ input[role='switch']:checked::after { transform: translateX(22px); }
 .tray-note.strong { margin-left: 0; color: var(--ink); font-size: 17px; font-weight: 900; padding: 8px 2px 4px; }
 .tray-empty { color: var(--muted); font-size: 14.5px; font-weight: 700; padding: 18px 8px; margin: auto; text-align: center; }
 
-.jtray-scroll { display: flex; align-items: center; gap: 2px; overflow-x: auto; overflow-y: hidden; padding: 4px 12px 10px; min-height: 98px; touch-action: pan-x; overscroll-behavior: contain; scrollbar-width: none; user-select: none; -webkit-user-select: none; }
-.jpiece { flex: none; border: 0; background: none; padding: 0; border-radius: 18px; cursor: grab; touch-action: pan-x; -webkit-touch-callout: none; transition: transform 0.15s; }
+.jtray-scroll { display: flex; align-items: center; gap: 2px; overflow-x: auto; overflow-y: hidden; padding: 4px 12px 10px; min-height: 98px; touch-action: none; overscroll-behavior: contain; scrollbar-width: none; user-select: none; -webkit-user-select: none; }
+.jpiece { flex: none; border: 0; background: none; padding: 0; border-radius: 18px; cursor: grab; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; transition: transform 0.15s; }
 .jpiece:hover { transform: translateY(-3px); }
 .jpiece canvas { display: block; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(50, 48, 110, 0.3)); }
 .jpiece.hinted { background: var(--accent-soft); box-shadow: inset 0 0 0 3px var(--accent-raw); animation: pulse 1s ease-in-out infinite alternate; }

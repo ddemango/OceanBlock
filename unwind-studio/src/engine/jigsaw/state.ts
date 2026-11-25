@@ -24,14 +24,26 @@ export interface JigsawState {
 
 export type DropResult = 'none' | 'joined' | 'locked';
 
-export function newGame(geom: JigsawGeom, seed: number, geometryVersion: number): JigsawState {
+/** Corner pieces, used to give a new puzzle a head start. */
+export const cornerIds = (geom: JigsawGeom) => [...new Set([0, geom.cols - 1, (geom.rows - 1) * geom.cols, geom.count - 1])];
+
+/**
+ * A fresh, shuffled game. With `starters`, the four corners begin locked in
+ * place so there is something to build from straight away.
+ */
+export function newGame(geom: JigsawGeom, seed: number, geometryVersion: number, starters = false): JigsawState {
   const tray = geom.pieces.map((p) => p.id);
   const r = rng((seed * 31 + geom.count) >>> 0);
   for (let i = tray.length - 1; i > 0; i--) {
     const j = r.int(0, i);
     [tray[i], tray[j]] = [tray[j], tray[i]];
   }
-  return { v: 1, count: geom.count, seed, geometryVersion, tray, groups: [], nextGroupId: 1, guide: false, edgesOnly: false };
+  const s: JigsawState = { v: 1, count: geom.count, seed, geometryVersion, tray, groups: [], nextGroupId: 1, guide: false, edgesOnly: false };
+  if (starters) for (const id of cornerIds(geom)) {
+    s.tray.splice(s.tray.indexOf(id), 1);
+    s.groups.push({ id: s.nextGroupId++, pieces: [id], x: 0, y: 0, locked: true });
+  }
+  return s;
 }
 
 export const findGroup = (s: JigsawState, id: number) => s.groups.find((g) => g.id === id);

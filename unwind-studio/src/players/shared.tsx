@@ -154,7 +154,7 @@ export function ReplayConfirm({ activity, onConfirm, onCancel }: { activity: Act
 
 export const TIPS: Record<Mode, Tip[]> = {
   puzzle: [
-    { icon: 'puzzle', title: 'Drag pieces out of the tray', text: 'Swipe the tray sideways to browse. Drag a piece up onto the table to place it; drop it back on the tray to return it.' },
+    { icon: 'puzzle', title: 'Drag pieces out of the tray', text: 'The four corners start in place. Swipe the tray sideways to browse, then drag a piece up onto the table — or tap it to set it down. Drop a piece back on the tray to return it.' },
     { icon: 'check', title: 'Pieces click together', text: 'Matching neighbours join and move as one. A piece or group dropped in the right spot on the board locks in place.' },
     { icon: 'fit', title: 'Move around freely', text: 'Drag empty space to pan, pinch or scroll to zoom. The frame button resets the view.' },
     { icon: 'hint', title: 'Helpers when you want them', text: 'Show only edge pieces, turn on a faint guide, peek at the picture, or ask for a hint. Keyboard: Enter picks up a tray piece, arrows move it, Enter drops it.' },

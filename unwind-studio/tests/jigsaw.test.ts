@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { pointInPoly } from '../src/art/geometry';
 import { buildJigsaw } from '../src/engine/jigsaw/geometry';
 import { gridFor, PIECE_COUNTS } from '../src/engine/jigsaw/grid';
-import { dropGroup, groupAt, groupOfPiece, isComplete, isValidState, moveGroup, newGame, progressOf, returnToTray, takeFromTray } from '../src/engine/jigsaw/state';
+import { cornerIds, dropGroup, groupAt, groupOfPiece, isComplete, isValidState, lockedCount, moveGroup, newGame, progressOf, returnToTray, takeFromTray } from '../src/engine/jigsaw/state';
 
 const W = 1200, H = 1200, SEED = 4242;
 
@@ -81,6 +81,30 @@ describe('jigsaw rules', () => {
     expect([...s.tray].sort((a, b) => a - b)).toEqual(geom.pieces.map((p) => p.id));
     expect(s.tray).not.toEqual(geom.pieces.map((p) => p.id));
     expect(newGame(geom, SEED, 1).tray).toEqual(s.tray);
+  });
+
+  it('can start with the four corners locked in place', () => {
+    for (const n of PIECE_COUNTS) {
+      const g = buildJigsaw(W, H, n, SEED);
+      const s = newGame(g, SEED, 1, true);
+      const corners = cornerIds(g);
+      expect(corners).toHaveLength(4);
+      expect(lockedCount(s)).toBe(4);
+      expect(s.tray).toHaveLength(n - 4);
+      for (const c of corners) {
+        expect(s.tray).not.toContain(c);
+        expect(groupOfPiece(s, c)).toMatchObject({ locked: true, x: 0, y: 0 });
+      }
+      expect(isValidState(JSON.parse(JSON.stringify(s)), g, SEED, 1)).toBe(true);
+      expect(isComplete(s)).toBe(false);
+    }
+  });
+
+  it('a corner piece placed next to a starter corner joins it and locks', () => {
+    const s = newGame(geom, SEED, 1, true);
+    const g = takeFromTray(s, geom, 1, geom.pieces[1].x + 4, geom.pieces[1].y - 3)!;
+    expect(dropGroup(s, geom, g.id, TOL)).toBe('locked');
+    expect(groupOfPiece(s, 1)!.locked).toBe(true);
   });
 
   it('locks a piece dropped near its solved position and not one dropped elsewhere', () => {

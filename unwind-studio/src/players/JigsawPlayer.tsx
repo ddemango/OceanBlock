@@ -74,7 +74,7 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
   const variant = String(count);
   const geom = useMemo(() => buildJigsaw(art.width, art.height, count, activity.geometrySeed), [art, count, activity.geometrySeed]);
   const loaded = useMemo(() => loadSaved(activity, variant, (s): s is JigsawState => isValidState(s, geom, activity.geometrySeed, activity.geometryVersion)), []); // eslint-disable-line react-hooks/exhaustive-deps
-  const st = useRef<JigsawState>(loaded.state ?? newGame(geom, activity.geometrySeed, activity.geometryVersion)).current;
+  const st = useRef<JigsawState>(loaded.state ?? newGame(geom, activity.geometrySeed, activity.geometryVersion, true)).current;
   const startedAt = useRef(loaded.rec?.startedAt ?? Date.now()).current;
 
   const [, setTick] = useState(0);
@@ -289,12 +289,24 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
   }, [geom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- dragging out of the tray ----
-  const onTrayPointerDown = (e: React.PointerEvent) => {
+  // ---- the tray: every touch gesture is handled here, so it behaves the same in
+  // Safari, the iOS app's web view and desktop browsers:
+  //   swipe sideways  → scroll the tray (with a little glide)
+  //   drag upwards    → lift the piece onto the table
+  //   tap a piece     → put it on the table, ready to drag
+  const glide = useRef(0);
+  const onTrayPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (completed || !R.stage || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const scroller = e.currentTarget;
     const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-piece]');
-    if (!btn || completed || !R.stage || (e.pointerType === 'mouse' && e.button !== 0)) return;
-    const id = Number(btn.dataset.piece);
+    const id = btn ? Number(btn.dataset.piece) : -1;
     const pid = e.pointerId, x0 = e.clientX, y0 = e.clientY, touch = e.pointerType !== 'mouse';
+    const scroll0 = scroller.scrollLeft;
+    cancelAnimationFrame(glide.current);
+    try { scroller.setPointerCapture(pid); } catch { /* ignore */ }
+    let mode: 'pending' | 'drag' | 'scroll' | 'none' = 'pending';
     let groupId = -1;
+    let lastX = x0, lastT = performance.now(), vel = 0;
     const worldAt = (ev: PointerEvent) => {
       const s = R.stage!.screenOf(ev);
       return R.stage!.worldOf({ x: s.x, y: s.y - (touch ? 44 : 0) }); // lift above the fingertip
@@ -305,45 +317,80 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
       moveGroup(st, groupId, x, y);
       requestDraw();
     };
+    const lift = (ev: PointerEvent) => {
+      const w = worldAt(ev);
+      const gr = takeFromTray(st, geom, id, w.x - geom.pw / 2, w.y - geom.ph / 2);
+      if (!gr) { mode = 'none'; return; }
+      groupId = gr.id; R.dragging = gr.id; R.held = -1;
+      mode = 'drag';
+      setTrayDrag(id);
+      cue('pick');
+    };
     const move = (ev: PointerEvent) => {
       if (ev.pointerId !== pid) return;
-      if (groupId < 0) {
-        const dx = ev.clientX - x0, dy = ev.clientY - y0;
-        const begin = touch ? dy < -10 && Math.abs(dy) > Math.abs(dx) : Math.hypot(dx, dy) > 5;
-        if (!begin) { if (touch && Math.abs(dx) > 14) stop(); return; }
-        const w = worldAt(ev);
-        const gr = takeFromTray(st, geom, id, w.x - geom.pw / 2, w.y - geom.ph / 2);
-        if (!gr) { stop(); return; }
-        groupId = gr.id; R.dragging = gr.id; R.held = -1;
-        setTrayDrag(id);
-        cue('pick');
-      }
       ev.preventDefault();
-      place(ev);
+      const dx = ev.clientX - x0, dy = ev.clientY - y0;
+      if (mode === 'pending') {
+        const slop = touch ? 8 : 5;
+        if (Math.hypot(dx, dy) < slop) return;
+        if (id >= 0 && (!touch || (dy < 0 && Math.abs(dy) >= Math.abs(dx) * 0.7))) lift(ev);
+        else mode = touch && Math.abs(dx) >= Math.abs(dy) ? 'scroll' : 'none';
+      }
+      if (mode === 'drag') place(ev);
+      else if (mode === 'scroll') {
+        scroller.scrollLeft = scroll0 - dx;
+        const now = performance.now();
+        vel = 0.8 * vel + 0.2 * ((ev.clientX - lastX) / Math.max(1, now - lastT));
+        lastX = ev.clientX; lastT = now;
+      }
     };
     const stop = () => {
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', cancel);
+      try { scroller.releasePointerCapture(pid); } catch { /* ignore */ }
     };
     const up = (ev: PointerEvent) => {
       if (ev.pointerId !== pid) return;
       stop();
-      if (groupId < 0) return;
-      R.dragging = -1; setTrayDrag(null);
-      drop(groupId, { x: ev.clientX, y: ev.clientY });
+      if (mode === 'drag') { R.dragging = -1; setTrayDrag(null); drop(groupId, { x: ev.clientX, y: ev.clientY }); return; }
+      if (mode === 'pending' && id >= 0) { tapPlace(id); return; }
+      if (mode === 'scroll' && !reducedMotion()) {
+        // a gentle glide after a flick
+        let v = vel * 16;
+        const step = () => {
+          if (Math.abs(v) < 0.5) return;
+          scroller.scrollLeft -= v; v *= 0.92;
+          glide.current = requestAnimationFrame(step);
+        };
+        glide.current = requestAnimationFrame(step);
+      }
     };
     const cancel = (ev: PointerEvent) => {
       if (ev.pointerId !== pid) return;
       stop();
-      if (groupId < 0) return;
+      if (mode !== 'drag') return;
       R.dragging = -1; setTrayDrag(null);
-      returnToTray(st, groupId, 0);
-      rerender(); requestDraw();
+      drop(groupId, null); // keep it on the table where it was
     };
     window.addEventListener('pointermove', move, { passive: false });
     window.addEventListener('pointerup', up);
     window.addEventListener('pointercancel', cancel);
+  };
+
+  /** Tap on a tray piece: set it down on the visible table, ready to drag into place. */
+  const tapPlace = (id: number) => {
+    const stg = R.stage;
+    if (!stg || completed) return;
+    const c = stg.worldOf({ x: stg.vw / 2, y: stg.vh / 2 });
+    const jitter = () => (Math.random() - 0.5) * Math.min(geom.pw * 1.4, 120 / stg.view.s);
+    const [x, y] = clampGroup(c.x - geom.pw / 2 + jitter(), c.y - geom.ph / 2 + jitter());
+    const gr = takeFromTray(st, geom, id, x, y);
+    if (!gr) return;
+    cue('pick');
+    R.flash = { pieces: [id], t0: performance.now() };
+    setLive('Piece placed on the table. Drag it into position.');
+    save(); rerender(); requestDraw();
   };
 
   const keyPick = (id: number) => {
