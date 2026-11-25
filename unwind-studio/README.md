@@ -58,7 +58,8 @@ works offline from first launch.
 **Upload a build:** GitHub → Actions → **Unwind with Ma Dukes → TestFlight** → Run workflow.
 It uses the repository's App Store Connect API key secrets (`ASC_KEY_P8`, `ASC_KEY_ID`,
 `ASC_ISSUER_ID`), looks up the Apple team from the account, signs automatically, and uploads. The build appears
-in TestFlight 5–20 minutes later.
+in TestFlight 5–20 minutes later. Pushing a commit whose message contains
+`[testflight]` does the same.
 
 **Add testers:** Actions → **App Store Connect** → Run workflow with action
 `add-testers`, bundle_id `com.unwindstudio.app` and the tester emails.

@@ -5,10 +5,16 @@ name: Unwind with Ma Dukes → TestFlight
 #   uploads it to TestFlight using the App Store Connect API key secrets
 #   ASC_KEY_P8, ASC_KEY_ID and ASC_ISSUER_ID. The Apple team is looked up
 #   from the account (APPLE_TEAM_ID is used instead if it is set).
+# - Or push a commit whose message contains [testflight]: same signed upload.
 # - On pull requests that touch unwind-studio/: an unsigned simulator build
 #   only, to check the iOS project still compiles. Nothing is uploaded.
 on:
   workflow_dispatch:
+  # A pushed commit whose message contains [testflight] also uploads.
+  push:
+    paths:
+      - 'unwind-studio/**'
+      - '.github/workflows/unwind-testflight.yml'
   pull_request:
     paths:
       - 'unwind-studio/**'
@@ -20,13 +26,15 @@ concurrency:
 
 jobs:
   ios:
+    # ordinary pushes are covered by the pull_request build; only [testflight] pushes run here
+    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[testflight]')
     runs-on: macos-15
     timeout-minutes: 45
     defaults:
       run:
         working-directory: unwind-studio
     env:
-      UPLOAD: ${{ github.event_name == 'workflow_dispatch' && secrets.ASC_KEY_P8 != '' && secrets.ASC_KEY_ID != '' && secrets.ASC_ISSUER_ID != '' }}
+      UPLOAD: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && secrets.ASC_KEY_P8 != '' && secrets.ASC_KEY_ID != '' && secrets.ASC_ISSUER_ID != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -53,7 +61,7 @@ jobs:
         if: env.UPLOAD != 'true'
         run: |
           set -eo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
             echo "::warning::Apple secrets are not set, so this was an unsigned simulator build only. Add ASC_KEY_P8, ASC_KEY_ID and ASC_ISSUER_ID to upload to TestFlight."
           fi
           xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
