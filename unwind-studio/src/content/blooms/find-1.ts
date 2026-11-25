@@ -119,7 +119,7 @@ scene(sh(rect(0, 0, W, 44), WOOD_DK), sh(rect(0, 34, W, 10), shade(WOOD_DK, -0.2
   scene(sh(glow, '#ffe7a0', { opacity: 0.35 }), sh(bulbs, '#ffe08a'));
 }
 // hanging baskets inside the window
-for (const [hx, hy, col] of [[470, 300, '#f2a7b8'], [1010, 320, '#cdbdea']] as [number, number, string][]) {
+for (const [hx, hy, col] of [[548, 300, '#f2a7b8'], [905, 320, '#cdbdea']] as [number, number, string][]) {
   scene(stroke(line([[hx, 44], [hx - 34, hy - 20]]) + line([[hx, 44], [hx + 34, hy - 20]]) + line([[hx, 44], [hx, hy - 24]]), '#5a5048', 1.4));
   scene(...place(trailer(110, '#6f9a5a', hx, 7), { x: hx, y: hy - 6 }));
   const g = rng(hx);

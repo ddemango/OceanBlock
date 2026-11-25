@@ -821,7 +821,8 @@ export function planks(x0: number, y0: number, w: number, h: number, seed: numbe
       if (g.next() > 0.5) knots += ellipse(x + ww / 2, y0 + g.range(20, h - 20), 3, 6);
     }
   }
-  out.push(stroke(grain, shade(base, -0.3), 1, { opacity: 0.6 }), sh(knots, shade(base, -0.4)));
+  if (grain) out.push(stroke(grain, shade(base, -0.3), 1, { opacity: 0.6 }));
+  if (knots) out.push(sh(knots, shade(base, -0.4)));
   return out;
 }
 

@@ -83,7 +83,11 @@ target('robin', 'Robin', place(robin(), { x: 984, y: 538, s: 0.62 }));
 {
   const g = rng(3);
   let fr = '';
-  for (const [cx, cy] of [[WX0, WY0], [WX1, WY0], [WX0, WY1], [WX1, WY1], [1040, WY1], [WX0, 380], [WX1, 640]] as Pt[]) for (let i = 0; i < 6; i++) fr += circle(cx + g.range(-40, 40), cy + g.range(-30, 30), g.range(12, 30));
+  for (const [cx, cy] of [[WX0, WY0], [WX1, WY0], [WX0, WY1], [WX1, WY1], [1040, WY1], [WX0, 380], [WX1, 660]] as Pt[]) for (let i = 0; i < 6; i++) {
+    const r = g.range(8, 18);
+    const x = Math.min(WX1 - r, Math.max(WX0 + r, cx + g.range(-30, 30))), y = Math.min(WY1 - r, Math.max(WY0 + r, cy + g.range(-24, 24)));
+    fr += circle(x, y, r);
+  }
   scene(sh(fr, '#ffffff', { opacity: 0.55 }));
   let crys = '';
   for (let i = 0; i < 14; i++) { const x = g.range(WX0 + 10, WX1 - 10), y = g.pick([g.range(WY0 + 8, WY0 + 60), g.range(WY1 - 60, WY1 - 8)]); for (let k = 0; k < 3; k++) { const a = (k * Math.PI) / 3; crys += line([[x - Math.cos(a) * 7, y - Math.sin(a) * 7], [x + Math.cos(a) * 7, y + Math.sin(a) * 7]]); } }
@@ -102,6 +106,9 @@ scene(
   let pl = '';
   for (let x = WX0 - 30; x < WX1 + 40; x += 24) pl += line([[x, 152], [x, 230]]);
   scene(stroke(pl, '#9a6262', 2, { opacity: 0.6 }), stroke(line([[WX0 - 40, 176], [WX1 + 40, 176]]) + line([[WX0 - 40, 200], [WX1 + 40, 200]]), '#e9dcc4', 2, { opacity: 0.7 }));
+}
+for (const [x, l, c] of [[952, 40, '#c97a7a'], [1004, 64, '#9fb8c8'], [1140, 30, '#8fa781']] as [number, number, string][]) {
+  scene(stroke(line([[x, 222], [x, 222 + l]]), '#a52e2a', 1.2), sh(circle(x, 232 + l, 10), c), sh(rect(x - 4, 220 + l, 8, 4, 1), '#c9a54a'), sh(circle(x - 3, 229 + l, 3), '#ffffff', { opacity: 0.7 }));
 }
 target('star', 'Gold star ornament', place(starOrnament('#d9a93a'), { x: 1100, y: 232, s: 1 }));
 // sill and plants
@@ -166,12 +173,7 @@ scene(sh(poly([[330, 566], [370, 566], [362, 610], [338, 610]]) + poly([[830, 56
 
 // mirror above the mantel
 scene(sh(circle(600, 330, 158), '#c9a54a'), sh(circle(600, 330, 146), '#e0c06a'), sh(circle(600, 330, 134), `url(#${ID}-mirror)`));
-scene(sh(rect(520, 260, 160, 210, 4), '#d6e0e2', { opacity: 0.7 }), sh(rect(530, 270, 64, 90) + rect(606, 270, 64, 90) + rect(530, 372, 64, 90) + rect(606, 372, 64, 90), '#eef3f5', { opacity: 0.8 }));
-{
-  let bt = '';
-  for (let i = 0; i < 7; i++) bt += poly([[470 + i * 40, 216 + i * 2], [500 + i * 40, 218 + i * 2], [485 + i * 40, 244 + i * 2]]);
-  scene(sh(bt, '#c9a6a6', { opacity: 0.6 }));
-}
+scene(sh(rect(548, 236, 120, 190, 4), '#d6e0e2', { opacity: 0.7 }), sh(rect(556, 244, 50, 84) + rect(612, 244, 48, 84) + rect(556, 336, 50, 82) + rect(612, 336, 48, 82), '#eef3f5', { opacity: 0.8 }));
 scene(sh(poly([[520, 230], [560, 210], [470, 440], [450, 400]]) + poly([[600, 200], [620, 205], [520, 460], [500, 450]]), '#ffffff', { opacity: 0.22 }));
 {
   let beads = '';
@@ -276,6 +278,9 @@ scene(sh(rect(0, 1280, W, 6), '#5c4633'));
   scene(...place([
     sh(ellipse(0, -100, 34, 12), '#7a5434'), sh(ellipse(-30, -108, 14, 18, 20), '#9a6c44'), sh(ellipse(26, -104, 14, 18, -20), '#8a603c'),
     sh(ellipse(-30, -108, 8, 11, 20) + ellipse(26, -104, 8, 11, -20), '#d9b48a'),
+    sh(ellipse(-4, -118, 13, 17, 5), '#7a5434'), sh(ellipse(-4, -118, 8, 11, 5), '#d9b48a'),
+    sh(ellipse(46, -112, 12, 16, -30), '#8a603c'), sh(ellipse(46, -112, 7, 10, -30), '#e0c09a'),
+    sh(ellipse(-50, -110, 12, 15, 30), '#7a5434'), sh(ellipse(-50, -110, 7, 9, 30), '#d9b48a'),
     sh(poly([[-70, -96], [70, -96], [56, 0], [-56, 0]]), '#b48a5a'),
   ], { x: 1100, y: 1480 }));
   let wv = '';
@@ -288,6 +293,23 @@ scene(sh(rect(0, 1280, W, 6), '#5c4633'));
   let bw = '';
   for (let r = 0; r < 4; r++) bw += line([[80 + r * 3, 1396 + r * 18], [220 - r * 3, 1396 + r * 18]]);
   scene(stroke(bw, '#8a6a44', 4));
+}
+{
+  // wrapped gifts by the side table
+  const gift = (x: number, y: number, w: number, h: number, col: string, rib: string) => scene(
+    sh(rect(x, y - h, w, h, 2), col), sh(rect(x + w * 0.65, y - h, w * 0.35, h, 2), shade(col, -0.12)),
+    sh(rect(x + w / 2 - 4, y - h, 8, h) + rect(x, y - h / 2 - 4, w, 8), rib),
+    sh(blob([[x + w / 2, y - h], [x + w / 2 - 16, y - h - 12], [x + w / 2 - 14, y - h + 2]], 0.8) + blob([[x + w / 2, y - h], [x + w / 2 + 16, y - h - 12], [x + w / 2 + 14, y - h + 2]], 0.8), rib),
+  );
+  gift(930, 1316, 70, 56, '#8fa781', '#f6efe2');
+  gift(990, 1322, 56, 40, '#c97a7a', '#d9a93a');
+  gift(944, 1262, 44, 36, '#9fb8c8', '#c9302c');
+  // a row of little stars woven into the rug
+  let rs = '';
+  for (let x = 220; x < 1020; x += 60) rs += star(x, 1386, 7, 3, 8) + star(x + 30, 1430, 5, 2.2, 8);
+  scene(sh(rs, '#b5443e', { opacity: 0.8 }));
+  // cards standing on the mantel
+  for (const [x, c, r] of [[598, '#c97a7a', -6], [772, '#8fa781', 8]] as [number, string, number][]) scene(...place([sh(rect(-14, -34, 28, 34, 1), '#f6efe2'), sh(rect(-10, -30, 20, 18), c), sh(star(0, -21, 5, 2.2), '#f6efe2')], { x, y: 520, rot: r }));
 }
 target('yarn', 'Blue yarn ball', place(yarnBall('#8fb3d6'), { x: 236, y: 1424, s: 0.85 }));
 target('slipper', 'Slipper', place(slipper('#c97a7a', '#f6efe2'), { x: 330, y: 1474, s: 0.9, rot: -4 }));
