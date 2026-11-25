@@ -83,7 +83,7 @@ export function ActivityPage({ id }: { id: string }) {
           {inProgress && <div className="card-progress"><ProgressBar value={rec.progress} /><span>{Math.round(rec.progress * 100)}%</span></div>}
           <div className="cta">
             <button className="btn btn-primary btn-lg" onClick={play} data-testid="start">
-              {rec?.completed ? 'View finished piece' : inProgress ? 'Resume' : `Start ${MODE_LABEL[a.mode].toLowerCase()}`}
+              {rec?.completed ? 'View finished piece' : inProgress ? 'Keep going' : `Start ${MODE_LABEL[a.mode].toLowerCase()}`}
             </button>
             {rec && (rec.completed || inProgress) && <button className="btn" onClick={() => (rec.completed ? (resetProgress(rec.key), play()) : setConfirm(true))} data-testid="restart"><Icon name="replay" size={18} />Start again</button>}
           </div>

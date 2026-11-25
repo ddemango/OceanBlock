@@ -1,6 +1,4 @@
-import '@fontsource-variable/bricolage-grotesque/standard.css';
-import '@fontsource/dm-mono/400.css';
-import '@fontsource/dm-mono/500.css';
+import '@fontsource-variable/nunito';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { ACTIVITIES, COLLECTIONS } from './content/catalog';

@@ -267,8 +267,8 @@ export function PaintPlayer({ activity: a, variant, onRestart }: { activity: Pai
         <svg className="stage-svg" aria-hidden="true">
           <defs>
             <pattern id="us-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <rect width="7" height="7" fill="rgba(196,122,90,0.10)" />
-              <rect width="2.4" height="7" fill="rgba(168,90,60,0.55)" />
+              <rect width="7" height="7" fill="rgba(242,156,134,0.16)" />
+              <rect width="2.4" height="7" fill="rgba(214,104,78,0.6)" />
             </pattern>
           </defs>
           <g ref={gRef}>

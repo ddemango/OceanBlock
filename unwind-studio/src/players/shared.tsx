@@ -127,7 +127,7 @@ export function Completion({ activity: a, detail, fills, onClose, onReplay, clos
       <div className="dialog done" role="dialog" aria-modal="true" aria-label="Activity complete" data-mode={a.mode}>
         <div className="petals" aria-hidden="true">{Array.from({ length: 14 }, (_, i) => <i key={i} style={{ ['--i' as string]: i }} />)}</div>
         <ArtThumb activity={a} fills={fills} stamp="done" className="done-art" />
-        <p className="eyebrow"><Icon name="sparkle" size={16} /> Complete</p>
+        <p className="eyebrow"><Icon name="sparkle" size={16} /> Lovely work</p>
         <h2>{a.title}</h2>
         <p className="meta">{detail} · saved to My Gallery</p>
         <div className="done-actions">

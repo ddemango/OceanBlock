@@ -73,7 +73,7 @@ export function Settings() {
 
       <section className="panel" aria-labelledby="s-credits">
         <h2 id="s-credits">Credits</h2>
-        <p className="meta">All artwork in Unwind Studio is original vector illustration created for this app. Type is set in Bricolage Grotesque and DM Mono (both SIL Open Font License 1.1).</p>
+        <p className="meta">All artwork in Unwind Studio is original vector illustration created for this app. Type is set in Nunito (SIL Open Font License 1.1).</p>
         {credits.map((a) => <p key={a.id} className="meta">{a.title}: {a.attribution!.author}, {a.attribution!.license}{a.attribution!.source ? ` — ${a.attribution!.source}` : ''}</p>)}
         <p className="meta">Unwind Studio {__APP_VERSION__}</p>
       </section>

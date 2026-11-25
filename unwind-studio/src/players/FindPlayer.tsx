@@ -154,6 +154,7 @@ export function FindPlayer({ activity: a, onRestart }: { activity: FindActivity;
         <svg className="stage-svg" aria-hidden="true">
           <g ref={gRef}>
             <clipPath id="us-scene-clip"><rect width={a.width} height={a.height} /></clipPath>
+            <rect className="scene-frame" width={a.width} height={a.height} fill="#fff" />
             <g clipPath="url(#us-scene-clip)" dangerouslySetInnerHTML={{ __html: scene }} />
             <g className="fmarks" pointerEvents="none">
               {state.found.map((id) => ring(id, 'fmark'))}
