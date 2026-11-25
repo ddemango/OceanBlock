@@ -55,6 +55,12 @@ async function toPage(key, x, y) {
 }
 async function shot(name) { await page.screenshot({ path: `${SHOTS}/${name}.png` }); }
 
+// ================= STARTUP =================
+// open the bare address with no #/ route, exactly as the installed iPhone app does
+await page.goto(BASE);
+await page.waitForSelector('.sky', { timeout: 8000 }).catch(() => {});
+check('the app starts from a bare address (no #/ route), as the iOS app does', (await page.locator('.sky').count()) === 1);
+
 // ================= JIGSAW =================
 console.log('\n— Jigsaw —');
 await open('#/play/coastal-puzzle/36');

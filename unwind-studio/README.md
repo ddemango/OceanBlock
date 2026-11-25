@@ -1,4 +1,4 @@
-# Unwind Studio
+# Unwind with Ma Dukes
 
 *Find your moment.* A calm place to unwind with three activities built around
 shared, themed artwork:
@@ -49,11 +49,11 @@ works offline from first launch.
 **One-time setup in App Store Connect** (Apple does not allow this step to be automated):
 
 1. Go to App Store Connect → Apps → **+** → New App.
-2. Platform iOS, name "Unwind Studio" (or any available name), primary language, and
+2. Platform iOS, name "Unwind with Ma Dukes", primary language, and
    bundle ID `com.unwindstudio.app`. If that ID is not offered yet, register it first at
    developer.apple.com → Identifiers → **+** → App IDs. SKU can be `unwind-studio`.
 
-**Upload a build:** GitHub → Actions → **Unwind Studio → TestFlight** → Run workflow.
+**Upload a build:** GitHub → Actions → **Unwind with Ma Dukes → TestFlight** → Run workflow.
 It uses the repository's App Store Connect API key secrets (`ASC_KEY_P8`, `ASC_KEY_ID`,
 `ASC_ISSUER_ID`), looks up the Apple team from the account, signs automatically, and uploads. The build appears
 in TestFlight 5–20 minutes later.

@@ -9,7 +9,7 @@ on:
         description: status | add-testers | invite | gamecenter | register-app
         default: status
       bundle_id:
-        description: Leave empty for Tidebreaker, or com.unwindstudio.app for Unwind Studio
+        description: Leave empty for Tidebreaker, or com.unwindstudio.app for Unwind with Ma Dukes
         default: ''
       emails:
         description: Comma-separated tester emails (for add-testers)

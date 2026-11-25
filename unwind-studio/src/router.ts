@@ -53,10 +53,13 @@ export function goBack(fallback: Route) {
 }
 
 const subscribe = (l: () => void) => { window.addEventListener('hashchange', l); return () => window.removeEventListener('hashchange', l); };
-let cachedHash = '', cached: Route = { name: 'home' };
+// The snapshot must stay the same object until the hash really changes, or React
+// re-renders forever. (A bare URL has an empty hash, which is how the iOS app opens.)
+let cachedHash: string | null = null, cached: Route = { name: 'home' };
+export function currentRoute(): Route {
+  if (location.hash !== cachedHash) { cachedHash = location.hash; cached = parseRoute(location.hash); }
+  return cached;
+}
 export function useRoute(): Route {
-  return useSyncExternalStore(subscribe, () => {
-    if (location.hash !== cachedHash || !cachedHash) { cachedHash = location.hash; cached = parseRoute(location.hash); }
-    return cached;
-  });
+  return useSyncExternalStore(subscribe, currentRoute);
 }

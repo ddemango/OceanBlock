@@ -1,6 +1,6 @@
-name: Unwind Studio → TestFlight
+name: Unwind with Ma Dukes → TestFlight
 
-# Builds the Unwind Studio iOS app (unwind-studio/) on a GitHub-hosted Mac.
+# Builds the Unwind with Ma Dukes iOS app (unwind-studio/) on a GitHub-hosted Mac.
 # - Run manually (Actions → this workflow → Run workflow): signs the app and
 #   uploads it to TestFlight using the App Store Connect API key secrets
 #   ASC_KEY_P8, ASC_KEY_ID and ASC_ISSUER_ID. The Apple team is looked up

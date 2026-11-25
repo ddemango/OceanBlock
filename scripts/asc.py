@@ -197,7 +197,7 @@ def preflight(bundle):
 
 
 def resolve_app():
-    """Optionally target another app by bundle id (ASC_BUNDLE_ID), e.g. Unwind Studio."""
+    """Optionally target another app by bundle id (ASC_BUNDLE_ID), e.g. Unwind with Ma Dukes."""
     global APP_ID
     bundle = os.environ.get('ASC_BUNDLE_ID', '').strip()
     if not bundle:
@@ -214,7 +214,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'preflight':
         sys.exit(0 if preflight(os.environ.get('ASC_BUNDLE_ID', '').strip()) else 1)
     if len(sys.argv) > 1 and sys.argv[1] == 'register-app':
-        ok = register_app(os.environ.get('ASC_BUNDLE_ID', '').strip(), os.environ.get('ASC_APP_NAME', 'Unwind Studio'))
+        ok = register_app(os.environ.get('ASC_BUNDLE_ID', '').strip(), os.environ.get('ASC_APP_NAME', 'Unwind with Ma Dukes'))
         sys.exit(0 if ok else 1)
     if not resolve_app():
         sys.exit(1)

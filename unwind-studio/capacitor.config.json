@@ -1,6 +1,6 @@
 {
   "appId": "com.unwindstudio.app",
-  "appName": "Unwind Studio",
+  "appName": "Unwind with Ma Dukes",
   "webDir": "dist",
   "backgroundColor": "#f6f3fb",
   "ios": { "contentInset": "never", "allowsLinkPreview": false, "scrollEnabled": true },

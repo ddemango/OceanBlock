@@ -1,4 +1,4 @@
-# Authoring content for Unwind Studio
+# Authoring content for Unwind with Ma Dukes
 
 All artwork is original vector art written in TypeScript with the small drawing
 toolkit in `src/art/kit.ts`. Nothing is downloaded at runtime, so every activity
