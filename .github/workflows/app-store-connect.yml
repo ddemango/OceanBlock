@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: status | add-testers | invite | gamecenter | register-app
+        description: status | add-testers | invite | gamecenter | register-app | rename
         default: status
       bundle_id:
         description: Leave empty for Tidebreaker, or com.unwindstudio.app for Unwind with Ma Dukes
         default: ''
       emails:
-        description: Comma-separated tester emails (for add-testers)
+        description: Comma-separated tester emails (add-testers) or the new app name (rename)
         default: d.s.demango@gmail.com,davide@advanta-ai.com
 
 jobs:

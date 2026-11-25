@@ -1,7 +1,7 @@
 import './style.css';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { getLevel, getChallenge, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
+import { getLevel, getChallenge, isHard, difficulty, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
 import { buildEnvironment, buildCannon, buildRaft, THEMES, themeForLevel } from './scenery.js';
 import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture, ironTexture, tntTexture, iceTexture, balloonTexture } from './textures.js';
 import * as sfx from './audio.js';
@@ -119,7 +119,7 @@ const raftMat = new CANNON.Material('raft');
 world.defaultContactMaterial.friction = 0.5;
 world.defaultContactMaterial.restitution = 0.05;
 world.addContactMaterial(new CANNON.ContactMaterial(blockMat, blockMat, { friction: 0.55, restitution: 0.02 }));
-world.addContactMaterial(new CANNON.ContactMaterial(blockMat, raftMat, { friction: 0.7, restitution: 0.02 }));
+world.addContactMaterial(new CANNON.ContactMaterial(blockMat, raftMat, { friction: 1.2, restitution: 0.0 })); // grippy deck: cargo rides moving rafts
 world.addContactMaterial(new CANNON.ContactMaterial(ballMat, blockMat, { friction: 0.3, restitution: 0.15 }));
 world.addContactMaterial(new CANNON.ContactMaterial(ballMat, raftMat, { friction: 0.6, restitution: 0.05 }));
 
@@ -282,7 +282,11 @@ function loadLevel(n, def = getLevel(n)) {
   state.level = n;
   state.def = def;
   state.event = def.event || null;
-  state.theme = state.event === 'storm' ? 'storm' : def.theme || themeForLevel(n);
+  state.theme = state.event === 'storm' || state.event === 'snow' ? state.event : def.theme || themeForLevel(n);
+  // rougher seas as you climb (and in storms): rafts ride the swells
+  const dLv = def.challenge ? 0.5 : difficulty(n);
+  state.waves = 1 + dLv * 1.0 + (state.event === 'storm' ? 0.5 : state.event === 'snow' ? 0.35 : 0);
+  env.water.setRough(Math.min(2.5, state.waves * 0.85));
   env.setTheme(state.theme);
   stopEvent();
   state.shots = def.shots;
@@ -296,6 +300,7 @@ function loadLevel(n, def = getLevel(n)) {
   state.extraUsed = false;
   state.endTimer = 0;
   state.firstHit = false;
+  state.toRelease = new Set();
   state.puUsed = {};
   state.megaShots = 0;
   state.laser = false;
@@ -303,6 +308,11 @@ function loadLevel(n, def = getLevel(n)) {
   timeScale = 1;
   slowT = 0;
   document.body.classList.remove('slowmo');
+  setupSeaLife(n);
+  // hungry sharks eat shots, so those levels come with a little extra ammo
+  const bold = sea.list.filter((c) => c.bold).length;
+  state.shots += bold * 2;
+  state.startShots = state.shots;
 
   for (const r of def.rafts) {
     const body = new CANNON.Body({ mass: 0, material: raftMat, type: CANNON.Body.KINEMATIC }); // kinematic so events can set it moving
@@ -336,7 +346,12 @@ function loadLevel(n, def = getLevel(n)) {
     body.position.set(b.x, b.y + 0.001, b.z);
     if (b.ry) body.quaternion.setFromEuler(0, b.ry, 0);
     world.addBody(body);
-    if (!spec.floats) body.sleep(); // towers stay perfectly still until something hits them
+    if (!spec.floats) {
+      // Until the first cannonball lands, each stack is locked to its raft as one solid piece
+      // (kinematic: it moves exactly with the raft and can't be jostled out of place).
+      body.type = CANNON.Body.KINEMATIC;
+      body.allowSleep = false;
+    }
 
     const mesh = blockVisual(b.type, variant++ % 3);
     mesh.castShadow = true;
@@ -345,6 +360,7 @@ function loadLevel(n, def = getLevel(n)) {
     const raftIdx = state.rafts.reduce((best, r, i) => (Math.abs(r.def.x - b.x) < Math.abs(state.rafts[best].def.x - b.x) ? i : best), 0);
     const block = { body, mesh, cleared: false, sunk: false, spec, type: b.type, hp: spec.hp || 0, raft: raftIdx, lastBall: -1 };
     if (spec.floats) {
+      body.userData = { floats: true };
       // balloons remember where they hover, relative to their raft
       const r = state.rafts[raftIdx].body.position;
       block.offset = new CANNON.Vec3(b.x - r.x, b.y, b.z - r.z);
@@ -377,10 +393,9 @@ function onBlockCollide(block, e) {
     ud.burst = true;
     queueBurst(e.body.position.clone(), e.body.velocity.clone(), ud.bomb, ud);
   }
-  if (!state.firstHit && e.body.userData?.ball) {
-    // First cannonball impact wakes the whole level so supports collapse naturally.
-    state.firstHit = true;
-    for (const b of state.blocks) b.body.wakeUp();
+  // A locked stack is freed when a cannonball or flying debris reaches it.
+  if (block.body.type === CANNON.Body.KINEMATIC && (ud?.ball || (e.body.type === CANNON.Body.DYNAMIC && !e.body.userData?.floats && impact > 1))) {
+    releaseRaft(block.raft);
   }
 }
 
@@ -424,7 +439,7 @@ function floatBalloons(dt) {
       continue;
     }
     const r = state.rafts[b.raft].body.position;
-    const tx = r.x + b.offset.x, ty = b.offset.y + Math.sin(elapsed * 1.6 + b.offset.x) * 0.12, tz = r.z + b.offset.z;
+    const tx = r.x + b.offset.x, ty = b.offset.y + (r.y - (RAFT_TOP - 0.5)) + Math.sin(elapsed * 1.6 + b.offset.x) * 0.12, tz = r.z + b.offset.z;
     const p = body.position;
     body.velocity.set((tx - p.x) * 4 + wind.x * 0.3, (ty - p.y) * 4 + lift, (tz - p.z) * 4);
     body.angularVelocity.scale(0.9, body.angularVelocity);
@@ -490,11 +505,17 @@ function driftRafts(dt) {
   for (let i = 0; i < state.rafts.length; i++) {
     const r = state.rafts[i];
     r.amp += (r.ampTarget - r.amp) * Math.min(1, dt * 0.8);
+    r.heave = Math.min(1, (r.heave || 0) + dt * 0.4); // ease the swell in after the level loads
+    r.t += dt;
+    const k0 = 1 / Math.max(dt, 1 / 120);
+    // ride the swell: the raft rises and falls with the water under it
+    const ty = RAFT_TOP - 0.5 + env.water.heightAt(r.body.position.x, r.body.position.z, elapsed) * r.heave * 0.9;
+    const vy = (ty - r.body.position.y) * k0;
     if (r.amp < 0.001) {
-      r.body.velocity.set(0, 0, 0);
+      r.body.velocity.set(0, vy, 0);
+      carryCargo(i, 0, vy, 0, dt);
       continue;
     }
-    r.t += dt;
     const w = r.mode === 'orbit' ? 0.7 : 0.85;
     const a = r.t * w; // all rafts move in step so neighbours never bump into each other
     const tx = r.def.x + Math.sin(a) * r.amp;
@@ -502,15 +523,48 @@ function driftRafts(dt) {
     const k = 1 / Math.max(dt, 1 / 120);
     const vx = (tx - r.body.position.x) * k;
     const vz = (tz - r.body.position.z) * k;
-    r.body.velocity.set(vx, 0, vz);
-    for (const b of state.blocks) {
-      if (b.raft !== i || b.removed || b.cleared || b.spec.floats) continue;
-      if (b.hp > 0) b.body.velocity.set(vx, 0, vz); // armored cargo rides along
-      else if (b.body.sleepState === CANNON.Body.SLEEPING || !state.firstHit) {
-        // until the first cannonball lands, the whole stack rides its raft as one piece
-        b.body.position.x += vx * dt;
-        b.body.position.z += vz * dt;
-        if (!state.firstHit) b.body.sleep();
+    r.body.velocity.set(vx, vy, vz);
+    carryCargo(i, vx, vy, vz, dt);
+  }
+}
+// Turn a raft's locked stack back into real physics once something reaches it (done between steps).
+function releaseRaft(i) {
+  state.firstHit = true;
+  state.toRelease = state.toRelease || new Set();
+  state.toRelease.add(i);
+}
+function releaseCargo() {
+  if (!state.toRelease || !state.toRelease.size) return;
+  const rafts = state.toRelease;
+  state.toRelease = new Set();
+  for (const b of state.blocks) {
+    if (!rafts.has(b.raft) || b.removed || b.spec.floats || b.body.type !== CANNON.Body.KINEMATIC) continue;
+    b.body.type = CANNON.Body.DYNAMIC;
+    b.body.mass = b.hp > 0 ? 200 : b.spec.mass; // armored crates stay too heavy to budge until broken
+    b.body.updateMassProperties();
+    b.body.allowSleep = true;
+    b.body.wakeUp();
+  }
+}
+function carryCargo(i, vx, vy, vz, dt) {
+  for (const b of state.blocks) {
+    if (b.raft !== i || b.removed || b.cleared || b.spec.floats) continue;
+    if (b.body.type === CANNON.Body.KINEMATIC) {
+      b.body.velocity.set(vx, vy, vz); // locked stacks move exactly with the raft
+      continue;
+    }
+    if (b.body.sleepState === CANNON.Body.SLEEPING) {
+      // settled pieces on a freed raft keep riding it
+      b.body.position.x += vx * dt;
+      b.body.position.y += vy * dt;
+      b.body.position.z += vz * dt;
+    } else if (b.hp > 0) b.body.velocity.set(vx, vy, vz); // awake armored cargo is too heavy to drag by friction: carry it
+    else {
+      // still-standing pieces get extra grip so stacks ride a swaying raft; flying pieces are left alone
+      const v = b.body.velocity;
+      if (Math.hypot(v.x - vx, v.z - vz) < 1.2 && Math.abs(v.y - vy) < 1.2) {
+        v.x += (vx - v.x) * 0.3;
+        v.z += (vz - v.z) * 0.3;
       }
     }
   }
@@ -520,6 +574,8 @@ function driftRafts(dt) {
 const pendingBursts = [];
 let shake = 0;
 function queueBurst(pos, vel, bomb = false, ud = null) {
+  // any blast (cannonball, keg, shark) frees the stacks it can reach
+  for (const b of state.blocks) if (!b.removed && b.body.position.distanceTo(pos) < 6) releaseRaft(b.raft);
   pendingBursts.push({ pos, vel, bomb, ud });
 }
 function applyBursts() {
@@ -688,7 +744,7 @@ function ballisticVelocity(from, to) {
 }
 
 // Hold a finger down to keep firing (auto-fire), drag to sweep the aim.
-const FIRE_INTERVAL = 280;
+const FIRE_INTERVAL = 190; // rapid fire while holding
 const pointer = { down: false, x: 0, y: 0 };
 
 function onPointerDown(e) {
@@ -967,7 +1023,10 @@ function stopEvent() {
   for (const o of ev.objs) scene.remove(o);
   ev.objs = [];
   ev.kind = null;
-  ev.rain = ev.shark = ev.pool = ev.jump = null;
+  ev.rain = ev.shark = ev.pool = ev.jump = ev.snow = null;
+  ev.whiteout = 0;
+  scene.fog.near = 90;
+  scene.fog.far = 300;
   wind.x = 0;
   $('wind').classList.add('hidden');
 }
@@ -987,6 +1046,18 @@ function buildShark() {
   for (const m of [body, fin, tail]) addOutline(m, 0.04);
   g.add(body, belly, fin, tail);
   return g;
+}
+function flakeTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 32;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  grd.addColorStop(0, 'rgba(255,255,255,1)');
+  grd.addColorStop(0.5, 'rgba(255,255,255,0.8)');
+  grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 32, 32);
+  return new THREE.CanvasTexture(c);
 }
 function whirlTexture() {
   const c = document.createElement('canvas');
@@ -1040,6 +1111,19 @@ function startEvent(kind) {
     ev.objs.push(ev.shark);
     ev.nextJump = 2.5;
     popup('SHARK WATERS!', '#9fd6ff', 'it may help you out');
+  } else if (kind === 'snow') {
+    const n = 1400;
+    const pos = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) pos.set([(Math.random() - 0.5) * 34, Math.random() * 16, -24 + Math.random() * 31], i * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    ev.snow = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.22, map: flakeTexture(), alphaTest: 0.05, transparent: true, opacity: 0.95, depthWrite: false }));
+    scene.add(ev.snow);
+    ev.objs.push(ev.snow);
+    ev.nextFlash = 6;
+    $('wind').classList.remove('hidden');
+    popup('SNOWSTORM!', '#e8f4ff', 'icy winds push your shots');
+    sfx.sfxWhoosh();
   } else if (kind === 'whirlpool') {
     ev.pool = new THREE.Mesh(new THREE.CircleGeometry(4.5, 40), new THREE.MeshBasicMaterial({ map: whirlTexture(), transparent: true, depthWrite: false }));
     ev.pool.rotation.x = -Math.PI / 2;
@@ -1112,7 +1196,7 @@ function updateEvent(dt) {
       sh.rotation.set(0, Math.atan2(Math.cos(a) * 8.5, -Math.sin(a) * 2.2), 0); // face along the path
       ev.nextJump -= dt;
       const targets = state.blocks.filter((b) => !b.cleared && !b.removed && b.hp === 0 && !b.spec.floats);
-      if (ev.nextJump <= 0 && targets.length) {
+      if (ev.nextJump <= 0 && targets.length && state.shotsFired > 0) { // never strike before the player's first shot
         ev.nextJump = 6 + Math.random() * 3;
         const target = targets[Math.floor(Math.random() * targets.length)];
         const to = new THREE.Vector3(target.body.position.x, 0, target.body.position.z - 2.5);
@@ -1121,9 +1205,172 @@ function updateEvent(dt) {
         sfx.sfxSplash(1);
       }
     }
+  } else if (ev.kind === 'snow') {
+    wind.x = Math.sin(ev.t * 0.35) * 2.8 + Math.sin(ev.t * 1.7) * 0.8;
+    const a = ev.snow.geometry.attributes.position.array;
+    for (let i = 0; i < a.length; i += 3) {
+      a[i] += (wind.x * 1.6 + Math.sin(ev.t * 2 + i) * 0.6) * dt;
+      a[i + 1] -= (2 + (i % 7) * 0.3) * dt;
+      a[i + 2] += Math.cos(ev.t + i) * 0.3 * dt;
+      if (a[i + 1] < 0) a[i + 1] = 16;
+      if (a[i] > 17) a[i] = -17;
+      if (a[i] < -17) a[i] = 17;
+    }
+    ev.snow.geometry.attributes.position.needsUpdate = true;
+    const w = $('wind');
+    w.textContent = '❄ ' + (wind.x < 0 ? '◀ ' : '') + 'WIND ' + Math.abs(wind.x).toFixed(1) + (wind.x >= 0 ? ' ▶' : '');
+    // whiteout gusts: the fog rolls in thick for a moment
+    ev.nextFlash -= dt;
+    if (ev.nextFlash <= 0) {
+      ev.nextFlash = 7 + Math.random() * 5;
+      ev.whiteout = 2.2;
+      sfx.sfxWhoosh();
+    }
+    ev.whiteout = Math.max(0, (ev.whiteout || 0) - dt);
+    const k = Math.sin(Math.min(1, ev.whiteout / 2.2) * Math.PI);
+    scene.fog.near = 90 - k * 80;
+    scene.fog.far = 300 - k * 255;
   } else if (ev.kind === 'whirlpool') {
     ev.pool.rotation.z -= dt * 1.8;
     ev.pool.scale.setScalar(Math.min(1, ev.pool.scale.x + dt * 0.6));
+  }
+}
+
+
+// ---- sea life: leaping fish and circling sharks; more of them (and bolder) on higher levels ----
+const FISH_COLORS = [0xff8a3c, 0xffd23c, 0xff5a8a, 0x4fc3ff, 0x7ee081, 0xb98cff];
+const fishGeo = new THREE.SphereGeometry(0.28, 12, 8).scale(0.75, 0.9, 1.7);
+const finGeo = new THREE.ConeGeometry(0.22, 0.4, 4).scale(0.3, 1, 1);
+function buildFish(color) {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshToonMaterial({ color, gradientMap: toonRamp });
+  const body = new THREE.Mesh(fishGeo, mat);
+  const tail = new THREE.Mesh(finGeo, mat);
+  tail.position.z = 0.55;
+  tail.rotation.x = Math.PI / 2;
+  const top = new THREE.Mesh(finGeo, mat);
+  top.position.set(0, 0.24, 0.05);
+  top.scale.setScalar(0.7);
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1d2638 });
+  for (const sx of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), eyeMat);
+    eye.position.set(sx * 0.17, 0.06, -0.3);
+    g.add(eye);
+  }
+  addOutline(body, 0.03);
+  g.add(body, tail, top);
+  g.userData.tail = tail;
+  return g;
+}
+const sea = { list: [] };
+const rand = (a, b) => a + Math.random() * (b - a);
+function clearSeaLife() {
+  for (const c of sea.list) scene.remove(c.mesh);
+  sea.list = [];
+}
+function setupSeaLife(level) {
+  clearSeaLife();
+  const d = state.challenge ? 0.5 : difficulty(level);
+  const fishN = 3 + Math.round(d * 9); // 3 → 12 fish
+  const sharkN = state.challenge ? 2 : level < 8 ? 0 : 1 + Math.floor(d * 3.2); // 0 → 4 sharks
+  for (let i = 0; i < fishN; i++) {
+    const mesh = buildFish(FISH_COLORS[i % FISH_COLORS.length]);
+    mesh.scale.setScalar(1.7);
+    mesh.visible = false;
+    scene.add(mesh);
+    sea.list.push({ kind: 'fish', mesh, t: rand(0.5, 4), leap: null, gap: [Math.max(1.2, 4 - d * 2.5), Math.max(3, 8 - d * 4)] });
+  }
+  for (let i = 0; i < sharkN; i++) {
+    const mesh = buildShark();
+    mesh.scale.setScalar(0.85);
+    scene.add(mesh);
+    sea.list.push({ kind: 'shark', mesh, t: rand(3, 7), leap: null, phase: (i / sharkN) * Math.PI * 2, speed: rand(0.35, 0.55) * (i % 2 ? -1 : 1),
+      rx: rand(6.5, 9.5), rz: rand(1.6, 3), cz: RAFT_Z + rand(3.5, 6.5), gap: [Math.max(2.5, 8 - d * 5), Math.max(5, 12 - d * 6)], bold: d > 0.22 });
+  }
+}
+// pick a leap across the water between the cannon and the rafts
+function startLeap(c) {
+  const shark = c.kind === 'shark';
+  const x = shark ? c.mesh.position.x : rand(-9, 9);
+  const z = shark ? c.mesh.position.z : rand(RAFT_Z + 2.5, RAFT_Z + 9);
+  const dir = rand(0, Math.PI * 2);
+  const len = shark ? rand(4, 6.5) : rand(1.8, 3.6);
+  c.leap = {
+    from: new THREE.Vector3(x, -0.4, z),
+    to: new THREE.Vector3(x + Math.cos(dir) * len, -0.4, z + Math.sin(dir) * len * 0.5),
+    h: shark ? rand(2.4, 4.2) : rand(1.4, 3),
+    dur: shark ? rand(1.0, 1.3) : rand(0.7, 1.0),
+    t: 0,
+  };
+  c.mesh.visible = true;
+  particles.splash(c.leap.from, shark ? 0.9 : 0.35);
+  if (shark) sfx.sfxSplash(0.7);
+}
+function updateSeaLife(dt) {
+  for (const c of sea.list) {
+    const m = c.mesh;
+    if (c.leap) {
+      const L = c.leap;
+      L.t += dt;
+      const k = Math.min(1, L.t / L.dur);
+      m.position.lerpVectors(L.from, L.to, k);
+      m.position.y = -0.4 + Math.sin(k * Math.PI) * L.h;
+      // face along the arc: nose up on the way out, down on the way back in
+      m.rotation.set(Math.cos(k * Math.PI) * 0.9, Math.atan2(L.from.x - L.to.x, L.from.z - L.to.z), 0);
+      if (c.kind === 'fish' && m.userData.tail) m.userData.tail.rotation.z = Math.sin(L.t * 30) * 0.5;
+      catchBalls(c);
+      if (k >= 1) {
+        particles.splash(L.to, c.kind === 'shark' ? 1 : 0.35);
+        c.leap = null;
+        c.t = rand(c.gap[0], c.gap[1]);
+        if (c.kind === 'fish') m.visible = false;
+      }
+      continue;
+    }
+    if (c.kind === 'shark') {
+      // circle with just the fin out of the water
+      c.phase += c.speed * dt * 0.5;
+      const x = Math.sin(c.phase) * c.rx;
+      const z = c.cz + Math.cos(c.phase) * c.rz;
+      const ang = Math.atan2(Math.cos(c.phase) * c.rx * Math.sign(c.speed), -Math.sin(c.phase) * c.rz * Math.sign(c.speed));
+      m.position.set(x, -0.55 + Math.sin(elapsed * 2 + c.phase) * 0.05, z);
+      m.rotation.set(0, ang, 0);
+    }
+    c.t -= dt;
+    if (c.t <= 0 && state.mode !== 'won') startLeap(c);
+  }
+}
+// leaping fish give a bonus shot when hit; bold sharks (higher levels) snatch cannonballs out of the air
+function catchBalls(c) {
+  if (state.mode !== 'play') return;
+  const p = c.mesh.position;
+  if (p.y < 0.3) return;
+  const reach = c.kind === 'shark' ? 1.5 : 1.1;
+  for (let i = state.balls.length - 1; i >= 0; i--) {
+    const ball = state.balls[i];
+    if (ball.body.userData.child || ball.body.position.distanceTo(p) > reach) continue;
+    if (c.kind === 'fish') {
+      if (c.hit) continue;
+      c.hit = true;
+      state.shots++;
+      popup('+1 SHOT!', '#7ee081', 'nice fish!');
+      particles.confetti(p.clone());
+      sfx.sfxCoin();
+      stat('fish');
+      c.leap.h *= 1.6; // sends it flying
+      setTimeout(() => (c.hit = false), 1500);
+      updateHud();
+    } else if (c.bold && !c.leap.ate) {
+      c.leap.ate = true; // one ball per leap
+      world.removeBody(ball.body);
+      scene.remove(ball.mesh);
+      state.balls.splice(i, 1);
+      popup('CHOMP!', '#9fd6ff', 'a shark ate your shot');
+      particles.splash(p.clone(), 0.8);
+      sfx.sfxSplash(1);
+      vibrate(40);
+      stat('sharkEats');
+    }
   }
 }
 
@@ -1239,6 +1486,7 @@ function stepPhysics(dt) {
   driftRafts(dt);
   floatBalloons(dt);
   world.step(1 / 60, dt, 6);
+  releaseCargo();
   applyUnlocks();
   applyBreaks();
   applyExplosions();
@@ -1312,7 +1560,7 @@ function updateGame(dt) {
     const moving = state.blocks.some((b) => {
       if (b.cleared || b.spec.floats) return false;
       const rv = state.rafts[b.raft].body.velocity; // motion relative to the raft it rides
-      return Math.hypot(b.body.velocity.x - rv.x, b.body.velocity.y, b.body.velocity.z - rv.z) > 0.35;
+      return Math.hypot(b.body.velocity.x - rv.x, b.body.velocity.y - rv.y, b.body.velocity.z - rv.z) > 0.35;
     });
     const ballsFlying = state.balls.some((b) => b.body.position.y > 0 && b.age < 4);
     if (!moving && !ballsFlying) {
@@ -1405,7 +1653,7 @@ function renderMap() {
   nodes.forEach((lv, i) => {
     const el = document.createElement('div');
     const done = lv < cur;
-    el.className = 'lv-node' + (lv === cur ? ' current' : done ? '' : ' locked');
+    el.className = 'lv-node' + (lv === cur ? ' current' : done ? '' : ' locked') + (isHard(lv) ? ' hard' : lv % 10 === 0 ? ' boss' : '');
     el.style.left = pts[i].x + '%';
     el.style.top = pts[i].y + '%';
     el.textContent = lv;
@@ -1640,7 +1888,7 @@ function challengeState() {
 function renderChallenge() {
   const c = challengeState();
   const def = getChallenge(dayNumber());
-  const names = { storm: 'Storm', shark: 'Shark Waters', whirlpool: 'Whirlpool' };
+  const names = { storm: 'Storm', shark: 'Shark Waters', whirlpool: 'Whirlpool', snow: 'Snowstorm' };
   $('ch-info').innerHTML = `${def.blocks.length} cargo · ${def.shots} shots · ${names[def.event] || 'Calm seas'}`;
   $('ch-best').textContent = c.best ? c.best.toLocaleString() : '—';
   $('ch-reward').classList.toggle('hidden', c.done);
@@ -1754,6 +2002,7 @@ function showBoosters() {
   state.mode = 'boosters';
   $('boost-title').innerHTML = `Level ${save.level}`;
   if (save.level % 10 === 0) $('boost-title').innerHTML = `<span class="boss-tag">BOSS</span> Level ${save.level}`;
+  else if (isHard(save.level)) $('boost-title').innerHTML = `<span class="boss-tag hard">HARD</span> Level ${save.level}`;
   refreshBoosters();
   show('boosters');
 }
@@ -1812,7 +2061,8 @@ function beginLevel(boosts, def) {
   const lv = state.level;
   if (state.challenge) {
     /* the challenge has its own intro popup */
-  } else if (lv % 10 === 0) setTimeout(() => popup('BOSS LEVEL!', '#ff5a3c', 'double coins'), 300);
+  } else if (state.def.hard) setTimeout(() => popup('HARD LEVEL!', '#ff5a3c', 'fewer shots · 1.5× coins'), 300);
+  else if (lv % 10 === 0) setTimeout(() => popup('BOSS LEVEL!', '#ff5a3c', 'double coins'), 300);
   else if (lv % 5 === 1 && lv > 1) setTimeout(() => popup(THEMES[state.theme].label, '#ffe7b8', `Chapter ${Math.floor((lv - 1) / 5) + 1}`), 300);
   if (boosts.triple) setTimeout(() => popup('TRIPLE SHOT!', '#5bc8ff', '10 shots'), lv % 5 === 1 || lv % 10 === 0 ? 1400 : 300);
   if (lv === 1 && !save.tutorialDone) $('hint').classList.remove('hidden');
@@ -1837,6 +2087,7 @@ function onWin() {
   const stars = ratio <= 0.4 ? 3 : ratio <= 0.7 ? 2 : 1;
   if (state.challenge) return onChallengeWin(stars);
   let reward = 20 + state.shots * 2 + (stars - 1) * 10 + (state.bonus || 0);
+  if (state.def.hard) reward = Math.round(reward * 1.5);
   if (state.level % 10 === 0) {
     reward *= 2; // boss bonus
     stat('bosses');
@@ -1994,6 +2245,7 @@ function frame() {
     syncMeshes();
     updateGame(dt);
     updateEvent(dt);
+    updateSeaLife(dt);
   }
   updateLaser();
   for (const ball of state.balls) {
@@ -2003,11 +2255,10 @@ function frame() {
   env.water.update(elapsed);
   env.clouds.update(dt);
 
-  // raft bob is purely cosmetic (physics deck stays put)
+  // rafts follow their physics body (sway, loops and swells); a slight roll sells the waves
   for (const r of state.rafts) {
-    r.mesh.position.x = r.body.position.x;
-    r.mesh.position.y = Math.sin(elapsed * 1.4 + r.def.x) * 0.04;
-    r.mesh.rotation.z = Math.sin(elapsed * 1.1 + r.def.x) * 0.004;
+    r.mesh.position.set(r.body.position.x, r.body.position.y - (RAFT_TOP - 0.5), r.body.position.z);
+    r.mesh.rotation.z = Math.sin(elapsed * 1.1 + r.def.x) * 0.004 * (state.waves || 1);
   }
 
   // cannon recoil
@@ -2048,10 +2299,25 @@ function frame() {
 }
 
 // Debug / test hook
-window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save, startChallenge, usePowerup, startEvent, getLevel };
+window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save, startChallenge, usePowerup, startEvent, getLevel, sea };
 
 goHome();
 frame();
+
+// Loading screen: fill the bar while the first frames render, then fade it away.
+{
+  const bar = document.querySelector('#loading .ld-bar i');
+  let pct = 10;
+  const tick = setInterval(() => {
+    pct = Math.min(100, pct + 12 + Math.random() * 14);
+    if (bar) bar.style.width = pct + '%';
+    if (pct >= 100) {
+      clearInterval(tick);
+      setTimeout(() => $('loading').classList.add('done'), 250);
+      setTimeout(() => $('loading').remove(), 900);
+    }
+  }, 160);
+}
 
 initNative();
 

@@ -272,7 +272,7 @@ const HAND_MADE = [
       for (const sx of [-1.25, 1.25]) b.col(cx + sx, 0, ['ice', 'ice', 'crate', 'ice'], RAFT_TOP);
       b.col(cx, 0, ['drum', 'drum', 'drum', 'drum', 'buoy'], RAFT_TOP);
     }
-    return b.build(24);
+    return b.build(24, { event: 'snow' });
   },
   // 21 — whirlpool cove
   () => {
@@ -445,48 +445,123 @@ const RAFT_STRUCTURES = [
   },
 ];
 
+// ---- difficulty curve ----------------------------------------------------
+// 0 at the start, rising steadily and reaching 1 around level 120. Everything that
+// makes a level harder scales with it: taller and deeper stacks, more rafts, more
+// armored cargo, faster-moving rafts, more ocean events and a tighter shot budget.
+export const difficulty = (n) => Math.min(1, Math.max(0, (n - 1) / 120));
+
+// a stepped tower `tiersN` rows high starting `base` blocks wide
+function tower(b, cx, z, base, tiersN, r, d) {
+  const list = [];
+  let n = base;
+  for (let i = 0; i < tiersN; i++) {
+    const t = i === 0 ? 'crate' : r() < 0.45 ? 'drum' : r() < 0.25 + d * 0.3 ? 'ice' : 'crate';
+    list.push([t, Math.max(1, n)]);
+    if (i % 2 === 1 || r() < 0.35) n--;
+  }
+  const y = tiers(b, cx, z, list);
+  if (n >= 1 && r() < 0.6) b.put('buoy', cx, y, z);
+  return y;
+}
+
+// How much cargo a generated level should carry: a smooth climb from ~40 pieces
+// right after the hand-made levels to ~80 by level 130 (and a little more after).
+const targetCargo = (n) => Math.round(Math.min(90, 40 + Math.max(0, n - 38) * 0.45));
+
 function procedural(level) {
   const r = rng(level * 7919);
+  const target = targetCargo(level);
+  // try every layout size and keep the ones closest to the target; pick one of those at random
+  const options = [];
+  for (const three of [false, true])
+    for (const deep of [false, true])
+      for (let tall = 3; tall <= 6; tall++) {
+        const b = buildProcedural(level, { three, deep, tall, classic: false });
+        options.push({ b, miss: Math.abs(b.blocks.length - target) + (b.blocks.length < target ? 2 : 0) });
+      }
+  options.sort((x, y) => x.miss - y.miss);
+  const best = options.filter((o) => o.miss <= options[0].miss + 4);
+  return finishProcedural(level, best[Math.floor(r() * best.length)].b);
+}
+
+function buildProcedural(level, { three, deep, tall, classic }) {
+  const r = rng(level * 7919 + 13);
+  const d = difficulty(level);
   const b = new Builder();
-  const deep = r() < 0.35;
-  const drift = r() < 0.45 ? 0.7 + r() * 0.6 : 0;
-  const mode = r() < 0.4 ? 'orbit' : 'side';
-  for (const cx of [-3.5, 3.5]) {
-    b.raft(cx, 0, 6.2, deep ? 4.2 : 3.2, drift, mode);
-    RAFT_STRUCTURES[Math.floor(r() * RAFT_STRUCTURES.length)](b, cx, r);
+  const xs = three ? [-4.7, 0, 4.7] : [-3.5, 3.5];
+  const drift = r() < 0.3 + d * 0.55 ? 0.6 + d * 0.9 + r() * 0.3 : 0; // faster, wider moving platforms
+  const mode = r() < 0.3 + d * 0.3 ? 'orbit' : 'side';
+  for (const cx of xs) {
+    const z = three && cx === 0 ? -1 : 0;
+    b.raft(cx, z, three ? 4.2 : 6.2, deep ? 4.2 : 3.2, drift, mode);
+    if (classic && !three) {
+      RAFT_STRUCTURES[Math.floor(r() * RAFT_STRUCTURES.length)](b, cx, r);
+      continue;
+    }
+    const base = three ? 3 : 4;
+    if (deep) for (const dz of [-0.65, 0.65]) tower(b, cx, z + dz, base, tall, rng(level * 31 + cx * 7), d);
+    else tower(b, cx, z, base, tall, r, d);
   }
-  // sprinkle special cargo: iron in the bottom row, ice crates, explosive barrels among drums
+  b.rng = r;
+  return b;
+}
+
+function finishProcedural(level, b) {
+  const r = b.rng;
+  const d = difficulty(level);
+  const xs = b.rafts.map((rf) => rf.x);
+  // special cargo: more iron (needs 2 hits) and ice as you go; powder kegs stay a treat
   let top = 0;
+  let irons = 0;
+  const maxIron = Math.round(4 + d * 10); // armored crates are capped so levels stay winnable
   for (const blk of b.blocks) {
     const bottom = Math.abs(blk.y - (RAFT_TOP + BLOCKS[blk.type].h / 2)) < 0.01;
     top = Math.max(top, blk.y + BLOCKS[blk.type].h / 2);
-    if (blk.type === 'crate' && bottom && r() < 0.3) blk.type = 'iron';
-    else if (blk.type === 'crate' && r() < 0.25) blk.type = 'ice';
-    else if (blk.type === 'drum' && r() < 0.2) blk.type = 'tnt';
+    if (irons >= maxIron && blk.type === 'crate') {
+      if (r() < 0.12) blk.type = 'ice';
+    } else if (blk.type === 'crate' && bottom && r() < 0.15 + d * 0.45) {
+      blk.type = 'iron';
+      irons++;
+    } else if (blk.type === 'crate' && !bottom && r() < d * 0.25) {
+      blk.type = 'iron';
+      irons++;
+    } else if (blk.type === 'crate' && r() < 0.12) blk.type = 'ice';
+    else if (blk.type === 'drum' && r() < 0.18 - d * 0.08) blk.type = 'tnt';
   }
-  if (r() < 0.5) for (const cx of [-3.5, 3.5]) b.balloon(cx + (r() - 0.5) * 2, Math.min(9.5, top + 1.4 + r()));
-  const shots = Math.max(18, Math.min(34, Math.round(b.blocks.length * 0.5) + 4));
-  const events = [null, 'storm', 'shark', 'whirlpool'];
-  return b.build(shots, { event: events[Math.floor(r() * events.length)] });
+  if (r() < 0.3 + d * 0.4) for (const cx of xs) b.balloon(cx + (r() - 0.5) * 2, Math.min(9.5, top + 1.3 + r()));
+  // shot budget gets tighter: ~0.7 shots per piece early, ~0.48 late (iron costs extra)
+  const ratio = 0.7 - d * 0.22;
+  const shots = Math.max(16, Math.min(52, Math.round(b.blocks.length * ratio + irons * 0.5) + 3));
+  const events = ['storm', 'shark', 'whirlpool', 'snow'];
+  const event = r() < 0.3 + d * 0.6 ? events[Math.floor(r() * events.length)] : null;
+  return b.build(shots, { event });
 }
 
-// Every 10th level: a three-raft boss fortress.
+// Every 10th level: a three-raft boss fortress that grows with each one you beat.
 function boss(level) {
   const r = rng(level * 104729);
-  const b = new Builder().raft(-4.7, 0, 4.2, 3.6, level >= 30 ? 0.5 : 0).raft(0, -1, 4.6, 4.2).raft(4.7, 0, 4.2, 3.6, level >= 30 ? 0.5 : 0);
-  // side towers
+  const d = difficulty(level);
+  const drift = level >= 30 ? 0.4 + d * 0.8 : 0;
+  const b = new Builder().raft(-4.7, 0, 4.2, 3.6, drift).raft(0, -1, 4.6, 4.2).raft(4.7, 0, 4.2, 3.6, drift);
+  const extra = Math.floor(d * 3); // extra tiers on the side towers
   for (const cx of [-4.7, 4.7]) {
-    const y = tiers(b, cx, 0, [['crate', 3], [level >= 20 ? 'tnt' : 'drum', 2], ['crate', 1]]);
+    const list = [['crate', 3], [level >= 20 ? 'tnt' : 'drum', 2], ['crate', 2]];
+    for (let i = 0; i < extra; i++) list.push([i % 2 ? 'crate' : 'drum', i < 1 ? 2 : 1]);
+    const y = tiers(b, cx, 0, list);
     b.col(cx, 0, ['tallDrum', 'buoy'], y);
   }
   // central keep, two rows deep, with an iron base and a lighthouse
   for (const z of [-0.65, 0.65]) {
     const step = W('crate') + 0.03;
-    for (let i = 0; i < 3; i++) b.put(i === 1 || r() < 0.3 ? 'iron' : 'crate', (i - 1) * step, RAFT_TOP, -1 + z);
-    tiers(b, 0, -1 + z, [['drum', 3], ['crate', 2]], RAFT_TOP + 1.2);
+    for (let i = 0; i < 3; i++) b.put(i === 1 || r() < 0.3 + d * 0.5 ? 'iron' : 'crate', (i - 1) * step, RAFT_TOP, -1 + z);
+    tiers(b, 0, -1 + z, [['drum', 3], [r() < d ? 'iron' : 'crate', 2]], RAFT_TOP + 1.2);
   }
   spire(b, 0, -1, RAFT_TOP + 3.55);
-  const lv = b.build(Math.min(40, 30 + Math.floor(level / 10)));
+  if (level >= 40) b.balloon(-2.35, RAFT_TOP + 5, -0.5).balloon(2.35, RAFT_TOP + 5, -0.5);
+  const irons = b.blocks.filter((x) => x.type === 'iron').length;
+  const shots = Math.min(56, Math.round(b.blocks.length * (0.8 - d * 0.28) + irons * 0.5) + 3);
+  const lv = b.build(shots, { event: level >= 50 ? ['storm', 'shark', 'whirlpool', 'snow'][Math.floor(r() * 4)] : null });
   lv.boss = true;
   return lv;
 }
@@ -497,10 +572,20 @@ export function getLevel(n) {
   const idx = n - 1 - Math.floor(n / 10); // skip the boss slots
   if (idx < HAND_MADE.length) {
     const lv = HAND_MADE[idx]();
-    if (idx >= 12) lv.shots = Math.round(lv.shots * 1.25); // newer cargo (ice, balloons, events) needs more ammo
-    return lv;
+    if (idx >= 12) lv.shots = Math.round(lv.shots * (1.25 - (idx - 12) * 0.008)); // ammo slowly tightens through the chapter
+    return hardify(n, lv);
   }
-  return procedural(n);
+  return hardify(n, procedural(n));
+}
+
+// Every 10th level from 15 on (15, 25, 35...) is a HARD level: fewer shots, bigger reward.
+export const isHard = (n) => n >= 15 && n % 10 === 5;
+function hardify(n, lv) {
+  if (isHard(n)) {
+    lv.shots = Math.max(12, Math.round(lv.shots * 0.9));
+    lv.hard = true;
+  }
+  return lv;
 }
 export const HAND_MADE_COUNT = HAND_MADE.length;
 
@@ -528,6 +613,6 @@ export function getChallenge(dayNumber) {
     else if (blk.type === 'drum' && r() < 0.3) blk.type = 'tnt';
   }
   for (const cx of xs) b.balloon(cx + (r() - 0.5) * 1.5, Math.min(9.5, top + 1.3 + r()));
-  const events = ['storm', 'shark', 'whirlpool'];
-  return b.build(Math.max(20, Math.round(b.blocks.length * 0.55) + 4), { event: events[Math.floor(r() * 3)], challenge: true, theme: ['day', 'sunset', 'night'][Math.floor(r() * 3)] });
+  const events = ['storm', 'shark', 'whirlpool', 'snow'];
+  return b.build(Math.max(20, Math.round(b.blocks.length * 0.55) + 4), { event: events[Math.floor(r() * events.length)], challenge: true, theme: ['day', 'sunset', 'night'][Math.floor(r() * 3)] });
 }

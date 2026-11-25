@@ -8,7 +8,8 @@ export const BALLS = [
 ];
 
 export const SKINS = [
-  { id: 'bronze', name: 'Harbor Bronze', cost: 0, barrel: 0xc7863a, bands: 0x7a4a1c, carriage: 0x1f8a8a },
+  { id: 'bronze', name: 'Black & Gold', cost: 0, barrel: 0x343848, bands: 0xf2b630, carriage: 0x5a2c14 },
+  { id: 'harbor', name: 'Harbor Bronze', cost: 300, barrel: 0xc7863a, bands: 0x7a4a1c, carriage: 0x1f8a8a },
   { id: 'steel', name: 'Navy Steel', cost: 400, barrel: 0xb8c4d2, bands: 0x4d5c70, carriage: 0x2a3f78 },
   { id: 'coral', name: 'Coral Reef', cost: 700, barrel: 0xff8a8a, bands: 0xc94a5a, carriage: 0x2fb3a5 },
   { id: 'emerald', name: 'Emerald Isle', cost: 1000, barrel: 0x3fbf6a, bands: 0x1f6b3c, carriage: 0xe9d6a6 },
@@ -36,6 +37,7 @@ export const ACHIEVEMENTS = [
   ['balloon30', 'Party Popper', 'balloons', 30, 300],
   ['challenge5', 'Daily Challenger', 'challenges', 5, 500],
   ['power20', 'Power Player', 'powerups', 20, 400],
+  ['fish10', 'Fish Friend', 'fish', 10, 300],
 ];
 
 // One-use-per-level power-ups (earned from the spin wheel, 3-star wins and the daily challenge).

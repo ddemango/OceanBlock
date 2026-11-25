@@ -6,6 +6,7 @@ Actions:
   add-testers  - add the given emails to the app's internal TestFlight group
   invite       - resend TestFlight invitations
   gamecenter   - enable Game Center and create the Daily Challenge leaderboard
+  rename       - set the App Store name (passed in the second argument)
 """
 import json, os, sys, time, urllib.request, urllib.error
 import jwt  # PyJWT
@@ -210,6 +211,25 @@ def resolve_app():
     return True
 
 
+def rename(new_name):
+    infos = call('GET', f'/apps/{APP_ID}/appInfos?include=appInfoLocalizations') or {'data': []}
+    locs = {i['id']: i for i in infos.get('included', []) if i['type'] == 'appInfoLocalizations'}
+    done = False
+    for info in infos['data']:
+        state = info['attributes'].get('appStoreState') or info['attributes'].get('state')
+        for ref in info['relationships']['appInfoLocalizations']['data']:
+            loc = locs.get(ref['id'])
+            if not loc:
+                continue
+            print(f"appInfo {info['id']} state={state} locale={loc['attributes'].get('locale')} name={loc['attributes'].get('name')!r}")
+            r = call('PATCH', f"/appInfoLocalizations/{loc['id']}", {'data': {'type': 'appInfoLocalizations', 'id': loc['id'], 'attributes': {'name': new_name}}})
+            if r:
+                print('Renamed to', r['data']['attributes']['name'])
+                done = True
+    if not done:
+        print('Could not rename the app listing')
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'preflight':
         sys.exit(0 if preflight(os.environ.get('ASC_BUNDLE_ID', '').strip()) else 1)
@@ -225,4 +245,6 @@ if __name__ == '__main__':
         invite([e.strip() for e in sys.argv[2].split(',') if e.strip()])
     if action == 'gamecenter':
         gamecenter()
+    if action == 'rename':
+        rename(sys.argv[2])
     status()

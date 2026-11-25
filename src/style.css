@@ -455,3 +455,52 @@ body.flash #fx-overlay { background: rgba(255, 255, 255, 0.75); transition: none
 @media (min-width: 700px) and (min-height: 900px) {
   #hud, #hud-progress, #popups, #powerbar, #wind, #hint, #toast, .screen > * { zoom: 1.45; }
 }
+
+/* ---------- win: treasure chest ---------- */
+.medal { display: none; }
+.chest { position: relative; width: 250px; height: 228px; animation: pop .6s .15s cubic-bezier(.2, 1.6, .5, 1) backwards; }
+.chest-svg { position: relative; width: 100%; height: 100%; filter: drop-shadow(0 6px 0 rgba(0,0,0,.35)); }
+.chest-glow { position: absolute; inset: -50px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 214, 90, .75), rgba(255, 214, 90, 0) 62%); animation: glow 1.6s ease-in-out infinite alternate; }
+.chest-rays { position: absolute; inset: -70px; border-radius: 50%; background: repeating-conic-gradient(rgba(255, 236, 160, .28) 0 10deg, transparent 10deg 24deg); -webkit-mask: radial-gradient(circle, #000 25%, transparent 68%); mask: radial-gradient(circle, #000 25%, transparent 68%); animation: rays 9s linear infinite; }
+@keyframes rays { to { transform: rotate(360deg); } }
+.chest-lid { transform-origin: 110px 92px; animation: lidOpen .8s .45s cubic-bezier(.3, 1.8, .5, 1) backwards; }
+@keyframes lidOpen { from { transform: translateY(18px) scaleY(.3); } }
+.spark { position: absolute; width: 18px; height: 18px; background: #fff7c2; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: twinkle 1.2s ease-in-out infinite; }
+.spark.s1 { left: 30px; top: 40px; }
+.spark.s2 { right: 24px; top: 60px; animation-delay: .4s; width: 24px; height: 24px; }
+.spark.s3 { left: 118px; top: 6px; animation-delay: .8s; }
+@keyframes twinkle { 0%, 100% { transform: scale(.2); opacity: 0; } 50% { transform: scale(1) rotate(45deg); opacity: 1; } }
+#win .big-btn small { display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+/* ---------- loading screen ---------- */
+#loading { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: linear-gradient(#2a93ea, #6fd0f8 55%, #1aa3d8 56%, #0b6fc2); transition: opacity .5s; }
+#loading.done { opacity: 0; pointer-events: none; }
+.ld-logo { display: flex; flex-direction: column; align-items: center; line-height: .9; font-weight: 900; transform: rotate(-4deg); }
+.ld-logo span { font-size: 52px; color: #fff; -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 5px 0 var(--ink); }
+.ld-logo b { font-size: 60px; color: #ff7a59; -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 5px 0 var(--ink); }
+.ld-ship { width: min(300px, 74vw); animation: bob 2.2s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-8px) rotate(-2deg); } }
+.ld-text { margin-top: 6vh; font-weight: 900; font-size: 20px; color: #fff; text-shadow: 0 2px 0 var(--ink); }
+.ld-bar { width: min(260px, 70vw); height: 18px; border-radius: 10px; background: #1d2638; border: 3px solid #1d2638; overflow: hidden; }
+.ld-bar i { display: block; height: 100%; width: 10%; border-radius: 8px; background: linear-gradient(#9dff7a, #2fbf3a); transition: width .25s; }
+
+/* ---------- HARD / BOSS markers ---------- */
+.boss-tag.hard { color: #ff7a1a; }
+.lv-node.hard::after, .lv-node.boss::after { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); padding: 1px 6px; border-radius: 8px; border: 2px solid var(--ink); font-size: 10px; font-weight: 900; color: #fff; white-space: nowrap; }
+.lv-node.hard::after { content: 'HARD'; background: #ff7a1a; }
+.lv-node.boss::after { content: 'BOSS'; background: #e0352b; }
+
+/* ---------- D's Cannon Blast logo ---------- */
+.logo-ds { font-weight: 900; line-height: .9; font-size: clamp(30px, 9vw, 56px); color: var(--gold); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); }
+.logo-top { font-size: clamp(46px, 13.5vw, 92px); }
+.logo-bottom { font-size: clamp(52px, 15vw, 104px); color: var(--gold); }
+.ld-logo i { font-style: normal; font-size: 34px; color: var(--gold); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); }
+.ld-logo b { color: var(--gold); }
+/* the big glossy "D's" badge */
+.logo-ds { display: flex; justify-content: center; margin-bottom: -10px; }
+.ds-mark { width: clamp(130px, 40vw, 220px); height: auto; overflow: visible; filter: drop-shadow(0 4px 0 rgba(29, 38, 56, .35)); }
+.ds-burst { transform-origin: 95px 82px; animation: dsPulse 2.4s ease-in-out infinite; filter: blur(.5px); }
+@keyframes dsPulse { 50% { transform: scale(1.12); opacity: .6; } }
+.ld-logo i { -webkit-text-stroke: 0; text-shadow: none; display: flex; justify-content: center; margin-bottom: -8px; }
+.ld-logo i .ds-mark { width: 170px; }

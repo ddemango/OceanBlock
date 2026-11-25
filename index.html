@@ -8,11 +8,43 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/icon.svg" />
-    <title>Tidebreaker</title>
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>D's Cannon Blast</title>
   </head>
   <body>
     <canvas id="game"></canvas>
+
+    <!-- Loading screen (shown until the 3D scene is ready) -->
+    <div id="loading">
+      <div class="ld-logo"><i><svg class="ds-mark" viewBox="0 0 240 150" aria-label="D's">
+          <defs>
+            <linearGradient id="dsGold2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6a8"/><stop offset=".45" stop-color="#ffd23c"/><stop offset="1" stop-color="#f08a12"/></linearGradient>
+            <linearGradient id="dsShine2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          </defs>
+          <g class="ds-burst" fill="#fff3a0" opacity=".85"><path d="M95 82 L212 71 L212 93 Z M95 82 L180 108 L168 124 Z M95 82 L167 152 L140 164 Z M95 82 L107 150 L83 150 Z M95 82 L50 164 L23 152 Z M95 82 L22 124 L10 108 Z M95 82 L-22 93 L-22 71 Z M95 82 L10 56 L22 40 Z M95 82 L23 12 L50 0 Z M95 82 L83 14 L107 14 Z M95 82 L140 0 L167 12 Z M95 82 L168 40 L180 56 Z"/></g>
+          <g font-family="'Arial Black', 'Avenir Next', system-ui, sans-serif" font-weight="900" stroke-linejoin="round" paint-order="stroke fill">
+            <text x="128" y="134" text-anchor="end" font-size="148" fill="#1d2638" stroke="#1d2638" stroke-width="22" transform="translate(0 7)">D</text>
+            <text x="128" y="134" text-anchor="end" font-size="148" fill="url(#dsGold2)" stroke="#1d2638" stroke-width="14">D</text>
+            <text x="128" y="134" text-anchor="end" font-size="148" fill="url(#dsShine2)" clip-path="inset(0 0 55% 0)" opacity=".55">D</text>
+            <text x="130" y="96" font-size="80" fill="#1d2638" stroke="#1d2638" stroke-width="18" transform="translate(0 5)">'s</text>
+            <text x="130" y="96" font-size="80" fill="url(#dsGold2)" stroke="#1d2638" stroke-width="11">'s</text>
+          </g>
+        </svg></i><span>CANNON</span><b>BLAST</b></div>
+      <svg class="ld-ship" viewBox="0 0 240 230" aria-hidden="true">
+        <path d="M118 20 v130" stroke="#5a2c14" stroke-width="8"/>
+        <path d="M122 28 L200 34 Q206 80 196 118 L122 118 Z" fill="#fff6e0" stroke="#1d2638" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M122 60 L203 64 M122 92 L201 94" stroke="#2fb3a5" stroke-width="10"/>
+        <path d="M114 40 L46 108 L114 112 Z" fill="#fff6e0" stroke="#1d2638" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M118 20 l26 8 l-26 8 z" fill="#ff5a3c" stroke="#1d2638" stroke-width="4"/>
+        <path d="M24 140 L216 140 L196 186 Q120 200 46 186 Z" fill="#a8562a" stroke="#1d2638" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M30 152 L210 152" stroke="#ffc93c" stroke-width="7"/>
+        <circle cx="70" cy="168" r="8" fill="#1d2638"/><circle cx="110" cy="171" r="8" fill="#1d2638"/><circle cx="150" cy="170" r="8" fill="#1d2638"/>
+        <path d="M0 196 Q30 178 60 196 T120 196 T180 196 T240 196 V230 H0 Z" fill="#ffffff" opacity=".95"/>
+        <path d="M0 208 Q30 192 60 208 T120 208 T180 208 T240 208 V230 H0 Z" fill="#5ee2f6"/>
+      </svg>
+      <div class="ld-text">Loading...</div>
+      <div class="ld-bar"><i></i></div>
+    </div>
 
     <!-- In-game HUD -->
     <div id="hud" class="hidden">
@@ -41,8 +73,22 @@
         <div class="pill heart-pill"><span class="heart-icon"><span class="lives">5</span></span><span class="lives-label">FULL</span></div>
       </div>
       <div class="logo">
-        <div class="logo-top">TIDE</div>
-        <div class="logo-bottom">BREAKER</div>
+        <div class="logo-ds"><svg class="ds-mark" viewBox="0 0 240 150" aria-label="D's">
+          <defs>
+            <linearGradient id="dsGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6a8"/><stop offset=".45" stop-color="#ffd23c"/><stop offset="1" stop-color="#f08a12"/></linearGradient>
+            <linearGradient id="dsShine" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          </defs>
+          <g class="ds-burst" fill="#fff3a0" opacity=".85"><path d="M95 82 L212 71 L212 93 Z M95 82 L180 108 L168 124 Z M95 82 L167 152 L140 164 Z M95 82 L107 150 L83 150 Z M95 82 L50 164 L23 152 Z M95 82 L22 124 L10 108 Z M95 82 L-22 93 L-22 71 Z M95 82 L10 56 L22 40 Z M95 82 L23 12 L50 0 Z M95 82 L83 14 L107 14 Z M95 82 L140 0 L167 12 Z M95 82 L168 40 L180 56 Z"/></g>
+          <g font-family="'Arial Black', 'Avenir Next', system-ui, sans-serif" font-weight="900" stroke-linejoin="round" paint-order="stroke fill">
+            <text x="128" y="134" text-anchor="end" font-size="148" fill="#1d2638" stroke="#1d2638" stroke-width="22" transform="translate(0 7)">D</text>
+            <text x="128" y="134" text-anchor="end" font-size="148" fill="url(#dsGold)" stroke="#1d2638" stroke-width="14">D</text>
+            <text x="128" y="134" text-anchor="end" font-size="148" fill="url(#dsShine)" clip-path="inset(0 0 55% 0)" opacity=".55">D</text>
+            <text x="130" y="96" font-size="80" fill="#1d2638" stroke="#1d2638" stroke-width="18" transform="translate(0 5)">'s</text>
+            <text x="130" y="96" font-size="80" fill="url(#dsGold)" stroke="#1d2638" stroke-width="11">'s</text>
+          </g>
+        </svg></div>
+        <div class="logo-top">CANNON</div>
+        <div class="logo-bottom">BLAST</div>
         <div class="logo-sub">sink the cargo · save the cannonballs</div>
       </div>
       <div id="levelmap"></div>
@@ -143,14 +189,47 @@
       </div>
       <div class="win-title"><small id="win-level-label">Level <span id="win-level">1</span></small><span id="win-title-word">CLEARED!</span></div>
       <div class="stars"><span></span><span></span><span></span></div>
-      <div class="medal">
-        <div class="medal-glow"></div>
-        <div class="medal-coins"><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="medal-face"><svg viewBox="0 0 100 100"><g fill="none" stroke="#7a4a10" stroke-width="7" stroke-linecap="round"><circle cx="50" cy="24" r="8"/><path d="M50 32v44M36 44h28M24 58c4 14 14 20 26 20s22-6 26-20"/></g></svg></div>
+      <div class="chest">
+        <div class="chest-glow"></div>
+        <div class="chest-rays"></div>
+        <svg class="chest-svg" viewBox="0 0 220 200" aria-hidden="true">
+          <defs>
+            <linearGradient id="cw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c2552f"/><stop offset="1" stop-color="#7d2a17"/></linearGradient>
+            <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#d9900f"/></linearGradient>
+            <radialGradient id="ci" cx="0.5" cy="0.8" r="0.7"><stop offset="0" stop-color="#fff5b8"/><stop offset="1" stop-color="#ffb52e"/></radialGradient>
+          </defs>
+          <!-- wooden plinth -->
+          <ellipse cx="110" cy="186" rx="96" ry="12" fill="#00000040"/>
+          <rect x="22" y="160" width="176" height="24" rx="10" fill="#6b3416" stroke="#1d2638" stroke-width="5"/>
+          <rect x="22" y="160" width="176" height="8" rx="4" fill="#a8622c"/>
+          <!-- open lid (tilted back) -->
+          <g class="chest-lid">
+            <path d="M40 78 Q110 22 180 78 L172 92 Q110 46 48 92 Z" fill="url(#cw)" stroke="#1d2638" stroke-width="5" stroke-linejoin="round"/>
+            <path d="M104 40 h12 v46 h-12 z" fill="url(#cg)" stroke="#1d2638" stroke-width="4"/>
+          </g>
+          <!-- treasure spilling out -->
+          <path d="M44 100 Q110 60 176 100 L176 112 L44 112 Z" fill="url(#ci)" stroke="#1d2638" stroke-width="4"/>
+          <circle cx="70" cy="92" r="10" fill="url(#cg)" stroke="#1d2638" stroke-width="3"/>
+          <circle cx="146" cy="90" r="11" fill="url(#cg)" stroke="#1d2638" stroke-width="3"/>
+          <circle cx="112" cy="80" r="12" fill="url(#cg)" stroke="#1d2638" stroke-width="3"/>
+          <path d="M88 86 l9 -12 l9 12 l-9 10 z" fill="#4fd1ff" stroke="#1d2638" stroke-width="3"/>
+          <path d="M126 92 l8 -10 l8 10 l-8 9 z" fill="#ff5a8a" stroke="#1d2638" stroke-width="3"/>
+          <!-- chest body -->
+          <rect x="38" y="104" width="144" height="60" rx="10" fill="url(#cw)" stroke="#1d2638" stroke-width="5"/>
+          <rect x="38" y="104" width="144" height="12" rx="6" fill="url(#cg)" stroke="#1d2638" stroke-width="4"/>
+          <rect x="62" y="104" width="12" height="60" fill="url(#cg)" stroke="#1d2638" stroke-width="4"/>
+          <rect x="146" y="104" width="12" height="60" fill="url(#cg)" stroke="#1d2638" stroke-width="4"/>
+          <rect x="96" y="120" width="28" height="30" rx="6" fill="url(#cg)" stroke="#1d2638" stroke-width="4"/>
+          <circle cx="110" cy="133" r="4" fill="#1d2638"/><rect x="108" y="135" width="4" height="8" fill="#1d2638"/>
+          <!-- coins on the plinth -->
+          <ellipse cx="40" cy="160" rx="14" ry="6" fill="url(#cg)" stroke="#1d2638" stroke-width="3"/>
+          <ellipse cx="186" cy="158" rx="14" ry="6" fill="url(#cg)" stroke="#1d2638" stroke-width="3"/>
+          <ellipse cx="176" cy="151" rx="12" ry="5" fill="url(#cg)" stroke="#1d2638" stroke-width="3"/>
+        </svg>
+        <i class="spark s1"></i><i class="spark s2"></i><i class="spark s3"></i>
       </div>
-      <div class="reward"><span class="coin-icon"></span>+<span id="win-coins">0</span></div>
       <div class="detail light" id="win-detail"></div>
-      <button id="btn-next" class="big-btn">Continue</button>
+      <button id="btn-next" class="big-btn">Continue<small><span class="coin-icon small"></span> <span id="win-coins">0</span></small></button>
       <div id="coin-shower"></div>
     </div>
 
