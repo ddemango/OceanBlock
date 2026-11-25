@@ -465,27 +465,52 @@ function tower(b, cx, z, base, tiersN, r, d) {
   return y;
 }
 
+// How much cargo a generated level should carry: a smooth climb from ~40 pieces
+// right after the hand-made levels to ~80 by level 130 (and a little more after).
+const targetCargo = (n) => Math.round(Math.min(90, 40 + Math.max(0, n - 38) * 0.45));
+
 function procedural(level) {
   const r = rng(level * 7919);
+  const target = targetCargo(level);
+  // try every layout size and keep the ones closest to the target; pick one of those at random
+  const options = [];
+  for (const three of [false, true])
+    for (const deep of [false, true])
+      for (let tall = 3; tall <= 6; tall++) {
+        const b = buildProcedural(level, { three, deep, tall, classic: false });
+        options.push({ b, miss: Math.abs(b.blocks.length - target) + (b.blocks.length < target ? 2 : 0) });
+      }
+  options.sort((x, y) => x.miss - y.miss);
+  const best = options.filter((o) => o.miss <= options[0].miss + 4);
+  return finishProcedural(level, best[Math.floor(r() * best.length)].b);
+}
+
+function buildProcedural(level, { three, deep, tall, classic }) {
+  const r = rng(level * 7919 + 13);
   const d = difficulty(level);
   const b = new Builder();
-  const three = r() < 0.1 + d * 0.55; // more rafts later on
   const xs = three ? [-4.7, 0, 4.7] : [-3.5, 3.5];
-  const deep = r() < 0.25 + d * 0.55; // two rows deep = twice the cargo
   const drift = r() < 0.3 + d * 0.55 ? 0.6 + d * 0.9 + r() * 0.3 : 0; // faster, wider moving platforms
   const mode = r() < 0.3 + d * 0.3 ? 'orbit' : 'side';
-  const tall = 3 + Math.floor(d * 3 + r() * 1.5); // 3 → 6 rows high
   for (const cx of xs) {
     const z = three && cx === 0 ? -1 : 0;
     b.raft(cx, z, three ? 4.2 : 6.2, deep ? 4.2 : 3.2, drift, mode);
-    if (!three && r() < 0.35 - d * 0.25) {
-      RAFT_STRUCTURES[Math.floor(r() * RAFT_STRUCTURES.length)](b, cx, r); // classic shapes early on
+    if (classic && !three) {
+      RAFT_STRUCTURES[Math.floor(r() * RAFT_STRUCTURES.length)](b, cx, r);
       continue;
     }
     const base = three ? 3 : 4;
     if (deep) for (const dz of [-0.65, 0.65]) tower(b, cx, z + dz, base, tall, rng(level * 31 + cx * 7), d);
     else tower(b, cx, z, base, tall, r, d);
   }
+  b.rng = r;
+  return b;
+}
+
+function finishProcedural(level, b) {
+  const r = b.rng;
+  const d = difficulty(level);
+  const xs = b.rafts.map((rf) => rf.x);
   // special cargo: more iron (needs 2 hits) and ice as you go; powder kegs stay a treat
   let top = 0;
   let irons = 0;
