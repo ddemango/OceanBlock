@@ -157,7 +157,23 @@ export function FindPlayer({ activity: a, onRestart }: { activity: FindActivity;
             <rect className="scene-frame" width={a.width} height={a.height} fill="#fff" />
             <g clipPath="url(#us-scene-clip)" dangerouslySetInnerHTML={{ __html: scene }} />
             <g className="fmarks" pointerEvents="none">
-              {state.found.map((id) => ring(id, 'fmark'))}
+              {state.found.map((id) => {
+                const b = boxes.get(id);
+                if (!b) return null;
+                const cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+                const rx = Math.max((b.x1 - b.x0) / 2 + 10, 16), ry = Math.max((b.y1 - b.y0) / 2 + 10, 16);
+                // check badge on the ring's upper right, sized to the object
+                const br = Math.max(9, Math.min(18, Math.max(rx, ry) * 0.28));
+                const bx = cx + rx * 0.72, by = cy - ry * 0.72;
+                return (
+                  <g key={'f' + id} className="fmark">
+                    <ellipse className="fmark-glow" cx={cx} cy={cy} rx={rx} ry={ry} />
+                    <ellipse className="fmark-ring" cx={cx} cy={cy} rx={rx} ry={ry} />
+                    <circle className="fmark-badge" cx={bx} cy={by} r={br} />
+                    <path className="fmark-check" d={`M${bx - br * 0.45} ${by + br * 0.02}L${bx - br * 0.1} ${by + br * 0.38}L${bx + br * 0.5} ${by - br * 0.36}`} strokeWidth={br * 0.3} />
+                  </g>
+                );
+              })}
               {burst && ring(burst, 'fburst')}
               {hintBox && hintId && (
                 <circle className="fhint" cx={(hintBox.x0 + hintBox.x1) / 2} cy={(hintBox.y0 + hintBox.y1) / 2} r={Math.max(hintBox.x1 - hintBox.x0, hintBox.y1 - hintBox.y0) * 0.9 + 26} />
