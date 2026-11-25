@@ -11,13 +11,25 @@ describe('bundled content', () => {
     expect(errors).toEqual([]);
   });
 
-  it('ships three collections, each with a puzzle, a painting and a scene', () => {
-    expect(COLLECTIONS).toHaveLength(3);
-    expect(ACTIVITIES).toHaveLength(9);
+  it('ships at least 15 puzzles, 15 paintings and 15 scenes, every collection with all three', () => {
+    for (const mode of ['puzzle', 'paint', 'find'] as const) expect(ACTIVITIES.filter((a) => a.mode === mode).length).toBeGreaterThanOrEqual(15);
+    expect(COLLECTIONS.length).toBeGreaterThanOrEqual(7);
     for (const c of COLLECTIONS) {
-      const modes = c.activityIds.map((id) => ACTIVITIES.find((a) => a.id === id)!.mode).sort();
-      expect(modes).toEqual(['find', 'paint', 'puzzle']);
+      const modes = new Set(c.activityIds.map((id) => ACTIVITIES.find((a) => a.id === id)!.mode));
+      expect([...modes].sort()).toEqual(['find', 'paint', 'puzzle']);
     }
+  });
+
+  it('turns every scene into a jigsaw of exactly the same artwork', () => {
+    for (const f of ACTIVITIES) if (f.mode === 'find') {
+      const j = ACTIVITIES.find((a) => a.id === `${f.id}-jigsaw`);
+      expect(j?.mode).toBe('puzzle');
+      if (j?.mode === 'puzzle') expect(j.art.shapes.length).toBe(f.items.reduce((n, i) => n + i.shapes.length, 0));
+    }
+  });
+
+  it('has no placeholder content left', () => {
+    for (const a of ACTIVITIES) expect(a.title, a.id).not.toBe('Placeholder');
   });
 
   it('every paint region can be reached by tapping its own label', () => {

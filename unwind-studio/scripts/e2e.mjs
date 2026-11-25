@@ -404,8 +404,12 @@ await page.getByTestId('gallery-progress').waitFor();
 check('in-progress activities are listed for resuming', (await page.getByTestId('gallery-progress').locator('.card').count()) >= 3);
 // search + filters
 await open('#/explore?mode=find');
-check('Explore filters by activity type', (await page.getByTestId('results').locator('.card').count()) === 3 && (await page.getByTestId('results').locator('.card[data-mode="find"]').count()) === 3);
-await page.getByLabel('Search activities').fill('library');
+{
+  const all = await page.getByTestId('results').locator('.card').count();
+  const finds = await page.getByTestId('results').locator('.card[data-mode="find"]').count();
+  check('Explore filters by activity type', all >= 15 && finds === all, `${all} scenes`);
+}
+await page.getByLabel('Search activities').fill('Collector');
 check('Explore search narrows results', (await page.getByTestId('results').locator('.card').count()) === 1);
 // replay keeps the gallery entry, asks before discarding active progress
 await open('#/activity/garden-puzzle');
