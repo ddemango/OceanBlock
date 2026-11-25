@@ -36,7 +36,7 @@ const TX = 610;
 R('tower-spire', poly([[TX - 40, 172], [TX + 40, 172], [TX + 14, 70], [TX, 22], [TX - 14, 70]]), 'slate');
 R('tower-belfry', rect(TX - 46, 170, 92, 64, 2), 'stone');
 R('tower-clock-block', rect(TX - 54, 234, 108, 120, 2), 'stone');
-R('tower-clock-face', circle(TX, 294, 40), 'cream');
+R('tower-clock-face', circle(TX, 294, 40), 'cream', [TX - 16, 312]);
 R('tower-shaft', rect(TX - 46, 354, 92, 400), 'stone');
 {
   let d = line([[TX, 294], [TX, 266]]) + line([[TX, 294], [TX + 20, 304]]);
@@ -93,7 +93,7 @@ for (let k = 0; k < 4; k++) R(`bus-upper-window-${k + 1}`, rect(120 + k * 134, 4
 R('bus-windscreen-upper', rect(646, 452, 34, 106, 8), 'glass');
 R('bus-stripe', rect(90, 586, 600, 28), 'cream', [380, 600]);
 for (let k = 0; k < 3; k++) R(`bus-lower-window-${k + 1}`, rect(200 + k * 134, 640, 116, 112, 10), 'glass');
-R('bus-door', rect(612, 640, 64, 200, 6), 'glass');
+R('bus-door', rect(612, 640, 64, 200, 6), 'glass', [628, 740]);
 R('bus-rear-window', rect(104, 640, 76, 112, 10), 'glass');
 R('bus-destination', rect(476, 426, 200, 22, 8), 'amber', [576, 437]);
 R('bus-skirt', rect(90, 830, 600, 54, 22), 'darkRed');
@@ -110,7 +110,7 @@ detail.push(stroke(line([[120, 505], [650, 505]]) + line([[200, 696], [580, 696]
 R('phone-crown', M(790, 504) + Q(845, 438, 900, 504) + 'Z', 'red');
 R('phone-sign', rect(796, 504, 98, 26, 3), 'cream');
 R('phone-body', rect(796, 530, 98, 310), 'red');
-R('phone-glass', rect(812, 560, 66, 240, 2), 'glass');
+R('phone-glass', rect(812, 560, 66, 240, 2), 'glass', [823, 580]);
 R('phone-base', rect(786, 838, 118, 20, 3), 'darkRed');
 {
   let g = '';
@@ -133,7 +133,7 @@ R('person-b-umbrella', umbrella(236, 1056, 136, -6), 'amber');
 R('person-c-coat', coat(760, 1132, 1250, 118), 'brick');
 R('person-c-head', ellipse(760, 1110, 24, 26), 'skin');
 for (let k = 0; k < 4; k++) R(`person-c-umbrella-${k + 1}`, umbrellaPanel(764, 1084, 118, k / 4, (k + 1) / 4, 4), k % 2 ? 'cream' : 'red');
-detail.push(stroke(line([[236, 1056], [240, 1132]]) + line([[764, 1084], [762, 1150]]) + line([[950, 630], [952, 676]]), '#3a3a44', 3));
+detail.push(stroke(line([[268, 1060], [270, 1124]]) + line([[790, 1088], [792, 1146]]) + line([[968, 632], [970, 672]]), '#3a3a44', 3));
 detail.push(stroke(line([[234, 960], [233, 942]]) + line([[766, 1001], [767, 985]]), '#3a3a44', 3));
 
 // ---------- rain ----------

@@ -1146,8 +1146,8 @@ export function cityView(x: number, y: number, w: number, h: number, seed: numbe
     bx += bw + g.range(-4, 6);
   }
   out.push(sh(dark, night ? '#2a2632' : '#5a6a78'), sh(lit[0], night ? '#f6d27a' : '#a9c8d8'), sh(lit[1], night ? '#f2b860' : '#c4dae4'), sh(sills, night ? '#2a2430' : '#e8dccc', { opacity: 0.7 }));
-  out.push(stroke(fire, night ? '#1e1a22' : '#3b3532', 2));
-  return out;
+  if (fire) out.push(stroke(fire, night ? '#1e1a22' : '#3b3532', 2));
+  return out.filter((p) => p.d);
 }
 
 /** Abstract framed art print, w × h, origin top-left. variant picks the motif. */
