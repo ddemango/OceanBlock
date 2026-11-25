@@ -537,8 +537,10 @@ export function doughnut(s: number, icing = '#f29bb5'): Shape[] {
   return [ol(xf(sector(0, 0, s * 0.48, 0, 360, s * 0.15), { sy: 0.8 }), '#d39a58', 1, -0.35), sh(xf(blob([[s * 0.42, 0], [s * 0.3, s * 0.3], [0, s * 0.43], [-s * 0.32, s * 0.28], [-s * 0.43, 0], [-s * 0.3, -s * 0.3], [0, -s * 0.42], [s * 0.3, -s * 0.31]], 1), { sy: 0.8 }), icing), sh(xf(circle(0, 0, s * 0.18), { sy: 0.8 }), '#b87a3e'), sh(xf(circle(0, 0, s * 0.13), { sy: 0.8 }), '#5a3a22'), ...spr.map((d, i) => sh(d, cols[i])), hl(ellipse(-s * 0.2, -s * 0.22, s * 0.12, s * 0.04, -20), 0.5)];
 }
 export function cookieCutter(s: number): Shape[] {
-  const d = star(0, 0, s * 0.5, s * 0.24, 5);
-  return [stroke(d, '#6e767c', s * 0.075), stroke(d, '#d6dcdf', s * 0.03)];
+  const pts = (ro: number, ri: number): Pt[] => { const p: Pt[] = []; for (let i = 0; i < 10; i++) { const a = ((-90 + i * 36) * Math.PI) / 180, r = i % 2 ? ri : ro; p.push([Math.cos(a) * r, Math.sin(a) * r]); } return p; };
+  const outer = pts(s * 0.52, s * 0.25), inner = pts(s * 0.44, s * 0.2).reverse();
+  const ring = poly(outer) + 'M' + inner.map(([x, y]) => `${Math.round(x * 10) / 10} ${Math.round(y * 10) / 10}`).join('L') + 'Z';
+  return [sh(ring, '#b9c0c4', { stroke: '#5f676d', strokeWidth: 1.2 }), stroke(star(0, 0, s * 0.48, s * 0.225, 5), '#eef2f4', s * 0.015)];
 }
 export function gingerbread(s: number): Shape[] {
   const c = '#b9733a';
