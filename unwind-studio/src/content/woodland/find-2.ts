@@ -224,6 +224,9 @@ target('feather', 'Feather', place(feather('#9aa7b0', '#3d4650'), { x: 560, y: 1
 }
 scene(...place(flowers(111, 14, 160, ['#f3ead2', '#f2c84b', '#c9a0d9']), { x: 690, y: 820 }), ...place(flowers(112, 10, 120, ['#f3ead2', '#e8833a']), { x: 260, y: 1060 }), ...place(flowers(113, 12, 140, ['#c9a0d9', '#f3ead2', '#f6b8c8']), { x: 1080, y: 1250 }));
 scene(...place(flowers(114, 16, 200, ['#f3ead2', '#f2c84b']), { x: 620, y: 720 }), ...place(flowers(115, 8, 90, ['#f6b8c8', '#f3ead2']), { x: 980, y: 800 }));
+scene(...place(flowers(119, 14, 150, ['#f3ead2', '#f6b8c8', '#f2c84b']), { x: 560, y: 880 }), ...place(flowers(120, 12, 140, ['#c9a0d9', '#f3ead2']), { x: 900, y: 870 }), ...place(flowers(121, 10, 120, ['#f2c84b', '#f3ead2']), { x: 330, y: 960 }), ...place(flowers(122, 10, 120, ['#f3ead2', '#e8833a']), { x: 980, y: 720 }));
+scene(...place(stone(26, 14, '#b6ae9e', 401), { x: 770, y: 860 }), ...place(stone(16, 9, '#a39d90', 402), { x: 800, y: 868 }), ...place(stone(18, 10, '#a39d90', 403), { x: 260, y: 1000 }));
+scene(...place(foliage(404, 150, 90, GREENS, 20), { x: 1000, y: 780, s: 0.9 }));
 target('butterfly', 'Butterfly', place(butterfly('#e8833a'), { x: 712, y: 770, s: 0.62, rot: 20 }));
 target('bee', 'Bumblebee', place(bee(), { x: 1100, y: 1208, s: 1 }));
 {
