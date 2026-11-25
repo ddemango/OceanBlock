@@ -84,7 +84,7 @@ scene(stroke(M(330, 590) + L(370, 590) + M(410, 612) + L(470, 612) + M(350, 618)
   scene(sh(reeds, '#5f8a3a'), sh(ellipse(286, 590, 3, 9) + ellipse(300, 586, 3, 9), '#7a4a2a'));
 }
 target('duck', 'Duck', place(duck(48), { x: 440, y: 606 }));
-scene(place(duck(28), { x: 360, y: 588 }));
+scene(sh(ellipse(360, 592, 12, 4) + ellipse(384, 600, 9, 3) + ellipse(500, 590, 10, 3.5), '#5f9a4c'), sh(circle(362, 590, 3), '#f4c4d4'));
 // the green, bunkers, flag
 scene(sh(ellipse(720, 600, 150, 40), '#a6d27a'), sh(ellipse(720, 600, 120, 30), '#b6dc8a', { opacity: 0.6 }));
 scene(sh(blob([[850, 610], [900, 596], [960, 606], [940, 630], [870, 632]], 0.8), '#ead9a8'), sh(blob([[560, 616], [600, 606], [630, 622], [600, 638], [562, 632]], 0.8), '#ead9a8'));
@@ -95,7 +95,7 @@ scene(place(player(38, '#f4f1ea', P.navy, SKIN[0], 0), { x: 660, y: 606 }), plac
 scene(stroke(line([[806, 580], [818, 604]]), '#b8c0c8', 2), place(golfBall(3), { x: 730, y: 606 }));
 // cart path and cart
 scene(stroke(M(1200, 690) + Q(980, 660, 820, 700) + Q(700, 730, 560, 720), '#d8cfb8', 16), stroke(M(1200, 690) + Q(980, 660, 820, 700) + Q(700, 730, 560, 720), '#e6dec8', 10));
-target('golf-cart', 'Golf cart', place(golfCart(104, '#f4f1ea', P.teal), { x: 1080, y: 684 }));
+target('golf-cart', 'Teal golf cart', place(golfCart(104, '#f4f1ea', P.teal), { x: 1080, y: 684 }));
 scene(place(golfCart(64, '#f4f1ea', P.red), { x: 600, y: 716 }));
 // flagpoles with club flags beyond the terrace
 // more trees and little daisies in the rough
@@ -121,6 +121,24 @@ scene(sh(rect(250, BY + 30, W - 250, 1500 - BY - 30) + rect(0, 1010, 250, 490), 
   let spots = '';
   for (let i = 0; i < 40; i++) spots += ellipse(g.range(260, 1190), g.range(840, 1490), g.range(3, 10), g.range(1.5, 4));
   scene(sh(spots, '#cdbd9c', { opacity: 0.6 }));
+}
+// fallen leaves and pebbles on the terrace
+{
+  const g = rng(303);
+  for (let i = 0; i < 10; i++) scene(sh(leaf(g.range(300, 1150), g.range(1150, 1300), g.range(12, 18), 5, g.range(0, 360)), g.pick(['#c9a24a', '#b8783a', '#8fae5a'])));
+}
+// lavender pots along the balustrade
+for (const x of [770, 810, 1100]) {
+  scene(sh(leaf(x - 4, 872, 30, 4, -100) + leaf(x, 872, 34, 4, -90) + leaf(x + 4, 872, 30, 4, -80), '#6a8a52'), sh(ellipse(x - 6, 846, 3, 9) + ellipse(x, 840, 3, 10) + ellipse(x + 6, 846, 3, 9), '#9a7ac8'), ol(poly([[x - 14, 866], [x + 14, 866], [x + 11, 890], [x - 11, 890]]), '#c9824a', 1));
+}
+// birds over the hills, benches by the courts
+scene(stroke(M(980, 250) + Q(986, 244, 992, 250) + Q(998, 244, 1004, 250), '#5a6a7a', 1.6), stroke(M(1020, 270) + Q(1025, 265, 1030, 270) + Q(1035, 265, 1040, 270), '#5a6a7a', 1.4), stroke(M(300, 210) + Q(306, 204, 312, 210) + Q(318, 204, 324, 210), '#5a6a7a', 1.6));
+scene(sh(rect(905, 552, 24, 4) + rect(1185, 552, 15, 4), '#7a5232'), sh(rect(907, 556, 2, 5) + rect(925, 556, 2, 5), '#3a3f4a'));
+{
+  const g = rng(404);
+  let a = '', b = '';
+  for (let i = 0; i < 30; i++) { const d = ellipse(g.range(260, 1190), g.range(840, 1490), g.range(2, 6), g.range(1, 3)); if (i % 2) a += d; else b += d; }
+  scene(sh(a, '#c4b28e', { opacity: 0.6 }), sh(b, '#efe6d2', { opacity: 0.7 }));
 }
 // =====================================================================
 // clubhouse wall (left)
@@ -195,7 +213,6 @@ scene(place(sunglasses(48), { x: 560, y: TY + 30, rot: 8 }));
   scene(sh(blob([[x - 46, 900], [x - 44, 852], [x - 26, 836], [x + 26, 836], [x + 44, 852], [x + 46, 900]], 0.5), '#e8c9d8'), sh(M(x - 12, 836) + L(x, 852) + L(x + 12, 836) + 'Z', '#fbfbf8'));
   scene(sh(rect(x - 7, 818, 14, 20), shade(sk, -0.08)), place(face(22, sk, HAIR[5]), { x, y: 800 }));
   scene(sh(ellipse(x, 784, 44, 9), '#f2efe6'), sh(M(x - 24, 786) + Q(x - 22, 760, x, 760) + Q(x + 22, 760, x + 24, 786) + 'Z', '#f2efe6'), sh(rect(x - 24, 778, 48, 7), P.teal));
-  scene(stroke(M(x - 40, 860) + Q(x - 52, 890, x - 40, 900) + M(x + 40, 860) + Q(x + 52, 890, x + 40, 900), '#e8c9d8', 14));
 }
 // things on the right table (top ~ 895)
 const TY2 = 1050 - 155;
@@ -234,11 +251,6 @@ target('glove-table', 'Golf glove', place(golfGlove(52), { x: 600, y: 1372, rot:
   scene(ol(rect(x - 42, y - 150, 84, 110, 4), '#7a5232', 1), sh(rect(x - 34, y - 142, 68, 94), '#2f3a36'));
   scene(stroke(line([[x - 24, y - 124], [x + 20, y - 124]]) + line([[x - 24, y - 108], [x + 10, y - 108]]) + line([[x - 24, y - 92], [x + 16, y - 92]]) + line([[x - 24, y - 76], [x + 6, y - 76]]), '#e8e4d8', 2), sh(star(x, y - 60, 6, 2.6), '#f2cf3a'));
 }
-// fallen leaves and pebbles on the terrace
-{
-  const g = rng(303);
-  for (let i = 0; i < 10; i++) scene(sh(leaf(g.range(300, 1150), g.range(1150, 1480), g.range(12, 18), 5, g.range(0, 360)), g.pick(['#c9a24a', '#b8783a', '#8fae5a'])));
-}
 // ivy on the clubhouse
 {
   const g = rng(55);
@@ -261,7 +273,7 @@ scene(sh(poly([[1000, 1300], [1022, 1300], [1060, 1080], [1054, 1078]]), P.red),
 // scattered tees
 {
   const g = rng(9);
-  for (let i = 0; i < 6; i++) scene(sh(xfTee(g.range(300, 560), g.range(1400, 1440), g.pick([80, 100, 260, 280])), g.pick([P.red, '#f4f1ea', '#f2cf3a', '#3a8fd0'])));
+  for (let i = 0; i < 6; i++) scene(sh(xfTee(g.range(250, 470), g.range(1290, 1330), g.pick([80, 100, 260, 280])), g.pick([P.red, '#f4f1ea', '#f2cf3a', '#3a8fd0'])));
 }
 // chair in front with tennis kit
 scene(place(bistroChair(230, '#2f5a4a', '#d4a26c'), { x: 220, y: 1500 }));
