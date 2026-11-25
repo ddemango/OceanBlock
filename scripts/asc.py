@@ -143,6 +143,35 @@ def gamecenter():
     print('Added English name' if loc else 'Localization failed')
 
 
+def register_app(bundle, name):
+    """Register the bundle id and try to create the App Store Connect app record."""
+    found = call('GET', f'/bundleIds?filter[identifier]={bundle}&limit=5') or {'data': []}
+    match = [b for b in found['data'] if b['attributes']['identifier'] == bundle]
+    if match:
+        bid = match[0]['id']
+        print('Bundle id already registered:', bundle)
+    else:
+        r = call('POST', '/bundleIds', {'data': {'type': 'bundleIds', 'attributes': {
+            'identifier': bundle, 'name': name, 'platform': 'IOS'}}})
+        if not r:
+            print('Could not register the bundle id.')
+            return False
+        bid = r['data']['id']
+        print('Registered bundle id:', bundle)
+    apps = call('GET', f'/apps?filter[bundleId]={bundle}&limit=1') or {'data': []}
+    if apps['data']:
+        print('App record already exists:', apps['data'][0]['attributes']['name'], apps['data'][0]['id'])
+        return True
+    r = call('POST', '/apps', {'data': {'type': 'apps', 'attributes': {
+        'name': name, 'sku': bundle.replace('.', '-'), 'primaryLocale': 'en-US', 'bundleId': bundle},
+        'relationships': {'bundleId': {'data': {'type': 'bundleIds', 'id': bid}}}}})
+    if r:
+        print('Created app record:', r['data']['id'])
+        return True
+    print('APP_RECORD_NOT_CREATED: Apple rejected creating the app record through the API.')
+    return False
+
+
 def resolve_app():
     """Optionally target another app by bundle id (ASC_BUNDLE_ID), e.g. Unwind Studio."""
     global APP_ID
@@ -158,6 +187,9 @@ def resolve_app():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'register-app':
+        ok = register_app(os.environ.get('ASC_BUNDLE_ID', '').strip(), os.environ.get('ASC_APP_NAME', 'Unwind Studio'))
+        sys.exit(0 if ok else 1)
     if not resolve_app():
         sys.exit(1)
     action = sys.argv[1] if len(sys.argv) > 1 else 'status'

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: status | add-testers | invite | gamecenter
+        description: status | add-testers | invite | gamecenter | register-app
         default: status
       bundle_id:
         description: Leave empty for Tidebreaker, or com.unwindstudio.app for Unwind Studio
