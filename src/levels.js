@@ -272,7 +272,7 @@ const HAND_MADE = [
       for (const sx of [-1.25, 1.25]) b.col(cx + sx, 0, ['ice', 'ice', 'crate', 'ice'], RAFT_TOP);
       b.col(cx, 0, ['drum', 'drum', 'drum', 'drum', 'buoy'], RAFT_TOP);
     }
-    return b.build(24);
+    return b.build(24, { event: 'snow' });
   },
   // 21 — whirlpool cove
   () => {
@@ -514,10 +514,13 @@ function finishProcedural(level, b) {
   // special cargo: more iron (needs 2 hits) and ice as you go; powder kegs stay a treat
   let top = 0;
   let irons = 0;
+  const maxIron = Math.round(4 + d * 10); // armored crates are capped so levels stay winnable
   for (const blk of b.blocks) {
     const bottom = Math.abs(blk.y - (RAFT_TOP + BLOCKS[blk.type].h / 2)) < 0.01;
     top = Math.max(top, blk.y + BLOCKS[blk.type].h / 2);
-    if (blk.type === 'crate' && bottom && r() < 0.15 + d * 0.45) {
+    if (irons >= maxIron && blk.type === 'crate') {
+      if (r() < 0.12) blk.type = 'ice';
+    } else if (blk.type === 'crate' && bottom && r() < 0.15 + d * 0.45) {
       blk.type = 'iron';
       irons++;
     } else if (blk.type === 'crate' && !bottom && r() < d * 0.25) {
@@ -530,8 +533,8 @@ function finishProcedural(level, b) {
   // shot budget gets tighter: ~0.7 shots per piece early, ~0.48 late (iron costs extra)
   const ratio = 0.7 - d * 0.22;
   const shots = Math.max(16, Math.min(52, Math.round(b.blocks.length * ratio + irons * 0.5) + 3));
-  const events = ['storm', 'shark', 'whirlpool'];
-  const event = r() < 0.3 + d * 0.6 ? events[Math.floor(r() * 3)] : null;
+  const events = ['storm', 'shark', 'whirlpool', 'snow'];
+  const event = r() < 0.3 + d * 0.6 ? events[Math.floor(r() * events.length)] : null;
   return b.build(shots, { event });
 }
 
@@ -558,7 +561,7 @@ function boss(level) {
   if (level >= 40) b.balloon(-2.35, RAFT_TOP + 5, -0.5).balloon(2.35, RAFT_TOP + 5, -0.5);
   const irons = b.blocks.filter((x) => x.type === 'iron').length;
   const shots = Math.min(56, Math.round(b.blocks.length * (0.8 - d * 0.28) + irons * 0.5) + 3);
-  const lv = b.build(shots, { event: level >= 50 ? ['storm', 'shark', 'whirlpool'][Math.floor(r() * 3)] : null });
+  const lv = b.build(shots, { event: level >= 50 ? ['storm', 'shark', 'whirlpool', 'snow'][Math.floor(r() * 4)] : null });
   lv.boss = true;
   return lv;
 }
@@ -579,7 +582,7 @@ export function getLevel(n) {
 export const isHard = (n) => n >= 15 && n % 10 === 5;
 function hardify(n, lv) {
   if (isHard(n)) {
-    lv.shots = Math.max(12, Math.round(lv.shots * 0.85));
+    lv.shots = Math.max(12, Math.round(lv.shots * 0.9));
     lv.hard = true;
   }
   return lv;
@@ -610,6 +613,6 @@ export function getChallenge(dayNumber) {
     else if (blk.type === 'drum' && r() < 0.3) blk.type = 'tnt';
   }
   for (const cx of xs) b.balloon(cx + (r() - 0.5) * 1.5, Math.min(9.5, top + 1.3 + r()));
-  const events = ['storm', 'shark', 'whirlpool'];
-  return b.build(Math.max(20, Math.round(b.blocks.length * 0.55) + 4), { event: events[Math.floor(r() * 3)], challenge: true, theme: ['day', 'sunset', 'night'][Math.floor(r() * 3)] });
+  const events = ['storm', 'shark', 'whirlpool', 'snow'];
+  return b.build(Math.max(20, Math.round(b.blocks.length * 0.55) + 4), { event: events[Math.floor(r() * events.length)], challenge: true, theme: ['day', 'sunset', 'night'][Math.floor(r() * 3)] });
 }

@@ -282,7 +282,11 @@ function loadLevel(n, def = getLevel(n)) {
   state.level = n;
   state.def = def;
   state.event = def.event || null;
-  state.theme = state.event === 'storm' ? 'storm' : def.theme || themeForLevel(n);
+  state.theme = state.event === 'storm' || state.event === 'snow' ? state.event : def.theme || themeForLevel(n);
+  // rougher seas as you climb (and in storms): rafts ride the swells
+  const dLv = def.challenge ? 0.5 : difficulty(n);
+  state.waves = 1 + dLv * 1.0 + (state.event === 'storm' ? 0.5 : state.event === 'snow' ? 0.35 : 0);
+  env.water.setRough(Math.min(2.5, state.waves * 0.85));
   env.setTheme(state.theme);
   stopEvent();
   state.shots = def.shots;
@@ -429,7 +433,7 @@ function floatBalloons(dt) {
       continue;
     }
     const r = state.rafts[b.raft].body.position;
-    const tx = r.x + b.offset.x, ty = b.offset.y + Math.sin(elapsed * 1.6 + b.offset.x) * 0.12, tz = r.z + b.offset.z;
+    const tx = r.x + b.offset.x, ty = b.offset.y + (r.y - (RAFT_TOP - 0.5)) + Math.sin(elapsed * 1.6 + b.offset.x) * 0.12, tz = r.z + b.offset.z;
     const p = body.position;
     body.velocity.set((tx - p.x) * 4 + wind.x * 0.3, (ty - p.y) * 4 + lift, (tz - p.z) * 4);
     body.angularVelocity.scale(0.9, body.angularVelocity);
@@ -495,11 +499,17 @@ function driftRafts(dt) {
   for (let i = 0; i < state.rafts.length; i++) {
     const r = state.rafts[i];
     r.amp += (r.ampTarget - r.amp) * Math.min(1, dt * 0.8);
+    r.heave = Math.min(1, (r.heave || 0) + dt * 0.4); // ease the swell in after the level loads
+    r.t += dt;
+    const k0 = 1 / Math.max(dt, 1 / 120);
+    // ride the swell: the raft rises and falls with the water under it
+    const ty = RAFT_TOP - 0.5 + env.water.heightAt(r.body.position.x, r.body.position.z, elapsed) * r.heave * 0.9;
+    const vy = (ty - r.body.position.y) * k0;
     if (r.amp < 0.001) {
-      r.body.velocity.set(0, 0, 0);
+      r.body.velocity.set(0, vy, 0);
+      carryCargo(i, 0, vy, 0, dt);
       continue;
     }
-    r.t += dt;
     const w = r.mode === 'orbit' ? 0.7 : 0.85;
     const a = r.t * w; // all rafts move in step so neighbours never bump into each other
     const tx = r.def.x + Math.sin(a) * r.amp;
@@ -507,16 +517,20 @@ function driftRafts(dt) {
     const k = 1 / Math.max(dt, 1 / 120);
     const vx = (tx - r.body.position.x) * k;
     const vz = (tz - r.body.position.z) * k;
-    r.body.velocity.set(vx, 0, vz);
-    for (const b of state.blocks) {
-      if (b.raft !== i || b.removed || b.cleared || b.spec.floats) continue;
-      if (b.hp > 0) b.body.velocity.set(vx, 0, vz); // armored cargo rides along
-      else if (b.body.sleepState === CANNON.Body.SLEEPING || !state.firstHit) {
-        // until the first cannonball lands, the whole stack rides its raft as one piece
-        b.body.position.x += vx * dt;
-        b.body.position.z += vz * dt;
-        if (!state.firstHit) b.body.sleep();
-      }
+    r.body.velocity.set(vx, vy, vz);
+    carryCargo(i, vx, vy, vz, dt);
+  }
+}
+function carryCargo(i, vx, vy, vz, dt) {
+  for (const b of state.blocks) {
+    if (b.raft !== i || b.removed || b.cleared || b.spec.floats) continue;
+    if (b.hp > 0) b.body.velocity.set(vx, vy, vz); // armored cargo rides along
+    else if (b.body.sleepState === CANNON.Body.SLEEPING || !state.firstHit) {
+      // until the first cannonball lands, the whole stack rides its raft as one piece
+      b.body.position.x += vx * dt;
+      b.body.position.y += vy * dt;
+      b.body.position.z += vz * dt;
+      if (!state.firstHit) b.body.sleep();
     }
   }
 }
@@ -972,7 +986,10 @@ function stopEvent() {
   for (const o of ev.objs) scene.remove(o);
   ev.objs = [];
   ev.kind = null;
-  ev.rain = ev.shark = ev.pool = ev.jump = null;
+  ev.rain = ev.shark = ev.pool = ev.jump = ev.snow = null;
+  ev.whiteout = 0;
+  scene.fog.near = 90;
+  scene.fog.far = 300;
   wind.x = 0;
   $('wind').classList.add('hidden');
 }
@@ -992,6 +1009,18 @@ function buildShark() {
   for (const m of [body, fin, tail]) addOutline(m, 0.04);
   g.add(body, belly, fin, tail);
   return g;
+}
+function flakeTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 32;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  grd.addColorStop(0, 'rgba(255,255,255,1)');
+  grd.addColorStop(0.5, 'rgba(255,255,255,0.8)');
+  grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 32, 32);
+  return new THREE.CanvasTexture(c);
 }
 function whirlTexture() {
   const c = document.createElement('canvas');
@@ -1045,6 +1074,19 @@ function startEvent(kind) {
     ev.objs.push(ev.shark);
     ev.nextJump = 2.5;
     popup('SHARK WATERS!', '#9fd6ff', 'it may help you out');
+  } else if (kind === 'snow') {
+    const n = 1400;
+    const pos = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) pos.set([(Math.random() - 0.5) * 34, Math.random() * 16, -24 + Math.random() * 31], i * 3);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    ev.snow = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.22, map: flakeTexture(), alphaTest: 0.05, transparent: true, opacity: 0.95, depthWrite: false }));
+    scene.add(ev.snow);
+    ev.objs.push(ev.snow);
+    ev.nextFlash = 6;
+    $('wind').classList.remove('hidden');
+    popup('SNOWSTORM!', '#e8f4ff', 'icy winds push your shots');
+    sfx.sfxWhoosh();
   } else if (kind === 'whirlpool') {
     ev.pool = new THREE.Mesh(new THREE.CircleGeometry(4.5, 40), new THREE.MeshBasicMaterial({ map: whirlTexture(), transparent: true, depthWrite: false }));
     ev.pool.rotation.x = -Math.PI / 2;
@@ -1126,6 +1168,31 @@ function updateEvent(dt) {
         sfx.sfxSplash(1);
       }
     }
+  } else if (ev.kind === 'snow') {
+    wind.x = Math.sin(ev.t * 0.35) * 2.8 + Math.sin(ev.t * 1.7) * 0.8;
+    const a = ev.snow.geometry.attributes.position.array;
+    for (let i = 0; i < a.length; i += 3) {
+      a[i] += (wind.x * 1.6 + Math.sin(ev.t * 2 + i) * 0.6) * dt;
+      a[i + 1] -= (2 + (i % 7) * 0.3) * dt;
+      a[i + 2] += Math.cos(ev.t + i) * 0.3 * dt;
+      if (a[i + 1] < 0) a[i + 1] = 16;
+      if (a[i] > 17) a[i] = -17;
+      if (a[i] < -17) a[i] = 17;
+    }
+    ev.snow.geometry.attributes.position.needsUpdate = true;
+    const w = $('wind');
+    w.textContent = '❄ ' + (wind.x < 0 ? '◀ ' : '') + 'WIND ' + Math.abs(wind.x).toFixed(1) + (wind.x >= 0 ? ' ▶' : '');
+    // whiteout gusts: the fog rolls in thick for a moment
+    ev.nextFlash -= dt;
+    if (ev.nextFlash <= 0) {
+      ev.nextFlash = 7 + Math.random() * 5;
+      ev.whiteout = 2.2;
+      sfx.sfxWhoosh();
+    }
+    ev.whiteout = Math.max(0, (ev.whiteout || 0) - dt);
+    const k = Math.sin(Math.min(1, ev.whiteout / 2.2) * Math.PI);
+    scene.fog.near = 90 - k * 80;
+    scene.fog.far = 300 - k * 255;
   } else if (ev.kind === 'whirlpool') {
     ev.pool.rotation.z -= dt * 1.8;
     ev.pool.scale.setScalar(Math.min(1, ev.pool.scale.x + dt * 0.6));
@@ -1455,7 +1522,7 @@ function updateGame(dt) {
     const moving = state.blocks.some((b) => {
       if (b.cleared || b.spec.floats) return false;
       const rv = state.rafts[b.raft].body.velocity; // motion relative to the raft it rides
-      return Math.hypot(b.body.velocity.x - rv.x, b.body.velocity.y, b.body.velocity.z - rv.z) > 0.35;
+      return Math.hypot(b.body.velocity.x - rv.x, b.body.velocity.y - rv.y, b.body.velocity.z - rv.z) > 0.35;
     });
     const ballsFlying = state.balls.some((b) => b.body.position.y > 0 && b.age < 4);
     if (!moving && !ballsFlying) {
@@ -1783,7 +1850,7 @@ function challengeState() {
 function renderChallenge() {
   const c = challengeState();
   const def = getChallenge(dayNumber());
-  const names = { storm: 'Storm', shark: 'Shark Waters', whirlpool: 'Whirlpool' };
+  const names = { storm: 'Storm', shark: 'Shark Waters', whirlpool: 'Whirlpool', snow: 'Snowstorm' };
   $('ch-info').innerHTML = `${def.blocks.length} cargo · ${def.shots} shots · ${names[def.event] || 'Calm seas'}`;
   $('ch-best').textContent = c.best ? c.best.toLocaleString() : '—';
   $('ch-reward').classList.toggle('hidden', c.done);
@@ -2150,11 +2217,10 @@ function frame() {
   env.water.update(elapsed);
   env.clouds.update(dt);
 
-  // raft bob is purely cosmetic (physics deck stays put)
+  // rafts follow their physics body (sway, loops and swells); a slight roll sells the waves
   for (const r of state.rafts) {
-    r.mesh.position.x = r.body.position.x;
-    r.mesh.position.y = Math.sin(elapsed * 1.4 + r.def.x) * 0.04;
-    r.mesh.rotation.z = Math.sin(elapsed * 1.1 + r.def.x) * 0.004;
+    r.mesh.position.set(r.body.position.x, r.body.position.y - (RAFT_TOP - 0.5), r.body.position.z);
+    r.mesh.rotation.z = Math.sin(elapsed * 1.1 + r.def.x) * 0.004 * (state.waves || 1);
   }
 
   // cannon recoil

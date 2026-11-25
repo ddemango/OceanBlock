@@ -24,7 +24,7 @@ export function buildEnvironment(scene) {
   const water = buildWater();
   scene.add(water.mesh);
 
-  buildIslands(scene);
+  const grassMat = buildIslands(scene);
   const rays = buildSunRays(scene);
   const clouds = buildClouds(scene);
   buildShipDeck(scene);
@@ -43,6 +43,7 @@ export function buildEnvironment(scene) {
     water.setColors(t.water);
     clouds.setTint(t.cloud);
     rays.forEach((r) => (r.visible = t.rays));
+    grassMat.color.set(t.grass || 0x58b85a); // headland tops turn snowy in winter
   }
 
   return { water, clouds, setTheme };
@@ -52,10 +53,11 @@ export const THEMES = {
   day:    { label: 'Sunny Bay',      sky: ['#1f8be8', '#6cc9f7', '#d9f6ff'], fog: 0xbcecfa, hemiSky: 0xe6f8ff, hemiGround: 0x2a8db0, hemiI: 1.35, sun: 0xfff6e2, sunI: 2.3, water: [0x0b5fb8, 0x0f9ad6, 0x5ee2f6], cloud: 0xdff2fb, rays: true },
   sunset: { label: 'Golden Sunset',  sky: ['#4a3a8c', '#ff8a5c', '#ffd59a'], fog: 0xffb98a, hemiSky: 0xffd2b0, hemiGround: 0x5a3a6a, hemiI: 1.1,  sun: 0xffb070, sunI: 2.4, water: [0x2a3f8a, 0x3f7fc0, 0xffb98a], cloud: 0xffb08a, rays: true },
   night:  { label: 'Moonlit Lagoon', sky: ['#0a1236', '#1f3a7a', '#3c6aa8'], fog: 0x23406e, hemiSky: 0x8fb0ff, hemiGround: 0x101a3a, hemiI: 0.9,  sun: 0xb8ccff, sunI: 1.6, water: [0x06204a, 0x0d3f78, 0x5f9ad8], cloud: 0x3a5288, rays: false },
+  snow:   { label: 'Frozen Seas',    sky: ['#8ea9c4', '#c9d8e6', '#f2f6fa'], fog: 0xe4edf5, hemiSky: 0xf2f7ff, hemiGround: 0x5a7590, hemiI: 1.3,  sun: 0xf4f8ff, sunI: 1.7, water: [0x24577e, 0x3f87b2, 0xe6f6ff], cloud: 0xf0f4f8, rays: false, grass: 0xf4f8fb },
   storm:  { label: 'Storm Waters',   sky: ['#3d4a5c', '#6f7f93', '#a9b6c4'], fog: 0x8a97a6, hemiSky: 0xc4cfdb, hemiGround: 0x2a3440, hemiI: 1.05, sun: 0xdfe6ee, sunI: 1.5, water: [0x1d3a52, 0x2f5d78, 0x9fc0d0], cloud: 0x7d8a99, rays: false },
 };
 // Mostly bright daytime seas; a new mood every 10 levels.
-export const themeForLevel = (n) => ['day', 'sunset', 'day', 'night', 'day', 'storm'][Math.floor((n - 1) / 10) % 6];
+export const themeForLevel = (n) => ['day', 'sunset', 'day', 'night', 'day', 'snow', 'day', 'storm'][Math.floor((n - 1) / 10) % 8];
 
 // ---------- water: animated vertex waves ----------
 function buildWater() {
@@ -89,18 +91,23 @@ function buildWater() {
     crest.set(c);
   }
   const tmp = new THREE.Color();
+  let rough = 1; // wave height multiplier: calm early on, big swells on hard levels and in storms
+  let roughTarget = 1;
+  // the swell height at a world position (rafts ride on this)
+  const swell = (x, zLocal, t) => Math.sin(x * 0.18 + t * 1.1) * 0.18 + Math.cos(zLocal * 0.23 + t * 0.9) * 0.16;
+  function heightAt(x, z, t) {
+    return swell(x, z - mesh.position.z, t) * rough;
+  }
 
   function update(t) {
+    rough += (roughTarget - rough) * 0.02;
     const pos = geo.attributes.position.array;
     for (let i = 0; i < pos.length; i += 3) {
       const x = base[i];
       const z = base[i + 2];
-      const h =
-        Math.sin(x * 0.18 + t * 1.1) * 0.18 +
-        Math.cos(z * 0.23 + t * 0.9) * 0.16 +
-        Math.sin((x + z) * 0.45 + t * 1.7) * 0.06;
+      const h = (swell(x, z, t) + Math.sin((x + z) * 0.45 + t * 1.7) * 0.06) * rough;
       pos[i + 1] = h;
-      const k = THREE.MathUtils.clamp((h + 0.3) / 0.7, 0, 1);
+      const k = THREE.MathUtils.clamp((h / rough + 0.3) / 0.7 + (rough - 1) * 0.15, 0, 1); // white crests on rough seas
       const dist = Math.min(1, Math.abs(z) / 110);
       tmp.copy(mid).lerp(deep, dist * 0.8);
       tmp.lerp(crest, k * k * 0.42);
@@ -111,7 +118,11 @@ function buildWater() {
     geo.computeVertexNormals();
   }
   update(0);
-  return { mesh, update, setColors };
+  return {
+    mesh, update, setColors, heightAt,
+    setRough(v) { roughTarget = v; },
+    get rough() { return rough; },
+  };
 }
 
 // Rounded cliff headlands with grassy tops on the horizon, plus a few rocks near the shore.
@@ -151,6 +162,7 @@ function buildIslands(scene) {
     m.rotation.y = x;
     scene.add(m);
   }
+  return grass;
 }
 
 function buildClouds(scene) {
