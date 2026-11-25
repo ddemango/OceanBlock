@@ -190,7 +190,7 @@ scene(sh(poly([[492, 262], [512, 262], [492, 296]]) + poly([[988, 262], [968, 26
 scene(sh(rect(960, 642, 240, 18), '#b98552'), sh(rect(960, 642, 240, 4), '#d4a26c'));
 scene(planks(964, 660, 236, 340, 1, '#87a278', 51), ol(rect(980, 676, 96, 300, 4), '#94ad84', 1.4, -0.3), ol(rect(1090, 676, 104, 300, 4), '#94ad84', 1.4, -0.3), sh(circle(1062, 820, 6) + circle(1104, 820, 6), '#c9a24a'), sh(rect(960, 986, 240, 16), '#6f8a62'));
 scene(stroke(rect(994, 692, 68, 268, 3) + rect(1104, 692, 76, 268, 3), '#6f8a62', 2), place(tulip(56, P.tomato, '#6f8a62'), { x: 1028, y: 940 }), place(tulip(56, '#e3a83a', '#6f8a62'), { x: 1142, y: 940 }));
-scene(stroke(M(1104, 820) + Q(1112, 836, 1120, 830), '#3b2f2a', 1.4), place(teaTowel(48, 96, P.sage, '#fbf3df'), { x: 1118, y: 836 }));
+scene(stroke(M(1104, 820) + Q(1112, 836, 1120, 830), '#3b2f2a', 1.4), place(teaTowel(48, 96, '#f3d77a', '#fbf3df'), { x: 1118, y: 836 }));
 {
   scene(place(utensil(110, 0, '#c98f55', '#c98f55'), { x: 990, y: 534 }), place(utensil(112, 2, P.steel, '#3b2f2a'), { x: 1006, y: 528 }), place(utensil(100, 3, P.steel, '#7a5232'), { x: 1022, y: 546 }));
   scene(ol(rect(978, 574, 58, 68, 8), '#c9673f', 1.2, -0.25), sh(rect(978, 594, 58, 8), '#f3d77a'), sh(ellipse(1007, 576, 29, 6), '#8a4a2a'));
@@ -216,7 +216,7 @@ scene(ol(M(70, 1040) + L(70, 1110) + Q(70, 1124, 86, 1124) + L(126, 1124) + Q(13
 // chairs on the far side of the table
 scene(place(chairBack(150, 170, '#8a5a34'), { x: 390, y: 1150 }), place(chairBack(150, 170, '#8a5a34'), { x: 800, y: 1150 }));
 // cat bowl on the rug
-scene(ol(ellipse(980, 1078, 30, 9), P.cornflower, 1), sh(ellipse(980, 1074, 24, 6), '#fbf6e8'), ol(ellipse(1050, 1086, 26, 8), P.tomato, 1), sh(ellipse(1050, 1083, 20, 5), '#b8742e'));
+scene(ol(ellipse(1100, 1046, 30, 9), P.cornflower, 1), sh(ellipse(1100, 1042, 24, 6), '#fbf6e8'), ol(ellipse(1160, 1066, 26, 8), P.tomato, 1), sh(ellipse(1160, 1063, 20, 5), '#b8742e'));
 // table top, apron and legs
 {
   const back = 1146, front = 1292;
