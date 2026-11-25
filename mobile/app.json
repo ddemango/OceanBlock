@@ -21,7 +21,7 @@
     "android": {
       "package": "com.tidebreaker.game",
       "adaptiveIcon": {
-        "backgroundColor": "#1b9fc9",
+        "backgroundColor": "#0068e3",
         "foregroundImage": "./assets/adaptive-icon.png"
       }
     },
@@ -39,7 +39,7 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 260,
           "resizeMode": "contain",
-          "backgroundColor": "#1b9fc9"
+          "backgroundColor": "#0068e3"
         }
       ]
     ],
