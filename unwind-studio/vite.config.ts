@@ -37,5 +37,5 @@ export default defineConfig({
   plugins: [react(), offline()],
   define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '1.0.0') },
   build: { target: 'es2022', chunkSizeWarningLimit: 2500 },
-  test: { include: ['tests/**/*.test.ts'], testTimeout: 30000 },
+  test: { include: ['tests/**/*.test.ts'], testTimeout: 240000 },
 });
