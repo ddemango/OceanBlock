@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { findItemSvg, shapesSvg } from '../art/render';
+import { findItemSvg, imageTag, shapesSvg } from '../art/render';
 import type { FindActivity } from '../content/types';
 import { buildFindGeometry, hitTarget, visibleFraction } from '../engine/find/geometry';
 import { guess, isComplete, isValidState, newFind, nextHint, targetsOf, type FindState } from '../engine/find/state';
@@ -15,7 +15,7 @@ export function FindPlayer({ activity: a, onRestart }: { activity: FindActivity;
   const targets = useMemo(() => targetsOf(a), [a]);
   const boxes = useMemo(() => new Map(a.items.map((it, i) => [it.id, geom.items[i].box] as const).filter(([id]) => id)), [a, geom]);
   const thumbs = useMemo(() => new Map(targets.map((t) => [t.id!, 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(findItemSvg(a, t))])), [a, targets]);
-  const scene = useMemo(() => (a.defs ? `<defs>${a.defs}</defs>` : '') + a.items.map((it) => shapesSvg(it.shapes)).join(''), [a]);
+  const scene = useMemo(() => (a.defs ? `<defs>${a.defs}</defs>` : '') + (a.image ? imageTag(a.image, a.width, a.height) : '') + a.items.map((it) => shapesSvg(it.shapes)).join(''), [a]);
 
   const loaded = useMemo(() => loadSaved(a, variant, (s): s is FindState => isValidState(s, a)), []); // eslint-disable-line react-hooks/exhaustive-deps
   const [state, setState] = useState<FindState>(loaded.state ?? newFind());

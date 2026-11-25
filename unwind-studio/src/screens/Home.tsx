@@ -1,4 +1,4 @@
-import { ACTIVITIES, activitiesOf, COLLECTIONS, getActivity, MODE_LABEL } from '../content/catalog';
+import { ACTIVITIES, activitiesOf, COLLECTIONS, getActivity, MODE_LABEL, ownCollections } from '../content/catalog';
 import type { Mode } from '../content/types';
 import { dailyPick, shuffledFor } from '../lib/daily';
 import { href } from '../router';
@@ -15,6 +15,8 @@ const MODES: { mode: Mode; line: string }[] = [
 
 export function Home() {
   const progress = useApp((d) => d.progress);
+  useApp((d) => d.creations); // re-render when photos are added or removed
+  const photos = ownCollections();
   const today = localDate();
   const hour = new Date().getHours();
   const greeting = hour < 5 ? 'A quiet moment' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -70,6 +72,25 @@ export function Home() {
               </a>
             );
           })}
+        </div>
+      </section>
+
+      <section aria-labelledby="h-own">
+        <div className="sect-head"><h2 id="h-own">Make your own</h2></div>
+        <div className="rail" data-testid="own-photos">
+          <a className="card makecard" href={href({ name: 'create' })} data-testid="make-own">
+            <span className="makecard-art" aria-hidden="true"><Icon name="plus" size={34} /></span>
+            <span className="card-body">
+              <h3>Use your own photo</h3>
+              <p className="meta">Turn a favourite picture into a jigsaw, a painting and a hidden-object scene.</p>
+            </span>
+          </a>
+          {photos.map((c) => (
+            <a key={c.id} className="card" href={href({ name: 'collection', id: c.id })} data-collection={c.id}>
+              <div className="card-art"><ArtThumb activity={getActivity(c.coverActivityId)!} /></div>
+              <div className="card-body"><h3>{c.title}</h3><p className="meta">Your photo · puzzle, paint and find</p></div>
+            </a>
+          ))}
         </div>
       </section>
 

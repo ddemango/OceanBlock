@@ -75,8 +75,22 @@ export const COLLECTIONS: Collection[] = SPECS.map((s) => {
 export const ACTIVITIES: Activity[] = ordered;
 
 const byId = new Map(ACTIVITIES.map((a) => [a.id, a]));
-export const getActivity = (id: string) => byId.get(id);
-export const getCollection = (id: string) => COLLECTIONS.find((c) => c.id === id);
+
+// The user's own photo creations live on the device; the store registers them here.
+const ownActs = new Map<string, Activity>();
+let ownCols: Collection[] = [];
+export function setOwnContent(cols: Collection[], acts: Activity[]) {
+  ownCols = cols;
+  ownActs.clear();
+  for (const a of acts) ownActs.set(a.id, a);
+}
+/** The user's photo collections, newest first. */
+export const ownCollections = () => ownCols;
+
+export const getActivity = (id: string) => byId.get(id) ?? ownActs.get(id);
+export const getCollection = (id: string) => COLLECTIONS.find((c) => c.id === id) ?? ownCols.find((c) => c.id === id);
+export const activitiesInCollection = (id: string): Activity[] =>
+  (getCollection(id)?.activityIds ?? []).map((x) => getActivity(x)).filter((a): a is Activity => !!a);
 export const activitiesOf = (mode: Mode) => ACTIVITIES.filter((a) => a.mode === mode);
 export const CATEGORIES = [...new Set(ACTIVITIES.flatMap((a) => a.categories))].sort();
 

@@ -22,8 +22,11 @@ function wrap(w: number, h: number, inner: string, defs = '', pxWidth?: number):
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}"${size}>${defs ? `<defs>${defs}</defs>` : ''}${inner}</svg>`;
 }
 
+/** A photo filling the artwork (for inline DOM use; bitmaps draw photos directly). */
+export const imageTag = (href: string, w: number, h: number) => `<image href="${esc(href)}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="none"/>`;
+
 export function illustrationSvg(ill: Illustration, pxWidth?: number): string {
-  return wrap(ill.width, ill.height, shapesSvg(ill.shapes), ill.defs, pxWidth);
+  return wrap(ill.width, ill.height, (ill.image ? imageTag(ill.image, ill.width, ill.height) : '') + shapesSvg(ill.shapes), ill.defs, pxWidth);
 }
 
 export const PAPER = '#fffdf8';
@@ -45,7 +48,7 @@ export function paintSvg(a: PaintActivity, fills: Record<string, string> | 'comp
 }
 
 export function findSvg(a: FindActivity, pxWidth?: number): string {
-  return wrap(a.width, a.height, a.items.map((it) => shapesSvg(it.shapes)).join(''), a.defs, pxWidth);
+  return wrap(a.width, a.height, (a.image ? imageTag(a.image, a.width, a.height) : '') + a.items.map((it) => shapesSvg(it.shapes)).join(''), a.defs, pxWidth);
 }
 
 /** Square thumbnail of one scene item, drawn from the exact shapes used in the scene. */

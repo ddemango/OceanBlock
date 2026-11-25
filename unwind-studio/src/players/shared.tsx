@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { ACTIVITIES, getCollection, MODE_LABEL } from '../content/catalog';
+import { activitiesInCollection, getCollection, MODE_LABEL } from '../content/catalog';
 import type { Activity, Mode } from '../content/types';
 import type { SavedView } from '../engine/view';
 import { cue } from '../lib/feedback';
@@ -113,8 +113,8 @@ export function Completion({ activity: a, detail, fills, onClose, onReplay, clos
   activity: Activity; detail: string; fills?: Record<string, string>; onClose(): void; onReplay(): void; closeLabel?: string;
 }) {
   const col = getCollection(a.collectionId);
-  const next = ACTIVITIES.find((x) => x.collectionId === a.collectionId && x.id !== a.id && !Object.values(getApp().progress).some((p) => p.activityId === x.id && p.completed))
-    ?? ACTIVITIES.find((x) => x.collectionId === a.collectionId && x.id !== a.id);
+  const siblings = activitiesInCollection(a.collectionId).filter((x) => x.id !== a.id);
+  const next = siblings.find((x) => !Object.values(getApp().progress).some((p) => p.activityId === x.id && p.completed)) ?? siblings[0];
   const [busy, setBusy] = useState(false);
   const save = async () => {
     setBusy(true);

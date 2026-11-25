@@ -5,6 +5,7 @@ import { JigsawPlayer } from './players/JigsawPlayer';
 import { PaintPlayer } from './players/PaintPlayer';
 import { setNativeTheme } from './lib/native';
 import { href, navigate, useRoute, type Route } from './router';
+import { CreatePage } from './screens/Create';
 import { ActivityPage, CollectionPage, NotFound } from './screens/Detail';
 import { Explore } from './screens/Explore';
 import { Gallery } from './screens/Gallery';
@@ -48,7 +49,7 @@ function Play({ id, variant }: { id: string; variant: string }) {
 }
 
 const NAV: { route: Route; label: string; icon: string; match: string[] }[] = [
-  { route: { name: 'home' }, label: 'Home', icon: 'home', match: ['home'] },
+  { route: { name: 'home' }, label: 'Home', icon: 'home', match: ['home', 'create'] },
   { route: { name: 'explore' }, label: 'Explore', icon: 'explore', match: ['explore', 'collection', 'activity'] },
   { route: { name: 'gallery' }, label: 'My Gallery', icon: 'gallery', match: ['gallery'] },
   { route: { name: 'settings' }, label: 'Settings', icon: 'settings', match: ['settings'] },
@@ -95,6 +96,7 @@ export function App() {
           {route.name === 'explore' && <Explore mode={route.mode} fav={route.fav} />}
           {route.name === 'gallery' && <Gallery tab={route.tab} />}
           {route.name === 'settings' && <Settings />}
+          {route.name === 'create' && <CreatePage />}
           {route.name === 'collection' && <CollectionPage id={route.id} />}
           {route.name === 'activity' && <ActivityPage key={route.id} id={route.id} />}
         </Boundary>

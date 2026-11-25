@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { ACTIVITIES, getActivity, getCollection, MODE_LABEL } from '../content/catalog';
+import { activitiesInCollection, getActivity, getCollection, MODE_LABEL } from '../content/catalog';
 import type { Activity } from '../content/types';
 import { gridFor } from '../engine/jigsaw/grid';
 import { targetsOf } from '../engine/find/state';
 import { goBack, href, navigate } from '../router';
-import { progressKey, resetProgress, useApp } from '../store/app';
+import { deleteCreation, progressKey, resetProgress, useApp } from '../store/app';
 import { ActivityCard, ArtThumb, Confirm, FavButton, ModeBadge, ProgressBar } from '../ui/common';
 import { Icon } from '../ui/Icon';
 import { defaultVariants, variantHint, variantLabel } from './labels';
@@ -16,6 +16,8 @@ export function NotFound({ what = 'page' }: { what?: string }) {
 export function CollectionPage({ id }: { id: string }) {
   const c = getCollection(id);
   const progress = useApp((d) => d.progress);
+  useApp((d) => d.creations);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   if (!c) return <NotFound what="collection" />;
   const acts = c.activityIds.map((x) => getActivity(x)!).filter(Boolean);
   const done = acts.filter((a) => Object.values(progress).some((p) => p.activityId === a.id && p.completed)).length;
@@ -24,10 +26,13 @@ export function CollectionPage({ id }: { id: string }) {
       <button className="linkbtn backlink" onClick={() => goBack({ name: 'explore' })}><Icon name="back" size={18} />Back</button>
       <header className="colhero">
         <ArtThumb activity={getActivity(c.coverActivityId)!} />
-        <div><p className="eyebrow">{c.theme} collection</p><h1>{c.title}</h1><p className="lede">{c.description}</p>
-          <p className="meta">{done} of {acts.length} completed</p><ProgressBar value={done / acts.length} label="Collection progress" /></div>
+        <div><p className="eyebrow">{c.own ? 'Your photo' : `${c.theme} collection`}</p><h1>{c.title}</h1><p className="lede">{c.description}</p>
+          <p className="meta">{done} of {acts.length} completed</p><ProgressBar value={done / acts.length} label="Collection progress" />
+          {c.own && <button className="btn btn-quiet-danger" onClick={() => setConfirmDelete(true)} data-testid="delete-photo"><Icon name="trash" size={18} />Delete this photo</button>}</div>
       </header>
       <div className="grid grid-3">{acts.map((a) => <ActivityCard key={a.id} activity={a} />)}</div>
+      {confirmDelete && <Confirm title="Delete this photo?" body={`This removes “${c.title}” and its jigsaw, painting and hidden-object scene from this device, along with any progress and finished pieces. It cannot be undone.`} confirm="Delete" danger
+        onCancel={() => setConfirmDelete(false)} onConfirm={() => { deleteCreation(c.id); setConfirmDelete(false); navigate({ name: 'home' }, true); }} />}
     </div>
   );
 }
@@ -45,7 +50,7 @@ export function ActivityPage({ id }: { id: string }) {
   const inProgress = rec && !rec.completed && rec.progress > 0;
   const play = () => navigate({ name: 'play', id: a.id, variant });
   const grid = a.mode === 'puzzle' ? gridFor(Number(variant), a.art.width / a.art.height) : null;
-  const others = ACTIVITIES.filter((x) => x.collectionId === a.collectionId && x.id !== a.id);
+  const others = activitiesInCollection(a.collectionId).filter((x) => x.id !== a.id);
 
   return (
     <div className="page detail" data-mode={a.mode}>

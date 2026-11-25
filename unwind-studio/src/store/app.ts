@@ -4,7 +4,9 @@
 // to localStorage when the page is hidden, so an interrupted save is recovered
 // on the next launch.
 import { useSyncExternalStore } from 'react';
+import { setOwnContent } from '../content/catalog';
 import type { Mode } from '../content/types';
+import { creationActivities, creationCollection, isCreation, type Creation } from '../photo/creation';
 import type { SavedView } from '../engine/view';
 import { dbClear, dbDelete, dbEntries, dbSetMany, openDb } from './db';
 
@@ -57,6 +59,8 @@ export interface AppData {
   gallery: GalleryEntry[];
   stats: Stats;
   tutorials: Partial<Record<Mode, boolean>>;
+  /** Photos the user turned into activities, newest first. */
+  creations: Creation[];
   notice: string | null;
 }
 
@@ -70,8 +74,13 @@ const defaults = (): AppData => ({
   gallery: [],
   stats: { pieces: 0, regions: 0, objects: 0, completed: 0, days: [] },
   tutorials: {},
+  creations: [],
   notice: null,
 });
+
+function registerCreations(list: Creation[]) {
+  setOwnContent(list.map(creationCollection), list.flatMap(creationActivities));
+}
 
 let data = defaults();
 const listeners = new Set<() => void>();
@@ -160,10 +169,13 @@ export async function initApp(): Promise<void> {
       else if (key === 'stats' && isObj(v)) next.stats = { ...next.stats, ...(v as Partial<Stats>), days: Array.isArray(v.days) ? (v.days as string[]) : [] };
       else if (key === 'tutorials' && isObj(v)) next.tutorials = v as AppData['tutorials'];
       else if (key.startsWith('progress/') && validProgress(v)) next.progress[v.key] = v;
+      else if (key.startsWith('creation/') && isCreation(v)) next.creations.push(v);
     }
   } catch {
     next.storageOk = false;
   }
+  next.creations.sort((a, b) => b.createdAt - a.createdAt);
+  registerCreations(next.creations);
   if (!next.storageOk) next.notice = 'Storage is unavailable in this browser session, so progress will not be kept after you close the app.';
   next.ready = true;
   data = next;
@@ -255,6 +267,34 @@ export function resetTutorials() {
   queue('tutorials', {}, 50);
 }
 
+/** Keep a new photo creation and save it straight away. */
+export async function addCreation(c: Creation): Promise<void> {
+  const creations = [c, ...data.creations.filter((x) => x.id !== c.id)];
+  registerCreations(creations);
+  set({ creations });
+  queue('creation/' + c.id, c, 0);
+  await flushSaves();
+}
+
+/** Delete a photo creation along with its progress, favourites and gallery entries. */
+export function deleteCreation(id: string) {
+  const c = data.creations.find((x) => x.id === id);
+  if (!c) return;
+  const ids = new Set(creationActivities(c).map((a) => a.id));
+  const creations = data.creations.filter((x) => x.id !== id);
+  registerCreations(creations);
+  const progress = { ...data.progress };
+  const gone: string[] = [P + 'creation/' + id];
+  for (const [k, p] of Object.entries(progress)) if (ids.has(p.activityId)) { delete progress[k]; gone.push(P + 'progress/' + k); }
+  for (const k of gone) pending.delete(k);
+  const gallery = data.gallery.filter((g) => !ids.has(g.activityId));
+  const favorites = data.favorites.filter((f) => !ids.has(f));
+  set({ creations, progress, gallery, favorites });
+  queue('gallery', gallery, 50);
+  queue('favorites', favorites, 50);
+  void dbDelete(gone).catch(() => set({ saveStatus: 'error' }));
+}
+
 let noticeTimer: ReturnType<typeof setTimeout> | null = null;
 export const setNotice = (notice: string | null) => {
   set({ notice });
@@ -269,11 +309,12 @@ export async function clearAllData() {
   try { localStorage.removeItem(JOURNAL); } catch { /* ignore */ }
   try { await dbClear(); } catch { /* ignore */ }
   const fresh = defaults();
+  registerCreations([]);
   set({ ...fresh, ready: true, storageOk: data.storageOk, prefs: data.prefs });
   queue('prefs', data.prefs, 50);
 }
 
 /** Approximate size of saved data, for Settings. */
 export function savedDataSize(): number {
-  try { return JSON.stringify([data.progress, data.gallery, data.favorites, data.stats]).length; } catch { return 0; }
+  try { return JSON.stringify([data.progress, data.gallery, data.favorites, data.stats, data.creations]).length; } catch { return 0; }
 }

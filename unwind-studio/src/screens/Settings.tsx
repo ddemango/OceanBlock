@@ -66,7 +66,7 @@ export function Settings() {
 
       <section className="panel" aria-labelledby="s-data">
         <h2 id="s-data">Your data</h2>
-        <div className="setrow"><span><strong>Saved on this device</strong><small>{storageOk ? `About ${Math.max(1, Math.round(savedDataSize() / 1024))} KB of progress, favourites and gallery entries. No account needed; nothing leaves your device.` : 'Storage is unavailable in this browser session, so progress cannot be kept.'}</small></span></div>
+        <div className="setrow"><span><strong>Saved on this device</strong><small>{storageOk ? `About ${Math.max(1, Math.round(savedDataSize() / 1024))} KB of progress, favourites, gallery entries and your photos. No account needed; nothing leaves your device.` : 'Storage is unavailable in this browser session, so progress cannot be kept.'}</small></span></div>
         <div className="setrow"><span><strong>Offline play</strong><small>{offline === 'ready' ? 'All bundled activities are stored and playable without a connection.' : offline === 'checking' ? 'Checking…' : 'Not stored for offline use yet. Open the installed or hosted app once while online to make everything available offline.'}</small></span>
           <span className={`pill ${offline === 'ready' ? 'ok' : ''}`} data-testid="offline-status">{offline === 'ready' ? 'Ready' : offline === 'checking' ? '…' : 'Online only'}</span></div>
         <div className="setrow"><span><strong>Clear everything</strong><small>Removes all progress, gallery entries, favourites and statistics.</small></span>
@@ -83,7 +83,7 @@ export function Settings() {
       {tips && <Dialog title={`How to play ${MODE_LABEL[tips]}`} onClose={() => setTips(null)} actions={<button className="btn btn-primary" onClick={() => setTips(null)}>Got it</button>}>
         <ul className="tips">{TIPS[tips].map((t) => <li key={t.title}><span className="tip-ic"><Icon name={t.icon} /></span><div><strong>{t.title}</strong><p>{t.text}</p></div></li>)}</ul>
       </Dialog>}
-      {confirm && <Confirm title="Clear all data?" body="This permanently removes your progress, completed gallery, favourites and statistics from this device. It cannot be undone." confirm="Clear everything" danger
+      {confirm && <Confirm title="Clear all data?" body="This permanently removes your progress, completed gallery, favourites, statistics and the photos you added from this device. It cannot be undone." confirm="Clear everything" danger
         onCancel={() => setConfirm(false)} onConfirm={async () => { await clearAllData(); setConfirm(false); toast('All data cleared'); }} />}
     </div>
   );

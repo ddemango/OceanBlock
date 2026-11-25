@@ -8,7 +8,7 @@ import {
   returnToTray, takeFromTray, type JigsawState,
 } from '../engine/jigsaw/state';
 import { cue, reducedMotion } from '../lib/feedback';
-import { rasterize } from '../lib/raster';
+import { rasterIllustration } from '../lib/raster';
 import { Stage, type Point } from '../lib/stage';
 import { bumpStats } from '../store/app';
 import { Dialog } from '../ui/common';
@@ -231,7 +231,7 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
     let alive = true;
     setError(null);
     const px = Math.min(count >= 196 ? 1500 : 1700, Math.max(1000, Math.round(Math.min(window.innerWidth, 900) * (window.devicePixelRatio || 1) * 1.6)));
-    rasterize(illustrationSvg(art), px, art.width / art.height)
+    rasterIllustration(art, px)
       .then((src) => { if (!alive) return; const a = buildSprites(src, geom); R.assets = a; setAssets(a); requestDraw(); })
       .catch((e: Error) => alive && setError(e.message || 'The artwork could not be loaded'));
     return () => { alive = false; };

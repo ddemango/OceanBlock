@@ -368,6 +368,69 @@ await shot('find-complete');
 await page.getByTestId('completion-close').click();
 check('the scene can be reviewed after completion', (await page.locator('.fmark').count()) === T.length);
 
+// ================= YOUR OWN PHOTO =================
+console.log('\n— Your own photo —');
+await open('#/create');
+// a photo-like picture made in the browser: sky, sun, hills, trees and a meadow of flowers, with grain
+const photoB64 = await page.evaluate(() => {
+  const c = document.createElement('canvas'); c.width = 1600; c.height = 1200; const g = c.getContext('2d');
+  let s = 42; const r = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  const sky = g.createLinearGradient(0, 0, 0, 700); sky.addColorStop(0, '#5b8fd6'); sky.addColorStop(1, '#f4c9a0'); g.fillStyle = sky; g.fillRect(0, 0, 1600, 1200);
+  const sun = g.createRadialGradient(1150, 300, 10, 1150, 300, 220); sun.addColorStop(0, '#fff6d0'); sun.addColorStop(0.3, '#ffd27a'); sun.addColorStop(1, 'rgba(255,200,120,0)'); g.fillStyle = sun; g.fillRect(0, 0, 1600, 1200);
+  for (let i = 0; i < 4; i++) { g.fillStyle = ['#4f7a56', '#3d6847', '#5d8a4a', '#2f5a3c'][i]; g.beginPath(); g.moveTo(0, 1200); for (let x = 0; x <= 1600; x += 40) g.lineTo(x, 600 + i * 110 + Math.sin(x / (180 + i * 60) + i) * 60); g.lineTo(1600, 1200); g.fill(); }
+  for (let i = 0; i < 26; i++) { const x = r() * 1600, y = 650 + r() * 300; g.fillStyle = '#6b4a2f'; g.fillRect(x - 6, y, 12, 90); g.fillStyle = ['#2e6b3a', '#3f7d3c', '#1f5530'][i % 3]; g.beginPath(); g.ellipse(x, y, 40 + r() * 30, 60 + r() * 40, 0, 0, 7); g.fill(); }
+  for (let i = 0; i < 260; i++) { const x = r() * 1600, y = 980 + r() * 220; g.fillStyle = ['#e85d75', '#f7d046', '#ffffff', '#b15ee8', '#ff8c42'][i % 5]; g.beginPath(); g.arc(x, y, 6 + r() * 10, 0, 7); g.fill(); }
+  const id = g.getImageData(0, 0, 1600, 1200); for (let i = 0; i < id.data.length; i += 4) { const n = (r() - 0.5) * 22; id.data[i] += n; id.data[i + 1] += n; id.data[i + 2] += n; } g.putImageData(id, 0, 0);
+  return c.toDataURL('image/jpeg', 0.9).split(',')[1];
+});
+await page.getByTestId('photo-input').setInputFiles({ name: 'IMG_2041.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(photoB64, 'base64') });
+await page.waitForSelector('.create-preview img');
+check('a chosen photo is previewed with a friendly default name', /^My photo/.test(await page.getByTestId('photo-title').inputValue()));
+await page.getByTestId('photo-title').fill('Meadow walk');
+await page.locator('[data-level="Relaxed"]').click();
+await shot('photo-create');
+const tCreate = Date.now();
+await page.getByTestId('create-photo').click();
+await page.waitForFunction(() => location.hash.startsWith('#/collection/photo-'), null, { timeout: 20000 });
+const made = await page.evaluate(() => { const c = window.__unwind.getApp().creations[0]; return { id: c.id, title: c.title, regions: c.paint.regions.length, colours: c.paint.palette.length, objects: c.find.items.length }; });
+check('a photo becomes a jigsaw, a painting and a hidden-object scene', made.title === 'Meadow walk' && (await page.locator('.card[data-activity]').count()) === 3, `${Date.now() - tCreate} ms, ${made.regions} areas, ${made.colours} colours, ${made.objects} objects`);
+await shot('photo-collection');
+await saved();
+
+await open(`#/play/${made.id}-puzzle/36`);
+await page.waitForFunction(() => window.__jigsaw?.assets, null, { timeout: 10000 });
+const photoPieces = await page.evaluate(() => window.__jigsaw.geom.pieces.length);
+check('the photo jigsaw cuts the photo into pieces', photoPieces === 36);
+
+await open(`#/play/${made.id}-paint/pbn`);
+await page.waitForFunction(() => window.__paint);
+const PP = await page.evaluate(() => ({ labels: window.__paint.geom.labels, colours: window.__paint.regionColours }));
+const big = PP.labels.findIndex((l) => l.r > 12);
+await page.locator(`.swatch[data-colour="${PP.colours[big]}"]`).click();
+const lp = await toPage('__paint', PP.labels[big].x, PP.labels[big].y);
+await page.mouse.click(lp.x, lp.y);
+check('the photo painting can be coloured by number', Object.keys(await page.evaluate(() => window.__paint.state.fills)).length === 1 && PP.labels.every((l) => l.r > 2), `${PP.labels.length} areas, all with room for a number`);
+await shot('photo-paint');
+
+await open(`#/play/${made.id}-find/default`);
+await page.waitForFunction(() => window.__find);
+const PT = await page.evaluate(() => window.__find.targets.map((t) => ({ id: t.id, ...window.__find.pointInside(t.id) })));
+await tapWorld(PT[0].x, PT[0].y);
+check('objects hidden in the photo can be found', PT.length === 8 && (await fstate()).found.length === 1, `${PT.length} objects`);
+await shot('photo-find');
+await saved();
+
+await open('#/');
+check('the photo is listed on Home after reopening the app', (await page.locator(`[data-collection="${made.id}"]`).count()) === 1);
+await page.goto(BASE + `#/collection/${made.id}`); await page.waitForTimeout(500);
+await page.getByTestId('delete-photo').click();
+await page.getByTestId('confirm').click();
+await page.waitForTimeout(300);
+const gone = await page.evaluate((id) => { const a = window.__unwind.getApp(); return a.creations.length === 0 && !Object.values(a.progress).some((p) => p.activityId.startsWith(id)) && location.hash === '#/'; }, made.id);
+await saved();
+await page.reload(); await page.waitForFunction(() => window.__unwind?.getApp().ready);
+check('deleting a photo removes it and its progress for good', gone && (await page.evaluate(() => window.__unwind.getApp().creations.length)) === 0);
+
 // ================= SHARED =================
 console.log('\n— Shared —');
 await open('#/play/garden-puzzle/64');

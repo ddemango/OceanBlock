@@ -6,6 +6,9 @@ shared, themed artwork:
 - **Puzzle** — a real jigsaw with interlocking pieces (36 / 64 / 100 / 196).
 - **Paint** — paint by number, plus free colouring of the same picture.
 - **Find** — detailed hidden-object scenes.
+- **Your own photo** — any photo becomes all three: a jigsaw, a paint-by-number
+  in the photo's own colours, and a scene with little objects hidden in it.
+  Photos stay on the device.
 
 It is an installable, offline-capable web app (PWA), designed for phones first
 and adapted for tablets and desktop. There are no accounts, no paid services
@@ -121,6 +124,14 @@ Key decisions:
   separate saves.
 - **Find.** A tap hits the topmost not-yet-found target whose own shapes
   contain the point (with a fingertip tolerance that shrinks as you zoom in).
+- **Your own photos.** `src/photo` turns a photo into activities on the device.
+  Paint: bilateral smoothing and k-means in Lab, then specks and slivers are
+  merged until every area has a solid 5×5 core for its number; outlines are
+  traced, pushed out a pixel and simplified, and drawn largest first so holes
+  never need cutting and neighbours overlap instead of gapping. Find: named
+  objects from the built-in scenes are scaled, tilted and placed in the
+  busiest parts of the photo. One record per photo (`creation/<id>` in
+  IndexedDB); its three activities are derived and registered with the catalog.
 - **Saving.** State is held in memory and written through to IndexedDB with
   debouncing; pending writes are flushed when leaving an activity and
   journalled synchronously to `localStorage` when the page is hidden, then

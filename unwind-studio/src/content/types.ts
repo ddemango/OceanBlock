@@ -16,6 +16,8 @@ interface ActivityBase {
   difficulty: Difficulty;
   /** Attribution for external assets. Omit for original in-house artwork. */
   attribution?: { author: string; license: string; source?: string };
+  /** Made by the user from their own photo (kept on this device). */
+  own?: boolean;
 }
 
 export interface PuzzleActivity extends ActivityBase {
@@ -63,6 +65,8 @@ export interface FindActivity extends ActivityBase {
   width: number;
   height: number;
   defs?: string;
+  /** Optional photo (data URL) drawn under every item, filling the scene. */
+  image?: string;
   /** Everything in the scene in painter's order (later items on top). Targets are items with target: true. */
   items: FindItem[];
 }
@@ -77,4 +81,6 @@ export interface Collection {
   /** Activity whose artwork is used as the cover. */
   coverActivityId: string;
   activityIds: string[];
+  /** A collection made from the user's own photo. */
+  own?: boolean;
 }

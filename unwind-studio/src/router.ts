@@ -5,6 +5,7 @@ export type Route =
   | { name: 'explore'; mode?: string; fav?: boolean }
   | { name: 'gallery'; tab?: string }
   | { name: 'settings' }
+  | { name: 'create' }
   | { name: 'collection'; id: string }
   | { name: 'activity'; id: string }
   | { name: 'play'; id: string; variant: string };
@@ -17,6 +18,7 @@ export function parseRoute(hash: string): Route {
     case 'explore': return { name: 'explore', mode: q.get('mode') ?? undefined, fav: q.get('fav') === '1' };
     case 'gallery': return { name: 'gallery', tab: q.get('tab') ?? undefined };
     case 'settings': return { name: 'settings' };
+    case 'create': return { name: 'create' };
     case 'collection': return seg[1] ? { name: 'collection', id: seg[1] } : { name: 'explore' };
     case 'activity': return seg[1] ? { name: 'activity', id: seg[1] } : { name: 'explore' };
     case 'play': return seg[1] && seg[2] ? { name: 'play', id: seg[1], variant: seg[2] } : { name: 'home' };
@@ -36,6 +38,7 @@ export function href(r: Route): string {
     }
     case 'gallery': return '#/gallery' + (r.tab ? '?tab=' + r.tab : '');
     case 'settings': return '#/settings';
+    case 'create': return '#/create';
     case 'collection': return '#/collection/' + encodeURIComponent(r.id);
     case 'activity': return '#/activity/' + encodeURIComponent(r.id);
     case 'play': return `#/play/${encodeURIComponent(r.id)}/${encodeURIComponent(r.variant)}`;

@@ -15,4 +15,6 @@ export interface Illustration {
   /** Raw SVG markup for <defs> (gradients). Gradient ids must be unique app-wide. */
   defs?: string;
   shapes: Shape[];
+  /** Optional photo (data URL) drawn under the shapes, filling the whole artwork. */
+  image?: string;
 }

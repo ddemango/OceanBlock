@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo to turn into your own jigsaw, painting and hidden-object scene.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a photo to turn into your own jigsaw, painting and hidden-object scene. Your photo stays on this device.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
   <key>CAPACITOR_DEBUG</key>
