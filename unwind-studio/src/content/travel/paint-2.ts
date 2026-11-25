@@ -45,10 +45,10 @@ R('bush-2', scallop(912, 612, 76, 40, 8), 'hills');
 const cx = 430;
 R('spire', rect(423, 150, 14, 130, 7), 'gold');
 detail.push(stroke(line([[416, 188], [444, 188]]) + line([[416, 206], [444, 206]]) + line([[416, 224], [444, 224]]) + line([[416, 242], [444, 242]]), '#a07a2a', 2.5));
-function tier(id: string, yb: number, wallW: number, wallH: number, S: number) {
+function tier(id: string, yb: number, wallW: number, wallH: number, S: number, win = false) {
   const yr = yb - 44;
   R(`${id}-wall`, rect(cx - wallW / 2, yb + 8, wallW, wallH), 'vermilion');
-  R(`${id}-window`, rect(cx - wallW * 0.2, yb + 36, wallW * 0.4, Math.min(wallH - 44, 56), 4), 'slate');
+  if (win) R(`${id}-window`, rect(cx - wallW * 0.2, yb + 36, wallW * 0.4, Math.min(wallH - 44, 56), 4), 'slate');
   R(`${id}-eave`, poly([[cx - S + 26, yb + 6], [cx + S - 26, yb + 6], [cx + wallW / 2 + 8, yb + 26], [cx - wallW / 2 - 8, yb + 26]]), 'vermDark');
   R(`${id}-roof`, `M${n(cx - S)} ${n(yb - 10)}Q${n(cx - S + 34)} ${n(yb - 2)} ${n(cx - wallW * 0.42)} ${n(yr)}L${n(cx + wallW * 0.42)} ${n(yr)}Q${n(cx + S - 34)} ${n(yb - 2)} ${n(cx + S)} ${n(yb - 10)}L${n(cx + S - 20)} ${n(yb + 8)}Q${n(cx)} ${n(yb + 18)} ${n(cx - S + 20)} ${n(yb + 8)}Z`, 'slate');
   let t = '';
@@ -60,7 +60,7 @@ function tier(id: string, yb: number, wallW: number, wallH: number, S: number) {
 }
 tier('tier-3', 296, 96, 80, 104);
 tier('tier-2', 384, 128, 86, 128);
-tier('tier-1', 474, 170, 112, 156);
+tier('tier-1', 474, 170, 112, 156, true);
 R('pagoda-base', rect(318, 584, 224, 30, 3), 'stone');
 R('pagoda-steps', poly([[396, 612], [464, 612], [476, 640], [384, 640]]), 'stoneDark');
 detail.push(stroke(line([[cx, 528], [cx, 584]]) + line([[cx - 70, 500], [cx - 70, 584]]) + line([[cx + 70, 500], [cx + 70, 584]]), '#92302b', 2));
@@ -155,8 +155,8 @@ R('lotus-heart', ellipse(871, 988, 12, 6), 'gold');
 
 // ---------- foreground bank and stone lantern ----------
 R('near-bank', curve([[0, 1006], [80, 1026], [160, 1076], [230, 1156], [276, H]], 0.9) + `L0 ${H}Z`, 'hills');
-R('iris-1', leaf(28, 1236, 190, 14, -78), 'grass');
-R('iris-2', leaf(214, 1246, 150, 12, -104), 'grass');
+R('iris-1', leaf(30, 1236, 190, 19, -78), 'grass');
+R('iris-2', leaf(212, 1244, 150, 17, -104), 'grass');
 R('lantern-base', rect(96, 1146, 68, 28, 3), 'stoneDark');
 R('lantern-pillar', rect(116, 1062, 28, 86), 'stone');
 R('lantern-platform', rect(94, 1042, 72, 22, 4), 'stoneDark');

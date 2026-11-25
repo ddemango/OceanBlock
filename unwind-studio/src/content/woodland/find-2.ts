@@ -127,13 +127,12 @@ target('dragonfly', 'Dragonfly', place(dragonfly(), { x: 470, y: 660, s: 0.75, r
 // left tree (in front of the stream)
 scene(...trunk(80, 1040, -10, 130, 31));
 target('fox', 'Fox cub', place(foxCub(), { x: 196, y: 1030, s: 0.72 }));
-scene(...place(fern(150, -120, '#5f8a45', 41), { x: 170, y: 1040 }), ...place(fern(130, -70, '#6f8f4e', 42), { x: 200, y: 1044 }), ...place(fern(120, -150, '#4e6b38', 43), { x: 150, y: 1046 }));
+scene(...place(fern(150, -120, '#8db35e', 41), { x: 170, y: 1040 }), ...place(fern(130, -70, '#a9c96e', 42), { x: 200, y: 1044 }), ...place(fern(120, -150, '#3f6233', 43), { x: 150, y: 1046 }));
 // right tree with the owl's hollow
 scene(...trunk(1100, 1080, -10, 150, 37));
 scene(sh(ellipse(1088, 690, 34, 50), '#2a1c14'), stroke(ellipse(1088, 690, 36, 52), '#7d5f40', 6));
 target('owl', 'Owl', place(owl(), { x: 1088, y: 734, s: 0.68 }));
 scene(sh(blob([[1050, 736], [1088, 726], [1126, 736], [1120, 748], [1056, 748]], 0.8), '#5e4630'));
-scene(...place(squirrel(), { x: 1150, y: 610, s: 0.8, rot: -90 }));
 // bracket fungi on the right trunk
 scene(sh(blob([[1028, 900], [1010, 890], [1004, 876], [1030, 880]], 0.9) + blob([[1032, 930], [1008, 924], [1000, 910], [1030, 912]], 0.9), '#d9b46a'), sh(blob([[1028, 896], [1012, 888], [1018, 884], [1030, 886]], 0.9), '#f0d48a'));
 
@@ -263,13 +262,13 @@ scene(...place(squirrel('#b85a2a'), { x: 1040, y: 980, s: 0.72 }));
 target('snail', 'Snail', place(snail('#c49a5c'), { x: 1010, y: 1318, s: 0.62 }));
 target('acorn', 'Acorn', place(acorn(), { x: 590, y: 1420, s: 0.8, rot: -60 }));
 // ferns and plants in the front
-scene(...place(fern(220, -110, '#5f8a45', 141), { x: 60, y: 1500 }), ...place(fern(200, -60, '#6f8f4e', 142), { x: 100, y: 1500 }), ...place(fern(180, -140, '#4e6b38', 143), { x: 40, y: 1500 }));
+scene(...place(fern(220, -110, '#8db35e', 141), { x: 60, y: 1500 }), ...place(fern(200, -60, '#a9c96e', 142), { x: 100, y: 1500 }), ...place(fern(180, -140, '#3f6233', 143), { x: 40, y: 1500 }));
 target('hedgehog', 'Hedgehog', place(hedgehog(), { x: 290, y: 1440, s: 0.85 }));
-scene(...place(fern(170, -80, '#8db35e', 144), { x: 380, y: 1500 }), ...place(fern(150, -110, '#6f8f4e', 145), { x: 420, y: 1500 }), ...place(fern(150, -45, '#5f8a45', 146), { x: 230, y: 1500 }));
+scene(...place(fern(170, -80, '#b5d27a', 144), { x: 380, y: 1500 }), ...place(fern(150, -110, '#a9c96e', 145), { x: 420, y: 1500 }), ...place(fern(150, -45, '#8db35e', 146), { x: 230, y: 1500 }));
 target('ladybird', 'Ladybird', place(ladybird(), { x: 120, y: 1360, s: 0.75, rot: -30 }));
 scene(...place(brownMushrooms(151), { x: 520, y: 1460 }), ...place(brownMushrooms(152, '#a5754a'), { x: 180, y: 1260, s: 0.8 }));
 target('toadstool', 'Red toadstool', place(toadstool(), { x: 1012, y: 1096, s: 0.66 }));
-scene(...place(fern(190, -100, '#5f8a45', 161), { x: 1140, y: 1500 }), ...place(fern(170, -150, '#4e6b38', 162), { x: 1180, y: 1500 }));
+scene(...place(fern(190, -100, '#8db35e', 161), { x: 1140, y: 1500 }), ...place(fern(170, -150, '#3f6233', 162), { x: 1180, y: 1500 }));
 {
   const g = rng(171);
   for (let i = 0; i < 14; i++) scene(...place(grass(1.4, g.pick(['#5f8a45', '#4e6b38', '#7fa35a']), 700 + i), { x: g.range(440, 1100), y: g.range(1440, 1500) }));
@@ -296,7 +295,7 @@ const activity: FindActivity = {
   defs:
     linearGradient(`${ID}-sky`, [[0, '#8fc3de'], [0.6, '#cfe6ee'], [1, '#eef3e0']]) +
     radialGradient(`${ID}-sun`, [[0, '#fff3c8'], [1, '#fff3c8']]) +
-    linearGradient(`${ID}-meadow`, [[0, '#9ab874'], [0.4, '#7fa35a'], [1, '#5f8a45']]) +
+    linearGradient(`${ID}-meadow`, [[0, '#9ab874'], [0.4, '#7fa35a'], [1, '#4a7536']]) +
     linearGradient(`${ID}-water`, [[0, '#9fcbd8'], [0.5, '#6fa8bd'], [1, '#4f8aa3']], 0, 0, 1, 1) +
     `<radialGradient id="${ID}-vignette" cx="0.5" cy="0.5" r="0.75"><stop offset="0.65" stop-color="#1f2a18" stop-opacity="0"/><stop offset="1" stop-color="#1f2a18" stop-opacity="1"/></radialGradient>`,
   items,
