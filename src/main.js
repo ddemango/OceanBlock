@@ -300,6 +300,7 @@ function loadLevel(n, def = getLevel(n)) {
   state.extraUsed = false;
   state.endTimer = 0;
   state.firstHit = false;
+  state.released = false;
   state.puUsed = {};
   state.megaShots = 0;
   state.laser = false;
@@ -345,7 +346,12 @@ function loadLevel(n, def = getLevel(n)) {
     body.position.set(b.x, b.y + 0.001, b.z);
     if (b.ry) body.quaternion.setFromEuler(0, b.ry, 0);
     world.addBody(body);
-    if (!spec.floats) body.sleep(); // towers stay perfectly still until something hits them
+    if (!spec.floats) {
+      // Until the first cannonball lands, each stack is locked to its raft as one solid piece
+      // (kinematic: it moves exactly with the raft and can't be jostled out of place).
+      body.type = CANNON.Body.KINEMATIC;
+      body.allowSleep = false;
+    }
 
     const mesh = blockVisual(b.type, variant++ % 3);
     mesh.castShadow = true;
@@ -387,9 +393,8 @@ function onBlockCollide(block, e) {
     queueBurst(e.body.position.clone(), e.body.velocity.clone(), ud.bomb, ud);
   }
   if (!state.firstHit && e.body.userData?.ball) {
-    // First cannonball impact wakes the whole level so supports collapse naturally.
+    // First cannonball impact releases the whole level so supports collapse naturally.
     state.firstHit = true;
-    for (const b of state.blocks) b.body.wakeUp();
   }
 }
 
@@ -521,17 +526,33 @@ function driftRafts(dt) {
     carryCargo(i, vx, vy, vz, dt);
   }
 }
+// After the first hit: turn every locked stack back into real physics (done between steps).
+function releaseCargo() {
+  if (!state.firstHit || state.released) return;
+  state.released = true;
+  for (const b of state.blocks) {
+    if (b.removed || b.spec.floats || b.body.type !== CANNON.Body.KINEMATIC) continue;
+    b.body.type = CANNON.Body.DYNAMIC;
+    b.body.mass = b.hp > 0 ? 200 : b.spec.mass; // armored crates stay too heavy to budge until broken
+    b.body.updateMassProperties();
+    b.body.allowSleep = true;
+    b.body.wakeUp();
+  }
+}
 function carryCargo(i, vx, vy, vz, dt) {
   for (const b of state.blocks) {
     if (b.raft !== i || b.removed || b.cleared || b.spec.floats) continue;
-    if (b.hp > 0) b.body.velocity.set(vx, vy, vz); // armored cargo rides along
-    else if (b.body.sleepState === CANNON.Body.SLEEPING || !state.firstHit) {
+    if (b.body.type === CANNON.Body.KINEMATIC) {
+      b.body.velocity.set(vx, vy, vz); // locked stacks move exactly with the raft
+      continue;
+    }
+    if (b.body.sleepState === CANNON.Body.SLEEPING || !state.firstHit) {
       // until the first cannonball lands, the whole stack rides its raft as one piece
       b.body.position.x += vx * dt;
       b.body.position.y += vy * dt;
       b.body.position.z += vz * dt;
       if (!state.firstHit) b.body.sleep();
-    }
+    } else if (b.hp > 0) b.body.velocity.set(vx, vy, vz); // awake armored cargo is too heavy to drag by friction: carry it
   }
 }
 
@@ -539,6 +560,7 @@ function carryCargo(i, vx, vy, vz, dt) {
 const pendingBursts = [];
 let shake = 0;
 function queueBurst(pos, vel, bomb = false, ud = null) {
+  state.firstHit = true; // any blast (cannonball, keg, shark) frees the stacks
   pendingBursts.push({ pos, vel, bomb, ud });
 }
 function applyBursts() {
@@ -1449,6 +1471,7 @@ function stepPhysics(dt) {
   driftRafts(dt);
   floatBalloons(dt);
   world.step(1 / 60, dt, 6);
+  releaseCargo();
   applyUnlocks();
   applyBreaks();
   applyExplosions();
