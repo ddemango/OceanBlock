@@ -37,6 +37,7 @@ export const ACHIEVEMENTS = [
   ['balloon30', 'Party Popper', 'balloons', 30, 300],
   ['challenge5', 'Daily Challenger', 'challenges', 5, 500],
   ['power20', 'Power Player', 'powerups', 20, 400],
+  ['fish10', 'Fish Friend', 'fish', 10, 300],
 ];
 
 // One-use-per-level power-ups (earned from the spin wheel, 3-star wins and the daily challenge).

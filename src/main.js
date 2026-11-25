@@ -1,7 +1,7 @@
 import './style.css';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { getLevel, getChallenge, isHard, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
+import { getLevel, getChallenge, isHard, difficulty, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
 import { buildEnvironment, buildCannon, buildRaft, THEMES, themeForLevel } from './scenery.js';
 import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture, ironTexture, tntTexture, iceTexture, balloonTexture } from './textures.js';
 import * as sfx from './audio.js';
@@ -303,6 +303,11 @@ function loadLevel(n, def = getLevel(n)) {
   timeScale = 1;
   slowT = 0;
   document.body.classList.remove('slowmo');
+  setupSeaLife(n);
+  // hungry sharks eat shots, so those levels come with a little extra ammo
+  const bold = sea.list.filter((c) => c.bold).length;
+  state.shots += bold * 2;
+  state.startShots = state.shots;
 
   for (const r of def.rafts) {
     const body = new CANNON.Body({ mass: 0, material: raftMat, type: CANNON.Body.KINEMATIC }); // kinematic so events can set it moving
@@ -1124,6 +1129,144 @@ function updateEvent(dt) {
   } else if (ev.kind === 'whirlpool') {
     ev.pool.rotation.z -= dt * 1.8;
     ev.pool.scale.setScalar(Math.min(1, ev.pool.scale.x + dt * 0.6));
+  }
+}
+
+
+// ---- sea life: leaping fish and circling sharks; more of them (and bolder) on higher levels ----
+const FISH_COLORS = [0xff8a3c, 0xffd23c, 0xff5a8a, 0x4fc3ff, 0x7ee081, 0xb98cff];
+const fishGeo = new THREE.SphereGeometry(0.28, 12, 8).scale(0.75, 0.9, 1.7);
+const finGeo = new THREE.ConeGeometry(0.22, 0.4, 4).scale(0.3, 1, 1);
+function buildFish(color) {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshToonMaterial({ color, gradientMap: toonRamp });
+  const body = new THREE.Mesh(fishGeo, mat);
+  const tail = new THREE.Mesh(finGeo, mat);
+  tail.position.z = 0.55;
+  tail.rotation.x = Math.PI / 2;
+  const top = new THREE.Mesh(finGeo, mat);
+  top.position.set(0, 0.24, 0.05);
+  top.scale.setScalar(0.7);
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x1d2638 });
+  for (const sx of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), eyeMat);
+    eye.position.set(sx * 0.17, 0.06, -0.3);
+    g.add(eye);
+  }
+  addOutline(body, 0.03);
+  g.add(body, tail, top);
+  g.userData.tail = tail;
+  return g;
+}
+const sea = { list: [] };
+const rand = (a, b) => a + Math.random() * (b - a);
+function clearSeaLife() {
+  for (const c of sea.list) scene.remove(c.mesh);
+  sea.list = [];
+}
+function setupSeaLife(level) {
+  clearSeaLife();
+  const d = state.challenge ? 0.5 : difficulty(level);
+  const fishN = 3 + Math.round(d * 9); // 3 → 12 fish
+  const sharkN = state.challenge ? 2 : level < 8 ? 0 : 1 + Math.floor(d * 3.2); // 0 → 4 sharks
+  for (let i = 0; i < fishN; i++) {
+    const mesh = buildFish(FISH_COLORS[i % FISH_COLORS.length]);
+    mesh.scale.setScalar(1.7);
+    mesh.visible = false;
+    scene.add(mesh);
+    sea.list.push({ kind: 'fish', mesh, t: rand(0.5, 4), leap: null, gap: [Math.max(1.2, 4 - d * 2.5), Math.max(3, 8 - d * 4)] });
+  }
+  for (let i = 0; i < sharkN; i++) {
+    const mesh = buildShark();
+    mesh.scale.setScalar(0.85);
+    scene.add(mesh);
+    sea.list.push({ kind: 'shark', mesh, t: rand(3, 7), leap: null, phase: (i / sharkN) * Math.PI * 2, speed: rand(0.35, 0.55) * (i % 2 ? -1 : 1),
+      rx: rand(6.5, 9.5), rz: rand(1.6, 3), cz: RAFT_Z + rand(3.5, 6.5), gap: [Math.max(2.5, 8 - d * 5), Math.max(5, 12 - d * 6)], bold: d > 0.22 });
+  }
+}
+// pick a leap across the water between the cannon and the rafts
+function startLeap(c) {
+  const shark = c.kind === 'shark';
+  const x = shark ? c.mesh.position.x : rand(-9, 9);
+  const z = shark ? c.mesh.position.z : rand(RAFT_Z + 2.5, RAFT_Z + 9);
+  const dir = rand(0, Math.PI * 2);
+  const len = shark ? rand(4, 6.5) : rand(1.8, 3.6);
+  c.leap = {
+    from: new THREE.Vector3(x, -0.4, z),
+    to: new THREE.Vector3(x + Math.cos(dir) * len, -0.4, z + Math.sin(dir) * len * 0.5),
+    h: shark ? rand(2.4, 4.2) : rand(1.4, 3),
+    dur: shark ? rand(1.0, 1.3) : rand(0.7, 1.0),
+    t: 0,
+  };
+  c.mesh.visible = true;
+  particles.splash(c.leap.from, shark ? 0.9 : 0.35);
+  if (shark) sfx.sfxSplash(0.7);
+}
+function updateSeaLife(dt) {
+  for (const c of sea.list) {
+    const m = c.mesh;
+    if (c.leap) {
+      const L = c.leap;
+      L.t += dt;
+      const k = Math.min(1, L.t / L.dur);
+      m.position.lerpVectors(L.from, L.to, k);
+      m.position.y = -0.4 + Math.sin(k * Math.PI) * L.h;
+      // face along the arc: nose up on the way out, down on the way back in
+      m.rotation.set(Math.cos(k * Math.PI) * 0.9, Math.atan2(L.from.x - L.to.x, L.from.z - L.to.z), 0);
+      if (c.kind === 'fish' && m.userData.tail) m.userData.tail.rotation.z = Math.sin(L.t * 30) * 0.5;
+      catchBalls(c);
+      if (k >= 1) {
+        particles.splash(L.to, c.kind === 'shark' ? 1 : 0.35);
+        c.leap = null;
+        c.t = rand(c.gap[0], c.gap[1]);
+        if (c.kind === 'fish') m.visible = false;
+      }
+      continue;
+    }
+    if (c.kind === 'shark') {
+      // circle with just the fin out of the water
+      c.phase += c.speed * dt * 0.5;
+      const x = Math.sin(c.phase) * c.rx;
+      const z = c.cz + Math.cos(c.phase) * c.rz;
+      const ang = Math.atan2(Math.cos(c.phase) * c.rx * Math.sign(c.speed), -Math.sin(c.phase) * c.rz * Math.sign(c.speed));
+      m.position.set(x, -0.55 + Math.sin(elapsed * 2 + c.phase) * 0.05, z);
+      m.rotation.set(0, ang, 0);
+    }
+    c.t -= dt;
+    if (c.t <= 0 && state.mode !== 'won') startLeap(c);
+  }
+}
+// leaping fish give a bonus shot when hit; bold sharks (higher levels) snatch cannonballs out of the air
+function catchBalls(c) {
+  if (state.mode !== 'play') return;
+  const p = c.mesh.position;
+  if (p.y < 0.3) return;
+  const reach = c.kind === 'shark' ? 1.5 : 1.1;
+  for (let i = state.balls.length - 1; i >= 0; i--) {
+    const ball = state.balls[i];
+    if (ball.body.userData.child || ball.body.position.distanceTo(p) > reach) continue;
+    if (c.kind === 'fish') {
+      if (c.hit) continue;
+      c.hit = true;
+      state.shots++;
+      popup('+1 SHOT!', '#7ee081', 'nice fish!');
+      particles.confetti(p.clone());
+      sfx.sfxCoin();
+      stat('fish');
+      c.leap.h *= 1.6; // sends it flying
+      setTimeout(() => (c.hit = false), 1500);
+      updateHud();
+    } else if (c.bold && !c.leap.ate) {
+      c.leap.ate = true; // one ball per leap
+      world.removeBody(ball.body);
+      scene.remove(ball.mesh);
+      state.balls.splice(i, 1);
+      popup('CHOMP!', '#9fd6ff', 'a shark ate your shot');
+      particles.splash(p.clone(), 0.8);
+      sfx.sfxSplash(1);
+      vibrate(40);
+      stat('sharkEats');
+    }
   }
 }
 
@@ -1997,6 +2140,7 @@ function frame() {
     syncMeshes();
     updateGame(dt);
     updateEvent(dt);
+    updateSeaLife(dt);
   }
   updateLaser();
   for (const ball of state.balls) {
@@ -2051,7 +2195,7 @@ function frame() {
 }
 
 // Debug / test hook
-window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save, startChallenge, usePowerup, startEvent, getLevel };
+window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save, startChallenge, usePowerup, startEvent, getLevel, sea };
 
 goHome();
 frame();
