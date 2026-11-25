@@ -119,7 +119,7 @@ const raftMat = new CANNON.Material('raft');
 world.defaultContactMaterial.friction = 0.5;
 world.defaultContactMaterial.restitution = 0.05;
 world.addContactMaterial(new CANNON.ContactMaterial(blockMat, blockMat, { friction: 0.55, restitution: 0.02 }));
-world.addContactMaterial(new CANNON.ContactMaterial(blockMat, raftMat, { friction: 0.7, restitution: 0.02 }));
+world.addContactMaterial(new CANNON.ContactMaterial(blockMat, raftMat, { friction: 1.2, restitution: 0.0 })); // grippy deck: cargo rides moving rafts
 world.addContactMaterial(new CANNON.ContactMaterial(ballMat, blockMat, { friction: 0.3, restitution: 0.15 }));
 world.addContactMaterial(new CANNON.ContactMaterial(ballMat, raftMat, { friction: 0.6, restitution: 0.05 }));
 
@@ -300,7 +300,7 @@ function loadLevel(n, def = getLevel(n)) {
   state.extraUsed = false;
   state.endTimer = 0;
   state.firstHit = false;
-  state.released = false;
+  state.toRelease = new Set();
   state.puUsed = {};
   state.megaShots = 0;
   state.laser = false;
@@ -360,6 +360,7 @@ function loadLevel(n, def = getLevel(n)) {
     const raftIdx = state.rafts.reduce((best, r, i) => (Math.abs(r.def.x - b.x) < Math.abs(state.rafts[best].def.x - b.x) ? i : best), 0);
     const block = { body, mesh, cleared: false, sunk: false, spec, type: b.type, hp: spec.hp || 0, raft: raftIdx, lastBall: -1 };
     if (spec.floats) {
+      body.userData = { floats: true };
       // balloons remember where they hover, relative to their raft
       const r = state.rafts[raftIdx].body.position;
       block.offset = new CANNON.Vec3(b.x - r.x, b.y, b.z - r.z);
@@ -392,9 +393,9 @@ function onBlockCollide(block, e) {
     ud.burst = true;
     queueBurst(e.body.position.clone(), e.body.velocity.clone(), ud.bomb, ud);
   }
-  if (!state.firstHit && e.body.userData?.ball) {
-    // First cannonball impact releases the whole level so supports collapse naturally.
-    state.firstHit = true;
+  // A locked stack is freed when a cannonball or flying debris reaches it.
+  if (block.body.type === CANNON.Body.KINEMATIC && (ud?.ball || (e.body.type === CANNON.Body.DYNAMIC && !e.body.userData?.floats && impact > 1))) {
+    releaseRaft(block.raft);
   }
 }
 
@@ -526,12 +527,18 @@ function driftRafts(dt) {
     carryCargo(i, vx, vy, vz, dt);
   }
 }
-// After the first hit: turn every locked stack back into real physics (done between steps).
+// Turn a raft's locked stack back into real physics once something reaches it (done between steps).
+function releaseRaft(i) {
+  state.firstHit = true;
+  state.toRelease = state.toRelease || new Set();
+  state.toRelease.add(i);
+}
 function releaseCargo() {
-  if (!state.firstHit || state.released) return;
-  state.released = true;
+  if (!state.toRelease || !state.toRelease.size) return;
+  const rafts = state.toRelease;
+  state.toRelease = new Set();
   for (const b of state.blocks) {
-    if (b.removed || b.spec.floats || b.body.type !== CANNON.Body.KINEMATIC) continue;
+    if (!rafts.has(b.raft) || b.removed || b.spec.floats || b.body.type !== CANNON.Body.KINEMATIC) continue;
     b.body.type = CANNON.Body.DYNAMIC;
     b.body.mass = b.hp > 0 ? 200 : b.spec.mass; // armored crates stay too heavy to budge until broken
     b.body.updateMassProperties();
@@ -546,13 +553,20 @@ function carryCargo(i, vx, vy, vz, dt) {
       b.body.velocity.set(vx, vy, vz); // locked stacks move exactly with the raft
       continue;
     }
-    if (b.body.sleepState === CANNON.Body.SLEEPING || !state.firstHit) {
-      // until the first cannonball lands, the whole stack rides its raft as one piece
+    if (b.body.sleepState === CANNON.Body.SLEEPING) {
+      // settled pieces on a freed raft keep riding it
       b.body.position.x += vx * dt;
       b.body.position.y += vy * dt;
       b.body.position.z += vz * dt;
-      if (!state.firstHit) b.body.sleep();
     } else if (b.hp > 0) b.body.velocity.set(vx, vy, vz); // awake armored cargo is too heavy to drag by friction: carry it
+    else {
+      // still-standing pieces get extra grip so stacks ride a swaying raft; flying pieces are left alone
+      const v = b.body.velocity;
+      if (Math.hypot(v.x - vx, v.z - vz) < 1.2 && Math.abs(v.y - vy) < 1.2) {
+        v.x += (vx - v.x) * 0.3;
+        v.z += (vz - v.z) * 0.3;
+      }
+    }
   }
 }
 
@@ -560,7 +574,8 @@ function carryCargo(i, vx, vy, vz, dt) {
 const pendingBursts = [];
 let shake = 0;
 function queueBurst(pos, vel, bomb = false, ud = null) {
-  state.firstHit = true; // any blast (cannonball, keg, shark) frees the stacks
+  // any blast (cannonball, keg, shark) frees the stacks it can reach
+  for (const b of state.blocks) if (!b.removed && b.body.position.distanceTo(pos) < 6) releaseRaft(b.raft);
   pendingBursts.push({ pos, vel, bomb, ud });
 }
 function applyBursts() {
@@ -1181,7 +1196,7 @@ function updateEvent(dt) {
       sh.rotation.set(0, Math.atan2(Math.cos(a) * 8.5, -Math.sin(a) * 2.2), 0); // face along the path
       ev.nextJump -= dt;
       const targets = state.blocks.filter((b) => !b.cleared && !b.removed && b.hp === 0 && !b.spec.floats);
-      if (ev.nextJump <= 0 && targets.length) {
+      if (ev.nextJump <= 0 && targets.length && state.shotsFired > 0) { // never strike before the player's first shot
         ev.nextJump = 6 + Math.random() * 3;
         const target = targets[Math.floor(Math.random() * targets.length)];
         const to = new THREE.Vector3(target.body.position.x, 0, target.body.position.z - 2.5);
