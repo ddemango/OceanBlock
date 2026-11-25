@@ -169,6 +169,13 @@ scene(sh(rect(20, 836, 940, 420), '#a8743e'));
   // marble top
   scene(sh(rect(14, 818, 952, 22, 3), `url(#${ID}-marble)`), stroke(curve([[60, 822], [160, 830], [240, 824]]) + curve([[400, 834], [520, 826], [620, 832]]) + curve([[720, 824], [820, 834], [920, 826]]), '#c9c0b0', 1), sh(rect(14, 838, 952, 6), '#3b2a1c', { opacity: 0.2 }));
 }
+// little bunting along the marble edge
+{
+  const cols = [P.tomato, '#f3d77a', P.cornflower, '#fbf6e8', P.sage];
+  const o: Shape[] = [];
+  for (let i = 0; i < 18; i++) { const x = 664 + i * 16; o.push(sh(poly([[x, 846], [x + 14, 846], [x + 7, 864]]), cols[i % 5])); }
+  scene(stroke(line([[660, 846], [952, 846]]), '#7a5232', 1.2), o);
+}
 // on the counter
 {
   scene(place(cakeStand(130, 36, '#fbf6e8'), { x: 98, y: 820 }), place(cake(104, 62, '#f2d18a', '#fbf6e8', '#c8283a'), { x: 98, y: 786 }));
@@ -208,7 +215,20 @@ scene(sh(rect(984, 1270, 200, 46, 4), '#b8925a'), stroke(rect(992, 1276, 184, 34
   scene(place(flowerVase(46, 2, '#fbf6e8', [P.tomato, '#f3d77a']), { x: x - 4, y: 1338 }));
 }
 // umbrella against the counter, baskets, sacks, crates and the milk
-target('umbrella', 'Umbrella', place(umbrella(170, P.tomato), { x: 650, y: 1300, rot: -10 }));
+// cake boxes stacked against the counter
+{
+  const box = (x: number, y: number, w: number, h: number, c: string): Shape[] => { let st = ''; for (let i = 0; i < w; i += 16) st += rect(x - w / 2 + i, y - h, 8, h); return [sh(rect(x - w / 2, y - h, w, h, 2), '#fbf6e8'), sh(st, c, { opacity: 0.7 }), sh(rect(x - w / 2 - 3, y - h - 8, w + 6, 10, 2), shade(c, -0.1)), stroke(line([[x, y - h - 8], [x, y]]), P.tomato, 2)]; };
+  scene(box(800, 1262, 130, 70, '#f4b8c8'), box(796, 1182, 112, 62, '#c9d8f0'), box(804, 1110, 92, 54, '#cfe0b0'), sh(M(782, 1056) + Q(790, 1040, 804, 1052) + Q(818, 1040, 826, 1056), 'none', { stroke: P.tomato, strokeWidth: 2 }));
+}
+// wheat wreath and letterbox on the door
+{
+  const g = rng(19);
+  let a = '', b = '';
+  for (let i = 0; i < 30; i++) { const t = (i / 30) * Math.PI * 2, x = 1082 + Math.cos(t) * 48, y = 800 + Math.sin(t) * 48; const d = leaf(x, y, g.range(16, 24), 5, (t * 180) / Math.PI + 100 + g.range(-20, 20)); if (i % 2) a += d; else b += d; }
+  scene(sh(a, '#d9b060'), sh(b, '#c09040'), stroke(M(1062, 752) + Q(1082, 740, 1102, 752), P.tomato, 4), sh(circle(1082, 754, 6), P.tomato));
+  scene(ol(rect(1040, 1060, 84, 22, 3), '#c9a24a', 1.2, -0.35), sh(rect(1048, 1066, 68, 6, 2), '#8a6a2a'), ol(rect(1000, 1206, 164, 14, 2), '#c9a24a', 1, -0.3));
+}
+target('umbrella', 'Umbrella', place(umbrella(130, P.tomato), { x: 680, y: 1300, rot: -14 }));
 {
   const bs: Shape[] = [];
   for (let i = 0; i < 7; i++) bs.push(...place(baguette(170, i % 2 ? '#d9a050' : '#cf9648'), { x: 450 + i * 12 - 36, y: 1290, rot: 90 + (i - 3) * 6 }));

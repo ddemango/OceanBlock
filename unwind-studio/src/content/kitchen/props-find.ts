@@ -520,12 +520,13 @@ export function pretzel(s: number): Shape[] {
 /** Croissant, origin centre. */
 export function croissant(s: number): Shape[] {
   const out: Shape[] = [];
-  const segs = [-2, 2, -1, 1, 0];
-  for (const i of segs) {
-    const t = i / 2, a = ((-90 + t * 62) * Math.PI) / 180, R = s * 0.3;
-    const x = Math.cos(a) * R, y = s * 0.28 + Math.sin(a) * R;
-    const sz = s * (0.13 + 0.11 * (1 - Math.abs(t)));
-    out.push(ol(ellipse(x, y, sz * 0.75, sz, t * 55), '#d9963e', 1.1, -0.38), hl(ellipse(x - sz * 0.15, y - sz * 0.45, sz * 0.35, sz * 0.14, t * 55), 0.35));
+  const order = [-3, 3, -2, 2, -1, 1, 0];
+  for (const i of order) {
+    const t = i / 3, th = ((-90 + t * 68) * Math.PI) / 180, R = s * 0.34;
+    const x = Math.cos(th) * R, y = s * 0.3 + Math.sin(th) * R;
+    const k = 1 - Math.abs(t) * 0.58;
+    const rot = (th * 180) / Math.PI + 90;
+    out.push(ol(ellipse(x, y, s * 0.1 * k + s * 0.02, s * 0.2 * k, rot), i % 2 ? '#d9963e' : '#e0a24a', 1.1, -0.4), hl(ellipse(x - s * 0.02, y - s * 0.06 * k, s * 0.04 * k, s * 0.1 * k, rot), 0.3));
   }
   return out;
 }
@@ -563,9 +564,17 @@ export function coin(r: number): Shape[] {
 export function spectacles(s: number, col = '#5a3a2a'): Shape[] {
   return [stroke(M(-s * 0.42, -s * 0.04) + L(-s * 0.5, -s * 0.18) + M(s * 0.42, -s * 0.04) + L(s * 0.5, -s * 0.18), col, s * 0.04), sh(circle(-s * 0.24, 0, s * 0.18) + circle(s * 0.24, 0, s * 0.18), '#cfe2ee', { opacity: 0.6 }), stroke(circle(-s * 0.24, 0, s * 0.18) + circle(s * 0.24, 0, s * 0.18), col, s * 0.05), stroke(M(-s * 0.07, -s * 0.02) + Q(0, -s * 0.1, s * 0.07, -s * 0.02), col, s * 0.04), hl(ellipse(-s * 0.3, -s * 0.07, s * 0.06, s * 0.03, -30), 0.8), hl(ellipse(s * 0.18, -s * 0.07, s * 0.06, s * 0.03, -30), 0.8)];
 }
-/** Closed umbrella with a crook handle, origin at the tip on the floor. */
+/** Open umbrella, origin at the bottom of the crook handle. */
 export function umbrella(s: number, col = '#d8452f'): Shape[] {
-  return [stroke(line([[0, 0], [0, -s * 0.08]]), '#4a5258', s * 0.025), ol(blob([[0, -s * 0.07], [s * 0.1, -s * 0.36], [s * 0.12, -s * 0.66], [s * 0.05, -s * 0.8], [-s * 0.05, -s * 0.8], [-s * 0.12, -s * 0.62], [-s * 0.08, -s * 0.34]], 0.8), col, 1.2), stroke(curve([[0, -s * 0.1], [s * 0.04, -s * 0.45], [s * 0.02, -s * 0.78]]) + curve([[0, -s * 0.1], [-s * 0.05, -s * 0.45], [-s * 0.07, -s * 0.66]]), shade(col, -0.28), 1.2), sh(rect(-s * 0.1, -s * 0.56, s * 0.2, s * 0.05, 2), '#fbf3df'), sh(circle(-s * 0.06, -s * 0.4, s * 0.02) + circle(s * 0.05, -s * 0.3, s * 0.02) + circle(s * 0.02, -s * 0.64, s * 0.02) + circle(-s * 0.04, -s * 0.2, s * 0.018), '#fbf3df'), stroke(M(0, -s * 0.8) + L(0, -s * 0.9) + Q(0, -s * 1.02, -s * 0.11, -s * 1.02) + Q(-s * 0.2, -s * 1.02, -s * 0.2, -s * 0.92), '#7a5232', s * 0.05)];
+  const top = -s * 0.95, base = -s * 0.5, hw = s * 0.5;
+  let can = M(-hw, base) + Q(-hw, top, 0, top) + Q(hw, top, hw, base);
+  const pts: number[] = [];
+  for (let i = 0; i <= 4; i++) pts.push(hw - (i * hw * 2) / 4);
+  for (let i = 0; i < 4; i++) can += Q((pts[i] + pts[i + 1]) / 2, base - s * 0.08, pts[i + 1], base);
+  can += 'Z';
+  let ribs = '';
+  for (const x of pts.slice(1, 4)) ribs += M(0, top) + Q(x * 0.5, top + s * 0.08, x, base);
+  return [stroke(M(0, top) + L(0, -s * 0.12) + Q(0, 0, -s * 0.1, 0) + Q(-s * 0.18, 0, -s * 0.18, -s * 0.08), '#7a5232', s * 0.035), ol(can, col, 1.2), sh(M(-hw * 0.5, base - s * 0.02) + Q(-hw * 0.4, top + s * 0.12, 0, top) + Q(-hw * 0.2, top + s * 0.14, -hw * 0.25, base - s * 0.04) + 'Z', '#ffffff', { opacity: 0.18 }), stroke(ribs, shade(col, -0.3), 1.2), sh(circle(-hw * 0.6, base - s * 0.14, s * 0.03) + circle(hw * 0.1, top + s * 0.18, s * 0.03) + circle(hw * 0.6, base - s * 0.12, s * 0.03) + circle(-hw * 0.2, base - s * 0.08, s * 0.03), '#fbf3df'), sh(rect(-s * 0.015, top - s * 0.06, s * 0.03, s * 0.07), '#3b2f2a')];
 }
 /** Teaspoon, horizontal, origin centre. */
 export function teaspoon(s: number): Shape[] {
