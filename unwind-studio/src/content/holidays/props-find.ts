@@ -405,8 +405,8 @@ export function pie(r: number, kind: number): Shape[] {
   if (kind === 0) {
     out.push(sh(ellipse(-r * 0.2, -ry * 0.2, r * 0.4, ry * 0.3), '#e48a3a', { opacity: 0.7 }));
     let cream = '';
-    for (const [x, y] of [[0, 0], [-r * 0.45, -ry * 0.25], [r * 0.45, -ry * 0.2], [-r * 0.3, ry * 0.4], [r * 0.32, ry * 0.42]] as Pt[]) cream += M(x - r * 0.12, y) + Q(x - r * 0.12, y - ry * 0.4, x, y - ry * 0.5) + Q(x + r * 0.12, y - ry * 0.4, x + r * 0.12, y) + Q(x, y + ry * 0.12, x - r * 0.12, y) + 'Z';
-    out.push(sh(cream, '#fbf6ea', { stroke: '#e0d6c4', strokeWidth: 0.8 }), sh(circle(0, -ry * 0.32, r * 0.04), '#c8722a', { opacity: 0.6 }));
+    for (const [x, y, k] of [[0, ry * 0.1, 1.6], [-r * 0.5, -ry * 0.1, 0.8], [r * 0.5, -ry * 0.05, 0.8]] as [number, number, number][]) cream += blob([[x - r * 0.16 * k, y], [x - r * 0.12 * k, y - ry * 0.3 * k], [x - r * 0.02 * k, y - ry * 0.5 * k], [x + r * 0.03 * k, y - ry * 0.68 * k], [x + r * 0.08 * k, y - ry * 0.4 * k], [x + r * 0.16 * k, y - ry * 0.14 * k], [x, y + ry * 0.1 * k]], 0.8);
+    out.push(sh(cream, '#fbf6ea', { stroke: '#e0d6c4', strokeWidth: 0.8 }), sh(circle(-r * 0.04, -ry * 0.2, r * 0.03) + circle(r * 0.05, -ry * 0.05, r * 0.025), '#a8582a', { opacity: 0.7 }));
   } else if (kind === 2) {
     let pc = '';
     for (let k = 0; k < 2; k++) for (let i = 0; i < (k ? 7 : 12); i++) { const a = (i / (k ? 7 : 12)) * Math.PI * 2, rr = k ? 0.38 : 0.68; pc += ellipse(Math.cos(a) * r * rr, Math.sin(a) * ry * rr, r * 0.12, ry * 0.16, (a * 180) / Math.PI); }

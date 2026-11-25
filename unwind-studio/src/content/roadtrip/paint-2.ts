@@ -55,7 +55,6 @@ const glints: [number, number, number][] = [[614, 220, 12], [633, 160, 12], [652
 glints.forEach(([y, w, h], i) => R(`glint-${i + 1}`, rrect(SUN.x - w / 2 + (i % 2) * 14, y - h / 2, w, h, [h / 2, h / 2, h / 2, h / 2]), 'gold'));
 R('foam', waveBand(0, W, 786, 7, 170, H, 1), 'cream');
 R('beach', waveBand(0, W, 806, 8, 260, H, 2.4), 'sand');
-R('dune', waveBand(0, W, 1176, 14, 620, H, 4.2), 'sandShadow');
 
 // ---------- palm trees ----------
 function palm(id: string, base: Pt, top: Pt, bend: number, w0: number, w1: number, bands: number, fronds: [number, number, number][], nuts: Pt[]) {
@@ -68,28 +67,26 @@ function palm(id: string, base: Pt, top: Pt, bend: number, w0: number, w1: numbe
   });
   nuts.forEach(([x, y], i) => R(`${id}-coconut-${i + 1}`, circle(x, y, 15), 'plum'));
 }
-palm('palm-left', [92, 1150], [178, 548], -46, 40, 22, 7,
+palm('palm-left', [92, 1146], [178, 548], -46, 40, 22, 7,
   [[-162, 150, 56], [-136, 180, 60], [-100, 150, 50], [-58, 190, 60], [-18, 220, 80], [24, 180, 70]],
   [[166, 566], [192, 572], [178, 590]]);
 palm('palm-right', [948, 1110], [872, 598], 30, 34, 20, 5,
   [[-176, 170, 64], [-128, 150, 50], [-62, 160, 54], [-16, 118, 40], [30, 120, 46]],
   [[862, 614], [886, 616]]);
 
-// ---------- beach towel and a starfish ----------
+// ---------- the coast highway along the bottom, and a starfish ----------
+R('starfish', star(410, 1112, 28, 11, 5, -80), 'coral');
+R('road-shoulder', waveBand(0, W, 1150, 4, 500, H, 1), 'sandShadow', [300, 1160]);
+R('highway', rect(0, 1168, W, H - 1168), 'glass');
+for (let i = 0; i < 5; i++) R(`lane-dash-${i + 1}`, rrect(50 + i * 200, 1204, 100, 12, [3, 3, 3, 3]), 'gold');
+detail.push(stroke(line([[0, 1176], [W, 1176]]) + line([[0, 1242], [W, 1242]]), '#fff3dc', 3));
+detail.push(stroke(line([[0, 1158], [W, 1158]]), '#8a7c6c', 2));
 {
-  const A: Pt = [520, 1120], B: Pt = [900, 1094], C: Pt = [940, 1236], D: Pt = [556, 1250];
-  const cols = ['coral', 'cream', 'turquoise', 'cream', 'coral'];
-  const at = (u: number, v: number): Pt => {
-    const top: Pt = [A[0] + (B[0] - A[0]) * u, A[1] + (B[1] - A[1]) * u];
-    const bot: Pt = [D[0] + (C[0] - D[0]) * u, D[1] + (C[1] - D[1]) * u];
-    return [top[0] + (bot[0] - top[0]) * v, top[1] + (bot[1] - top[1]) * v];
-  };
-  cols.forEach((c, i) => R(`towel-${i + 1}`, poly([at(i / 5, 0), at((i + 1) / 5, 0), at((i + 1) / 5, 1), at(i / 5, 1)]), c));
-  let fringe = '';
-  for (let k = 0; k <= 10; k++) { const p = at(k / 10, 0); fringe += line([p, [p[0] - 3, p[1] - 12]]); }
-  detail.push(stroke(fringe, '#c9614f', 2));
+  // wooden guard-rail posts on the shoulder
+  let posts = '';
+  for (let x = 40; x < W; x += 120) posts += line([[x, 1150], [x, 1166]]);
+  detail.push(stroke(posts, '#7a5638', 3));
 }
-R('starfish', star(400, 1176, 30, 12, 5, -80), 'coral');
 
 // ---------- the camper van ----------
 const SH = { x: 512, y: 1046 };
@@ -162,7 +159,7 @@ for (const [i, wx] of [[1, 334], [2, 700]] as const) {
   detail.push(stroke(bird(470, 220, 13) + bird(510, 200, 10) + bird(540, 236, 8), INK, 2));
   // footprints and grass tufts in the sand
   detail.push(stroke(
-    curve([[120, 1180], [124, 1150], [118, 1128]]) + curve([[132, 1180], [140, 1156], [150, 1140]]) + curve([[108, 1180], [100, 1160], [88, 1150]]) +
+    curve([[150, 1140], [154, 1112], [148, 1092]]) + curve([[162, 1140], [170, 1118], [180, 1104]]) + curve([[138, 1140], [130, 1122], [118, 1112]]) +
     curve([[960, 1000], [962, 972], [956, 954]]) + curve([[970, 1000], [978, 978], [988, 966]]),
     '#7d9a4f', 3));
   detail.push(stroke(curve([[408, 1170], [400, 1176], [392, 1172]]), '#b4523f', 1.5));
@@ -170,7 +167,7 @@ for (const [i, wx] of [[1, 334], [2, 700]] as const) {
 
 const activity: PaintActivity = {
   id: 'roadtrip-paint-2', version: 1, mode: 'paint', title: 'Vintage Camper Van',
-  blurb: 'A two-tone camper van with a surfboard on the roof, parked between the palms as the sun sinks into the sea.',
+  blurb: 'A two-tone camper van with a surfboard on the roof, pulled off the coast highway between the palms as the sun sinks into the Pacific.',
   collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Moderate',
   width: W, height: H, palette, regions, detail,
 };

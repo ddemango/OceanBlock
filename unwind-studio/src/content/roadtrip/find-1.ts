@@ -334,7 +334,7 @@ scene(place(rollerCase(70, 96, '#c9a06a', 87), { x: 820, y: 1210 }));
 void blob; void GOLD; void L;
 
 const activity: FindActivity = {
-  id: ID, version: 1, mode: 'find', title: 'Airport Lounge',
+  id: 'roadtrip-find-1', version: 1, mode: 'find', title: 'Airport Lounge',
   blurb: 'Your flight is boarding soon: find fourteen travel bits among the seats, suitcases and café counter while the plane waits outside.',
   collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Moderate',
   width: W, height: H, defs, items,

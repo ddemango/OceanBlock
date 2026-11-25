@@ -58,7 +58,7 @@ export function balloon(cx: number, cy: number, r: number) {
   const strip = (u0: number, u1: number, ya: number, yb: number) => {
     const parts: number[] = ya < cy && yb > cy ? [...ys(ya, cy), ...ys(cy, yb).slice(1)] : ys(ya, yb);
     const left: Pt[] = parts.map((y) => [xAt(u0, y), y]);
-    const right: Pt[] = parts.map((y) => [xAt(u1, y), y]).reverse();
+    const right: Pt[] = parts.map((y): Pt => [xAt(u1, y), y]).reverse();
     return poly([...left, ...right]);
   };
   return { yTop, yNeck, hw, xAt, strip, cap: (yb: number) => strip(-1, 1, yTop, yb) };

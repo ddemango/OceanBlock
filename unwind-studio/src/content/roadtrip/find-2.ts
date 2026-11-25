@@ -59,9 +59,9 @@ scene(sh(rect(0, LAKE, W, SHORE - LAKE + 40), `url(#${ID}-lake)`));
   for (let i = 0; i < 36; i++) { const y = g.range(LAKE + 10, SHORE + 20), x = g.range(0, W), w = g.range(30, 120) * (0.6 + (y - LAKE) / 300); scene(sh(rect(x, y, w, 2.4, 1.2), g.pick(['#f6c8a0', '#fbe0c0', '#b8a8d0']), { opacity: g.range(0.35, 0.8) })); }
   scene(sh(rect(905, LAKE + 6, 50, 4, 2) + rect(898, LAKE + 20, 64, 4, 2) + rect(910, LAKE + 36, 40, 3, 1.5), '#fff6d0', { opacity: 0.6 }));
   // canoe with a paddler
-  const cx = 700, cy = 690;
+  const cx = 545, cy = 724;
   scene(sh(ellipse(cx, cy + 8, 130, 10), '#2a3a58', { opacity: 0.4 }));
-  scene(place(figure(90, '#d2452f', 12), { x: cx + 30, y: cy - 4 }));
+  scene(place(figure(90, '#d2452f', 12), { x: cx + 30, y: cy + 34 }));
   scene(stroke(line([[cx - 10, cy - 60], [cx + 50, cy + 20]]), '#8a5a35', 3), sh(ellipse(cx + 52, cy + 22, 6, 12, -40), '#8a5a35'));
   scene(ol(M(cx - 130, cy - 20) + Q(cx - 110, cy + 4, cx - 60, cy + 6) + L(cx + 60, cy + 6) + Q(cx + 110, cy + 4, cx + 130, cy - 20) + Q(cx, cy - 6, cx - 130, cy - 20) + 'Z', '#c8643a', 1.2), stroke(M(cx - 128, cy - 19) + Q(cx, cy - 4, cx + 128, cy - 19), '#e8a060', 2));
   // ducks
@@ -75,7 +75,6 @@ scene(sh(rect(0, LAKE, W, SHORE - LAKE + 40), `url(#${ID}-lake)`));
   for (let x = 870; x < 1200; x += 22) planks += line([[x, y0 - (x - 860) * 0.06], [x, y0 + 30 - (x - 860) * 0.04]]);
   scene(stroke(planks, '#6b4a30', 1.6));
   for (const px of [880, 980, 1080]) scene(sh(rect(px - 5, y0 + 20 - (px - 860) * 0.05, 10, 50), '#5a3a24'), sh(ellipse(px, y0 + 70 - (px - 860) * 0.05, 14, 3), '#fbe0c0', { opacity: 0.4 }));
-  target('fishing-rod', 'Fishing rod', place(fishingRod(130), { x: 930, y: y0 + 8 }));
   scene(ol(rect(1010, y0 - 30, 46, 30, 3), '#3f6b8e', 1), sh(rect(1010, y0 - 30, 46, 8, 3), '#2f4a6a'));
 }
 
@@ -151,9 +150,10 @@ scene(stroke(line([[1080, 562], [1150, 552]]), '#4a3222', 5));
   const g = rng(14), cols = ['#ffd27a', '#ff9a6a', '#fff3c4', '#9ae0c0'];
   for (let i = 0; i < 9; i++) { const t = i / 8, x = x1 + 216 + t * (700 - x1 - 216), y = top + 76 + Math.sin(t * Math.PI) * 40 - t * 36; const c = g.pick(cols); scene(sh(circle(x, y + 6, 10), c, { opacity: 0.25 }), sh(ellipse(x, y + 6, 3.4, 5), c)); }
   // camper step clutter
-  target('binoculars', 'Binoculars', place(binoculars(44, '#3a4a3a'), { x: x0 + 236, y: base - 6 }));
-  target('firefly-jar', 'Jar of fireflies', place(fireflyJar(46), { x: x1 - 30, y: base - 76 }).map((p) => p));
+  target('binoculars', 'Binoculars', place(binoculars(44, '#3a4a3a'), { x: 1046, y: 1186 }));
+  target('firefly-jar', 'Jar of fireflies', place(fireflyJar(46), { x: x1 - 30, y: base - 76 }));
 }
+target('fishing-rod', 'Fishing rod', place(fishingRod(170), { x: 40, y: 1250, rot: 8 }));
 // =====================================================================
 // tent on the right
 // =====================================================================
@@ -193,7 +193,6 @@ scene(stroke(line([[1080, 562], [1150, 552]]), '#4a3222', 5));
   target('marshmallow', 'Toasted marshmallow', place(marshmallowStick(110), { x: fx + 140, y: fy - 50, sx: -1 }));
 }
 scene(place(campChair(110, '#2f6690'), { x: 380, y: 1200 }), place(campChair(110, '#c8322a'), { x: 830, y: 1210 }));
-scene(sh(rect(325, 1080, 110, 30, 6), '#d9a040', { opacity: 0.9 }));
 target('ukulele', 'Ukulele', place(ukulele(110, '#c98a4a'), { x: 840, y: 1130, rot: 24 }));
 
 // =====================================================================
@@ -239,7 +238,7 @@ target('ukulele', 'Ukulele', place(ukulele(110, '#c98a4a'), { x: 840, y: 1130, r
     scene(ol(circle(x, y, 20), '#a8784a', 1), sh(circle(x, y, 13), '#d9b07a'), stroke(circle(x, y, 7), '#a8784a', 1));
   }
   scene(stroke(line([[1100, 1470], [1150, 1350]]), '#8a5a35', 6), sh(poly([[1136, 1346], [1172, 1356], [1166, 1384], [1144, 1376]]), '#9aa0a6'));
-  target('boot', 'Hiking boot', place(hikingBoot(74, '#8a5a35'), { x: 760, y: 1480 }));
+  scene(place(hikingBoot(74, '#8a5a35'), { x: 760, y: 1480 }));
   target('flashlight', 'Flashlight', place(flashlight(80, '#f2c14e'), { x: 500, y: 1240, rot: -10 }));
   // log seat with the squirrel
   scene(shadow(1000, 1240, 110, 10), ol(rect(900, 1196, 200, 42, 20), '#7a5a3a', 1.2), ol(ellipse(1100, 1217, 14, 21), '#d9b07a', 1), stroke(circle(1100, 1217, 9), '#a8784a', 1), stroke(line([[920, 1210], [1060, 1208]]) + line([[930, 1224], [1070, 1226]]), '#5a3a24', 1.4));
@@ -251,7 +250,7 @@ target('ukulele', 'Ukulele', place(ukulele(110, '#c98a4a'), { x: 840, y: 1130, r
 void L; void Q; void M;
 
 const activity: FindActivity = {
-  id: ID, version: 1, mode: 'find', title: 'Campsite by the Lake',
+  id: 'roadtrip-find-2', version: 1, mode: 'find', title: 'Campsite by the Lake',
   blurb: 'The first stars are out over the mountain lake: find sixteen camping treasures around the camper, the tent and the crackling fire.',
   collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Detailed',
   width: W, height: H, defs, items,

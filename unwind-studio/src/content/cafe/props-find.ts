@@ -41,13 +41,13 @@ export function woodFloor(y0: number, y1: number, W: number, cols: string[], see
   const g = rng(seed);
   const by = cols.map(() => '');
   let seams = '';
-  let y = y0, rowH = 22;
+  let y = y0, rowH = 18;
   while (y < y1) {
     const h = Math.min(rowH, y1 - y);
     let x = -g.range(0, 160);
-    while (x < W) { const len = g.range(120, 260); by[g.int(0, cols.length - 1)] += rect(Math.max(0, x), y, Math.min(W, x + len) - Math.max(0, x), h); if (x > 0) seams += line([[x, y], [x, y + h]]); x += len; }
+    while (x < W) { const len = g.range(100, 220) * (rowH / 30 + 0.5); by[g.int(0, cols.length - 1)] += rect(Math.max(0, x), y, Math.min(W, x + len) - Math.max(0, x), h); if (x > 0) seams += line([[x, y], [x, y + h]]); x += len; }
     seams += line([[0, y], [W, y]]);
-    y += h; rowH *= 1.12;
+    y += h; rowH *= 1.06;
   }
   return [sh(rect(0, y0, W, y1 - y0), cols[0]), ...by.map((d, i) => sh(d, cols[i])).filter((p) => p.d), stroke(seams, '#3b2414', 1.4, { opacity: 0.35 })];
 }

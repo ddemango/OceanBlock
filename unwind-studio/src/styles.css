@@ -470,3 +470,6 @@ html[data-text='large'] .page, html[data-text='large'] .dialog, html[data-text='
 html[data-text='larger'] .page, html[data-text='larger'] .dialog, html[data-text='larger'] .pbar, html[data-text='larger'] .tray-tools { zoom: 1.25; }
 /* a calm solid strip behind the phone's clock and battery, so scrolled content never runs under them */
 .shell::before { content: ''; position: fixed; z-index: 40; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: var(--bg-top); pointer-events: none; }
+/* the app icon as the brand mark */
+.brand-mark { background: url('/icon-192.png') center / cover no-repeat; box-shadow: 0 2px 8px rgba(80, 40, 160, 0.25); }
+.brand-mark::before, .brand-mark::after { display: none; }

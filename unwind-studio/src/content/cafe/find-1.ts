@@ -174,7 +174,7 @@ scene(sh(ellipse(850, 1150, 340, 70), '#2f5a50'), stroke(ellipse(850, 1150, 310,
 scene(at(floorLamp(300, '#f0dcae', '#3b3532'), 1160, 1090));
 scene(at(armchair(220, '#5c8a4e', 1), 620, 1130));
 scene(at(cushion(66, K.mustard, '#fbf6ec', 1, -8), 626, 1006));
-target('reading-glasses', 'Reading glasses', at(readingGlasses(62), 528, 1000, 1, -12));
+target('reading-glasses', 'Reading glasses', at(readingGlasses(56), 532, 990, 1, -8));
 scene(at(armchair(210, K.mustard, 3), 1070, 1130));
 scene(at(cushion(60, K.red, '#fbf6ec', 0, 10), 1068, 1010));
 // low table
@@ -190,7 +190,9 @@ scene(at(cushion(60, K.red, '#fbf6ec', 0, 10), 1068, 1010));
 // =====================================================================
 // foreground: café table, chairs and plants
 // =====================================================================
-scene(sh(ellipse(300, 1440, 260, 46), '#c98a5a', { opacity: 0.55 }), stroke(ellipse(300, 1440, 230, 38), '#fbf3df', 3, { opacity: 0.5 }));
+scene(sh(ellipse(320, 1430, 300, 60), '#7a3a32'), stroke(ellipse(320, 1430, 270, 50) + ellipse(320, 1430, 200, 36), '#f3d77a', 3, { opacity: 0.8 }), stroke(ellipse(320, 1430, 236, 43), '#e8a08a', 4, { opacity: 0.8 }));
+// guitar case on the floor by the stage
+scene(ol(blob([[480, 1200], [520, 1170], [640, 1176], [700, 1166], [740, 1190], [700, 1214], [640, 1206], [520, 1222]], 0.8), '#2b2622', 1.2), stroke(curve([[500, 1196], [600, 1190], [720, 1188]]), '#4a4440', 2), sh(rect(590, 1196, 24, 8, 2), K.chrome));
 scene(at(bistroChair(260, '#3b2a22'), 120, 1430), at(bistroChair(260, '#3b2a22'), 480, 1430));
 scene(at(cafeTable(270, 200, '#ece4d2'), 300, 1450));
 {

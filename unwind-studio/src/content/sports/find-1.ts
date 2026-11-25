@@ -88,9 +88,9 @@ for (const x of [70, 1130]) {
   scene(sh(on, '#7fe07a'), sh(off, '#2f4a3e'), sh(circle(600, 172, 6) + circle(618, 172, 6), '#e85a4a'));
   // clock face
   scene(ol(circle(800, 176, 20), '#f6ecd6', 2), stroke(M(800, 176) + L(800, 162) + M(800, 176) + L(810, 180), '#1c2e27', 2.5));
-  scene(place(gull(40), { x: 380, y: 28 }));
+  scene(place(gull(26), { x: 380, y: 22 }));
 }
-target('seagull', 'Seagull', place(gull(48), { x: 690, y: 28 }));
+target('seagull', 'Seagull', place(gull(46), { x: 326, y: 264 }));
 
 // =====================================================================
 // outfield wall and the field
@@ -165,7 +165,7 @@ scene(stroke(line([[0, 742], [W, 742]]), '#b8c0c8', 4));
 // the stands: rows of fans seen from behind
 // =====================================================================
 scene(sh(rect(0, 790, W, 710), '#cfc8bb'));
-const rows: [number, number][] = [[850, 60], [930, 70], [1025, 82], [1135, 96], [1265, 112]];
+const rows: [number, number][] = [[852, 70], [938, 84], [1038, 98], [1152, 114], [1290, 132]];
 const aisles: [number, number][] = [[210, 270], [880, 950]];
 const g = rng(2026);
 const shirts = [P.red, P.red, P.navy, '#f4f1ea', P.teal, '#f2cf3a', '#7fa8d8', P.red, '#9b6fb0', P.navy, '#e57a2e'];
@@ -207,15 +207,15 @@ target('pennant', 'Yellow pennant', place(pennant(96, '#f2cf3a', P.navy), { x: 6
 target('cotton-candy', 'Cotton candy', place(cottonCandy(84), { x: 1010, y: 902, rot: 10 }));
 
 // vendors in the aisles
-scene(place(vendor(260, '#f2cf3a', P.red, SKIN[2], HAIR[0], 'popcorn'), { x: 240, y: 1035 }));
-scene(place(vendor(320, P.red, '#f4f1ea', SKIN[0], HAIR[3], 'hotdog'), { x: 915, y: 1245 }));
+scene(place(vendor(260, '#f2cf3a', P.red, SKIN[2], HAIR[0], 'popcorn'), { x: 240, y: 1052 }));
+scene(place(vendor(330, P.red, '#f4f1ea', SKIN[0], HAIR[3], 'hotdog'), { x: 915, y: 1300 }));
 
 // things resting on seat backs
-target('peanuts', 'Bag of peanuts', place(peanutBag(56), { x: 560, y: 1005 }));
-target('baseball', 'Baseball', place(baseball(17), { x: 772, y: 900 }));
-target('cap', 'Baseball cap', place(cap(66, P.navy, shade(P.navy, -0.2), '#f2cf3a'), { x: 1080, y: 1112, rot: -6 }));
-target('mitt', 'Baseball mitt', place(mitt(86), { x: 420, y: 1210, rot: -12 }));
-target('sunglasses', 'Sunglasses', place(sunglasses(70), { x: 700, y: 1104 }));
+target('peanuts', 'Bag of peanuts', place(peanutBag(58), { x: 560, y: 1010 }));
+target('baseball', 'Baseball', place(baseball(18), { x: 772, y: 894 }));
+target('cap', 'Baseball cap', place(cap(66, P.navy, shade(P.navy, -0.2), '#f2cf3a'), { x: 1080, y: 1116, rot: -6 }));
+target('mitt', 'Baseball mitt', place(mitt(90), { x: 430, y: 1222, rot: -12 }));
+target('sunglasses', 'Sunglasses', place(sunglasses(70), { x: 700, y: 1108 }));
 
 // =====================================================================
 // foreground ledge with snacks
@@ -234,12 +234,11 @@ scene(sh(rect(0, 1372, W, 128), '#b5ad9e'), sh(rect(0, 1372, W, 36), '#d8d2c4'),
 }
 target('pretzel', 'Pretzel', place(pretzel(84), { x: 116, y: 1404 }));
 target('hot-dog', 'Hot dog', place(hotDog(120), { x: 250, y: 1404 }));
-target('soda', 'Soda cup', place(sodaCup(78), { x: 380, y: 1396 }));
+target('soda', 'Teal soda cup', place(sodaCup(78), { x: 380, y: 1396 }));
 target('popcorn', 'Popcorn', place(popcornBox(96), { x: 520, y: 1404 }));
 scene(place(sodaCup(70, P.red), { x: 660, y: 1394 }));
 target('scorecard', 'Scorecard', place(clipboard(100), { x: 800, y: 1440, rot: -8 }));
 target('binoculars', 'Binoculars', place(binoculars(96), { x: 1030, y: 1430 }));
-scene(place(bat(220), { x: 10, y: 1480, rot: -6 }));
 target('bat', 'Baseball bat', place(bat(260, '#b98552'), { x: 860, y: 1360, rot: -64 }));
 scene(shadow(600, 1495, 600, 8, 0.12));
 

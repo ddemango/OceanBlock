@@ -3,7 +3,7 @@ import type { Shape } from '../../art/types';
 import type { FindActivity, FindItem } from '../types';
 import {
   P, ol, shadow, cobbles, cloud, tree, bunting, townhouse, awning, planks, potted, tulipBucket, wateringCan, basket, basketHandle, bicycle,
-  seedTray, gloves, trowel, robin, butterfly, chalkboard, wheelbarrow, boots, birdhouse, crate, petals, type PlantKind,
+  pot, seedTray, gloves, trowel, robin, butterfly, chalkboard, wheelbarrow, boots, birdhouse, crate, petals, type PlantKind,
 } from './props-find';
 
 const ID = 'seasons-find-1';
@@ -142,6 +142,16 @@ scene(place(tulipBucket(30, '#fbf3df', 121), { x: 1077, y: 1050 }));
 scene(shadow(960, 1470, 160, 12));
 target('bicycle', 'Blue bicycle', place(bicycle(200, '#4a78b8', true), { x: 960, y: 1468 }));
 scene(place(potted(28, POTS[0], 'tulip', '#e8607a', 131), { x: 1076, y: 1302 }));
+
+// extra clutter: stacked empty pots, a crate of pansies, compost sacks
+{
+  const stack = (x: number, y: number, k: number, col: string) => { for (let i = 0; i < k; i++) scene(place(pot(30, col), { x, y: y - i * 9 })); };
+  stack(250, 1180, 4, P.terracotta); stack(290, 1186, 3, '#d9825a');
+  scene(shadow(80, 1200, 46, 8), sh(rect(40, 1130, 80, 70, 14), '#c9b48a'), sh(rect(40, 1130, 80, 16, 8), '#b89f72'), sh(rect(52, 1160, 56, 22, 3), '#7f9a70'), sh(circle(80, 1171, 6), '#f2c14e'));
+  scene(shadow(750, 1490, 64, 8), place(crate(120, 46, '#c99a62'), { x: 750, y: 1490 }));
+  for (let i = 0; i < 4; i++) scene(place(potted(24, POTS[i % POTS.length], i % 2 ? 'pansy' : 'daisy', FLOWERS[(i * 3) % FLOWERS.length], 150 + i), { x: 708 + i * 28, y: 1448 }));
+  scene(place(potted(40, POTS[1], 'leafy', '#6f9a5c', 160), { x: 560, y: 1470 }), place(potted(36, POTS[4], 'geranium', '#e8607a', 161), { x: 40, y: 1470 }));
+}
 
 // a few fallen petals on top of everything at the very front
 scene(petals(0, 1440, W, 60, 30, 141, ['#f7c6d0', '#ffffff'], 5));

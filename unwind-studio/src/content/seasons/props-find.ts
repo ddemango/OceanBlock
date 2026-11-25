@@ -360,7 +360,7 @@ export function bicycle(s: number, col: string, frontBasket = false): Shape[] {
   out.push(stroke(line([S, [S[0], S[1] - 0.06 * s]]), '#8a9095', 0.03 * s), ol(blob([[S[0] - 0.13 * s, S[1] - 0.08 * s], [S[0] - 0.02 * s, S[1] - 0.12 * s], [S[0] + 0.1 * s, S[1] - 0.09 * s], [S[0] + 0.02 * s, S[1] - 0.04 * s]], 0.8), '#6b4a32', 1));
   out.push(stroke(line([Ht, [Ht[0] - 0.02 * s, Ht[1] - 0.08 * s]]) + curve([[Ht[0] - 0.02 * s, Ht[1] - 0.08 * s], [Ht[0] - 0.1 * s, Ht[1] - 0.12 * s], [Ht[0] - 0.18 * s, Ht[1] - 0.08 * s]]), '#8a9095', 0.03 * s), sh(rect(Ht[0] - 0.24 * s, Ht[1] - 0.1 * s, 0.08 * s, 0.035 * s, 0.015 * s), '#6b4a32'));
   out.push(sh(circle(Ht[0] + 0.03 * s, Ht[1] - 0.02 * s, 0.035 * s), '#f3e7b0'), stroke(circle(Ht[0] + 0.03 * s, Ht[1] - 0.02 * s, 0.035 * s), '#8a9095', 0.01 * s));
-  if (frontBasket) out.push(...place(basket(0.26 * s, 0.17 * s), { x: Ht[0] + 0.16 * s, y: Ht[1] + 0.12 * s }));
+  if (frontBasket) out.push(stroke(line([[Ht[0], Ht[1] - 0.04 * s], [Ht[0] + 0.06 * s, Ht[1] - 0.02 * s]]) + line([[Ht[0] + 0.12 * s, Ht[1] + 0.14 * s], [F[0], F[1] - 0.05 * s]]), '#8a9095', 0.015 * s), ...place(basket(0.24 * s, 0.17 * s), { x: Ht[0] + 0.15 * s, y: Ht[1] + 0.14 * s }));
   return out;
 }
 
@@ -450,7 +450,8 @@ export function chalkboard(s: number): Shape[] {
     sh(rect(-0.27 * s, -0.95 * s, 0.54 * s, 0.64 * s, 0.02 * s), '#33403b'),
     stroke(doodle + line([[0, -0.62 * s], [0, -0.5 * s]]) + curve([[-0.18 * s, -0.42 * s], [-0.08 * s, -0.45 * s], [0.04 * s, -0.4 * s], [0.18 * s, -0.43 * s]]), '#f3efe4', 0.012 * s + 0.6),
     sh(circle(0, -0.72 * s, 0.03 * s), '#f2c14e'),
-    stroke(curve([[-0.2 * s, -0.86 * s], [-0.12 * s, -0.89 * s], [-0.02 * s, -0.86 * s]]) + curve([[0.06 * s, -0.86 * s], [0.12 * s, -0.89 * s], [0.2 * s, -0.86 * s]]), '#f3a8b8', 0.012 * s + 0.6),
+    stroke(leaf(0, -0.56 * s, 0.1 * s, 0.035 * s, -150) + leaf(0, -0.58 * s, 0.1 * s, 0.035 * s, -30), '#bfe3a8', 0.012 * s + 0.6),
+    stroke(line([[-0.2 * s, -0.86 * s], [-0.14 * s, -0.86 * s]]) + line([[0.14 * s, -0.86 * s], [0.2 * s, -0.86 * s]]) + line([[-0.2 * s, -0.36 * s], [0.2 * s, -0.36 * s]]), '#f3a8b8', 0.012 * s + 0.6),
     stroke(line([[-0.3 * s, -0.28 * s], [-0.33 * s, 0]]) + line([[0.3 * s, -0.28 * s], [0.33 * s, 0]]), '#a8743e', 0.05 * s),
   ];
 }

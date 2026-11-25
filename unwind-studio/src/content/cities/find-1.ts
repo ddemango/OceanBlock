@@ -54,9 +54,37 @@ scene(sh(rect(0, 0, W, 840), `url(#${ID}-sky)`));
     if (g.next() < 0.3) scene(sh(rect(x + w / 2 - 1.5, y - 60, 3, 60), far), sh(circle(x + w / 2, y - 62, 3), '#e8505a'));
     x += w + g.range(-6, 10);
   }
-  // a stepped tower with a spire
-  scene(sh(rect(820, 330, 90, 500) + rect(836, 280, 58, 60) + rect(850, 240, 30, 50) + poly([[856, 240], [865, 150], [874, 240]]), '#34366a'));
-  for (let y = 350; y < 800; y += 22) scene(sh(rect(830, y, 70, 8), '#262854'), sh(rect(834 + ((y / 22) % 3) * 22, y, 14, 8), '#f0c87a'));
+  // the Empire State Building: stacked setbacks, a rounded crown and the mast
+  {
+    const cx = 860, body = '#363a70', winC = '#f0c87a';
+    const tiers: [number, number, number][] = [[124, 420, 830], [96, 360, 420], [70, 300, 360], [48, 262, 300], [34, 236, 262]];
+    for (const [w, y0, y1] of tiers) scene(sh(rect(cx - w / 2, y0, w, y1 - y0), body), sh(rect(cx + w / 2 - w * 0.28, y0, w * 0.28, y1 - y0), '#2c2f62'));
+    scene(sh(M(cx - 14, 236) + L(cx - 14, 210) + Q(cx, 192, cx + 14, 210) + L(cx + 14, 236) + 'Z', '#f2d68a'), sh(rect(cx - 4, 140, 8, 60, 2), '#c8c0d8'), stroke(line([[cx, 140], [cx, 96]]), '#c8c0d8', 2), sh(circle(cx, 94, 3), '#e8505a'));
+    scene(sh(rect(cx - 17, 236, 34, 26), '#e8c06a', { opacity: 0.9 }), sh(rect(cx - 24, 262, 48, 10), '#f2d68a', { opacity: 0.8 }));
+    let piers = '';
+    for (let x = cx - 56; x <= cx + 56; x += 14) piers += line([[x, 430], [x, 830]]);
+    for (let x = cx - 42; x <= cx + 42; x += 14) piers += line([[x, 366], [x, 420]]);
+    scene(stroke(piers, '#4a4e88', 2));
+    const gg = rng(25);
+    for (let y = 440; y < 820; y += 16) for (let x = cx - 50; x < cx + 56; x += 14) if (gg.next() < 0.3) scene(sh(rect(x, y, 8, 8), winC));
+    for (let y = 370; y < 414; y += 14) for (let x = cx - 38; x < cx + 42; x += 14) if (gg.next() < 0.45) scene(sh(rect(x, y, 8, 8), winC));
+  }
+  // a Chrysler-style Art Deco crown: stacked sunburst arches and a needle spire
+  {
+    const cx = 470, body = '#3a3e76', steel = '#c8c8dc';
+    scene(sh(rect(cx - 44, 360, 88, 470), body), sh(rect(cx + 14, 360, 30, 470), '#2e3268'));
+    for (let i = 0; i < 6; i++) {
+      const r = 40 - i * 6.2, y = 360 - i * 17;
+      scene(sh(M(cx - r, y) + L(cx - r, y - 4) + Q(cx - r, y - r * 1.15, cx, y - r * 1.25) + Q(cx + r, y - r * 1.15, cx + r, y - 4) + L(cx + r, y) + 'Z', i % 2 ? '#b0b2c8' : steel));
+      let tri = '';
+      for (let k = -2; k <= 2; k++) { const a = (k / 6) * Math.PI; const tx = cx + Math.sin(a) * r * 0.75, ty = y - 6 - Math.cos(a) * r * 0.7; tri += poly([[tx - 3, ty + 4], [tx + 3, ty + 4], [tx, ty - 5]]); }
+      scene(sh(tri, '#ffe29a'));
+    }
+    scene(sh(poly([[cx - 5, 268], [cx, 170], [cx + 5, 268]]), steel));
+    const gg = rng(27);
+    for (let y = 372; y < 820; y += 16) for (let x = cx - 38; x < cx + 40; x += 13) if (gg.next() < 0.32) scene(sh(rect(x, y, 7, 8), '#f0c87a'));
+    scene(sh(rect(cx - 46, 360, 92, 6), steel));
+  }
 }
 {
   const g = rng(33);
@@ -302,7 +330,7 @@ void mix; void leaf;
 
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'Rooftop Garden at Night',
-  blurb: 'String lights glow over a little table for two on a city rooftop, with thirteen cosy finds tucked among the planters.',
+  blurb: 'String lights glow over a little table for two on a New York rooftop, with the lit-up skyline behind and thirteen cosy finds tucked among the planters.',
   collectionId: 'cities', categories: ["Cities"], difficulty: 'Relaxed',
   width: W, height: H, defs, items,
 };

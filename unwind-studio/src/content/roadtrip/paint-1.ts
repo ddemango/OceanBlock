@@ -95,12 +95,12 @@ for (const [i, x, r] of [[1, 70, 22], [2, 112, 18], [3, 470, 16], [4, 790, 20], 
     const cells: [number, number][] = [];
     for (let c = 0; c < nC; ) {
       let e = c + 1;
-      while (e < nC && span(k, c, e) < 90) e++;
+      while (e < nC && span(k, c, e) < 130) e++;
       cells.push([c, e]);
       c = e;
     }
     const last = cells[cells.length - 1];
-    if (cells.length > 1 && span(k, last[0], last[1]) < 90) { cells.pop(); cells[cells.length - 1][1] = last[1]; }
+    if (cells.length > 1 && span(k, last[0], last[1]) < 130) { cells.pop(); cells[cells.length - 1][1] = last[1]; }
     const row: { x: [number, number]; fill: string }[] = [];
     cells.forEach(([ca, cb], i) => {
       const pts = cellPts(k, ca, cb);
@@ -172,7 +172,6 @@ function hotAirBalloon(b: BalloonSpec) {
   }
 }
 
-hotAirBalloon({ id: 'far-balloon', cx: 902, cy: 586, r: 26, gores: ['mustard', 'red', 'mustard'] });
 hotAirBalloon({ id: 'little-balloon', cx: 640, cy: 590, r: 42, gores: ['red', 'cream', 'red'] });
 hotAirBalloon({ id: 'teal-balloon', cx: 800, cy: 250, r: 104, gores: ['teal', 'cream', 'teal', 'cream', 'teal'], cap: 'mustard' });
 hotAirBalloon({ id: 'rose-balloon', cx: 168, cy: 628, r: 70, gores: ['rose', 'mustard', 'rose', 'mustard', 'rose'], cap: 'cream' });
