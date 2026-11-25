@@ -95,7 +95,7 @@ scene(sh(rect(WX0, WY0, WX1 - WX0, WY1 - WY0), `url(#${ID}-sky)`));
   scene(sh(bl, '#fbe3e6'));
 }
 target('nest', "Bird's nest", place(nest(7, '#a9d5d8'), { x: 826, y: 248, s: 0.72 }));
-target('woodpecker', 'Woodpecker', place(woodpecker(), { x: 918, y: 470, s: 0.95, rot: -4 }));
+target('woodpecker', 'Woodpecker', place(woodpecker(), { x: 918, y: 400, s: 0.95, rot: -4 }));
 // feeders hanging from the branch
 scene(...place(tubeFeeder('#6f9f8f'), { x: 620, y: 244 }));
 scene(...place(songbird('bluetit', false), { x: 604, y: 302, s: 0.55, sx: -0.55 }), ...place(songbird('goldfinch', false), { x: 640, y: 330, s: 0.55 }));

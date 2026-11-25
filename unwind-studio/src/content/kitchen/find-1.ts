@@ -25,6 +25,17 @@ function herbBunch(x: number, y: number, len: number, seed: number, col: string)
   return [stroke(line([[x, y], [x, y + len * 0.42]]), '#8a7050', 1.3), sh(a, col), sh(b, shade(col, 0.18)), sh(rect(x - 5, y + len * 0.36, 10, 7, 2), '#c99a6a')];
 }
 
+/** Folk-painted tulip stencil for cupboard panels, origin at the stem base. */
+function tulip(s: number, col: string, leafCol: string): Shape[] {
+  return [stroke(curve([[0, 0], [2, -s * 0.5], [0, -s * 0.8]]), leafCol, 2), sh(leaf(0, -s * 0.2, s * 0.42, s * 0.12, -35) + leaf(0, -s * 0.3, s * 0.4, s * 0.12, -150), leafCol), sh(M(-s * 0.18, -s * 0.8) + L(-s * 0.2, -s * 1.08) + L(-s * 0.08, -s * 0.96) + L(0, -s * 1.12) + L(s * 0.08, -s * 0.96) + L(s * 0.2, -s * 1.08) + L(s * 0.18, -s * 0.8) + Q(0, -s * 0.68, -s * 0.18, -s * 0.8) + 'Z', col), sh(circle(-s * 0.3, -s * 0.7, s * 0.04) + circle(s * 0.3, -s * 0.7, s * 0.04) + circle(0, -s * 1.22, s * 0.04), col)];
+}
+/** Ladder-back chair seen from the front (seat hidden behind the table), origin at the seat centre. */
+function chairBack(w: number, h: number, col: string): Shape[] {
+  let rungs = '';
+  for (let i = 0; i < 4; i++) { const y = -h * 0.28 - i * h * 0.17; rungs += M(-w / 2, y) + Q(0, y + 8, w / 2, y) + L(w / 2, y - 12) + Q(0, y - 4, -w / 2, y - 12) + 'Z'; }
+  return [sh(rect(-w / 2 - 8, -h, 14, h + 40, 4) + rect(w / 2 - 6, -h, 14, h + 40, 4), col), sh(rect(-w / 2 - 6, -h, 4, h + 40, 2) + rect(w / 2 - 4, -h, 4, h + 40, 2), shade(col, 0.2)), sh(circle(-w / 2 - 1, -h - 6, 9) + circle(w / 2 + 1, -h - 6, 9), col), sh(rungs, col), stroke(rungs, shade(col, -0.3), 1), sh(rect(-w / 2 - 10, 0, w + 20, 16, 4), shade(col, -0.1)), stroke(line([[-w / 2, 6], [w / 2, 6]]) + line([[-w / 2, 11], [w / 2, 11]]), '#d9b878', 2)];
+}
+
 // =====================================================================
 // back wall, beam and window
 // =====================================================================
@@ -108,6 +119,9 @@ scene(sh(rect(28, 680, 444, 20, 2), '#b98552'), sh(rect(28, 680, 444, 5, 2), '#d
 scene(planks(40, 700, 420, 290, 1, '#87a278', 21), sh(rect(40, 700, 420, 290), '#000000', { opacity: 0.03 }));
 scene(ol(rect(54, 710, 190, 56, 4), '#94ad84', 1.4, -0.3), ol(rect(256, 710, 190, 56, 4), '#94ad84', 1.4, -0.3), sh(circle(149, 738, 6) + circle(351, 738, 6), '#c9a24a'));
 scene(ol(rect(54, 778, 190, 200, 4), '#94ad84', 1.4, -0.3), ol(rect(256, 778, 190, 200, 4), '#94ad84', 1.4, -0.3), stroke(rect(72, 796, 154, 164, 3) + rect(274, 796, 154, 164, 3), '#6f8a62', 2), sh(circle(232, 878, 6) + circle(268, 878, 6), '#c9a24a'), sh(rect(36, 986, 428, 16), '#6f8a62'));
+scene(place(tulip(70, P.tomato, '#6f8a62'), { x: 149, y: 942 }), place(tulip(70, '#e3a83a', '#6f8a62'), { x: 351, y: 942 }), place(tulip(22, P.tomato, '#6f8a62'), { x: 110, y: 760 }), place(tulip(22, P.tomato, '#6f8a62'), { x: 410, y: 760 }));
+// broom leaning in the corner
+scene(stroke(line([[470, 600], [492, 990]]), '#a8743e', 7), ol(poly([[474, 930], [512, 930], [528, 1004], [462, 1004]]), '#d9b878', 1, -0.3), stroke(line([[476, 950], [470, 1000]]) + line([[488, 950], [486, 1002]]) + line([[500, 950], [504, 1002]]) + line([[510, 950], [520, 1002]]), '#a8874a', 1.2), sh(rect(470, 928, 46, 8, 2), P.tomato));
 // on the worktop: crock, bread board, rolling pin, jars
 {
   scene(place(utensil(110, 2, P.steel, '#7a5232'), { x: 76, y: 572 }), place(utensil(120, 0, '#c98f55', '#c98f55'), { x: 96, y: 562 }), place(utensil(104, 3, P.steel, '#3b2f2a'), { x: 112, y: 580 }));
@@ -160,7 +174,9 @@ scene(sh(poly([[492, 262], [512, 262], [492, 296]]) + poly([[988, 262], [968, 26
   scene(sh(rect(x0 + 12, 716, 200, 196, 6) + rect(x1 - 212, 716, 200, 196, 6), '#efe2c4'), stroke(rect(x0 + 12, 716, 200, 196, 6) + rect(x1 - 212, 716, 200, 196, 6), '#c9b894', 2));
   scene(sh(rect(x0 + 44, 770, 136, 100, 6) + rect(x1 - 180, 770, 136, 100, 6), '#3b3532'), sh(rect(x0 + 52, 776, 40, 88, 4) + rect(x1 - 172, 776, 40, 88, 4), '#5a5250', { opacity: 0.6 }));
   scene(sh(rect(x0 + 30, 728, 164, 9, 4) + rect(x1 - 194, 728, 164, 9, 4), '#c9d0d5'), sh(rect(x0 + 30, 728, 164, 3, 2) + rect(x1 - 194, 728, 164, 3, 2), '#ffffff', { opacity: 0.6 }));
-  scene(place(teaTowel(62, 110, '#fbf3df', P.cornflower), { x: x0 + 150, y: 734 }));
+  scene(place(teaTowel(62, 110, '#fbf3df', P.cornflower), { x: x0 + 150, y: 734 }), place(gingham(-30, -4, 60, 104, 6, '#fbf3df', P.tomato), { x: x1 - 120, y: 738 }), stroke(rect(x1 - 150, 734, 60, 104), P.tomatoDk, 1));
+  scene(ol(circle(x0 + 112, 892, 12) + circle(x1 - 112, 892, 12), '#fbf6e8', 1.2, -0.4), stroke(line([[x0 + 112, 892], [x0 + 118, 884]]) + line([[x1 - 112, 892], [x1 - 106, 884]]), P.tomato, 1.6));
+  scene(ol(rect((x0 + x1) / 2 - 36, 700, 72, 12, 6), '#c9a24a', 1, -0.35));
   scene(sh(rect(x0 + 12, 924, x1 - x0 - 24, 54, 4), '#e9dcbc'), sh(rect(x0 + 180, 944, 80, 10, 4), '#c9d0d5'), sh(rect(x0, 984, x1 - x0, 12), '#3b3532'));
   // on the hob
   scene(place(cookPot(124, 84, P.tomato, P.tomatoDk), { x: 604, y: 636 }), stroke(curve([[590, 520], [600, 500], [588, 480], [598, 462]]) + curve([[620, 522], [630, 502], [618, 484]]), '#ffffff', 3, { opacity: 0.5 }));
@@ -173,7 +189,8 @@ scene(sh(poly([[492, 262], [512, 262], [492, 296]]) + poly([[988, 262], [968, 26
 // =====================================================================
 scene(sh(rect(960, 642, 240, 18), '#b98552'), sh(rect(960, 642, 240, 4), '#d4a26c'));
 scene(planks(964, 660, 236, 340, 1, '#87a278', 51), ol(rect(980, 676, 96, 300, 4), '#94ad84', 1.4, -0.3), ol(rect(1090, 676, 104, 300, 4), '#94ad84', 1.4, -0.3), sh(circle(1062, 820, 6) + circle(1104, 820, 6), '#c9a24a'), sh(rect(960, 986, 240, 16), '#6f8a62'));
-scene(stroke(rect(994, 692, 68, 268, 3) + rect(1104, 692, 76, 268, 3), '#6f8a62', 2));
+scene(stroke(rect(994, 692, 68, 268, 3) + rect(1104, 692, 76, 268, 3), '#6f8a62', 2), place(tulip(56, P.tomato, '#6f8a62'), { x: 1028, y: 940 }), place(tulip(56, '#e3a83a', '#6f8a62'), { x: 1142, y: 940 }));
+scene(stroke(M(1104, 820) + Q(1112, 836, 1120, 830), '#3b2f2a', 1.4), place(teaTowel(48, 96, P.sage, '#fbf3df'), { x: 1118, y: 836 }));
 {
   scene(place(utensil(110, 0, '#c98f55', '#c98f55'), { x: 990, y: 534 }), place(utensil(112, 2, P.steel, '#3b2f2a'), { x: 1006, y: 528 }), place(utensil(100, 3, P.steel, '#7a5232'), { x: 1022, y: 546 }));
   scene(ol(rect(978, 574, 58, 68, 8), '#c9673f', 1.2, -0.25), sh(rect(978, 594, 58, 8), '#f3d77a'), sh(ellipse(1007, 576, 29, 6), '#8a4a2a'));
@@ -194,14 +211,21 @@ scene(ol(M(70, 1040) + L(70, 1110) + Q(70, 1124, 86, 1124) + L(126, 1124) + Q(13
   const g = rng(71);
   const logs: Shape[] = [];
   for (let i = 0; i < 6; i++) { const x = 400 + (i % 3) * 34, y = 1010 + Math.floor(i / 3) * 22 + g.range(-3, 3); logs.push(ol(rect(x - 30, y - 9, 62, 20, 9), '#8a6238', 1), ol(ellipse(x + 30, y + 1, 7, 10), '#d9b07a', 1, -0.3), stroke(ellipse(x + 30, y + 1, 3.5, 5), '#a8743e', 0.8)); }
-  scene(logs, place(basket(170, 70, '#a8743e'), { x: 434, y: 1046 }));
+  scene(logs.map((p) => ({ ...p, d: p.d })), place(basket(170, 70, '#a8743e'), { x: 306, y: 1046 }));
 }
+// chairs on the far side of the table
+scene(place(chairBack(150, 170, '#8a5a34'), { x: 390, y: 1150 }), place(chairBack(150, 170, '#8a5a34'), { x: 800, y: 1150 }));
+// cat bowl on the rug
+scene(ol(ellipse(980, 1078, 30, 9), P.cornflower, 1), sh(ellipse(980, 1074, 24, 6), '#fbf6e8'), ol(ellipse(1050, 1086, 26, 8), P.tomato, 1), sh(ellipse(1050, 1083, 20, 5), '#b8742e'));
 // table top, apron and legs
 {
   const back = 1146, front = 1292;
   scene(sh(rect(96, 1320, 34, 180, 4) + rect(1070, 1320, 34, 180, 4), '#7a5232'), sh(rect(120, 1320, 10, 180) + rect(1094, 1320, 10, 180), '#5a3a22'));
   scene(sh(rect(180, 1150, 22, 160) + rect(1000, 1150, 22, 160), '#5a3a22'));
-  scene(place(sack(150, 120, '#d9c39a', P.tomato), { x: 820, y: 1488 }), place(pile(110, 15, ['potato'], 5, 1), { x: 720, y: 1490 }), shadow(600, 1494, 480, 14, 0.2));
+  scene(shadow(600, 1494, 480, 14, 0.2), place(sack(150, 120, '#d9c39a', P.tomato), { x: 820, y: 1488 }), place(pile(110, 15, ['potato'], 5, 1), { x: 720, y: 1490 }));
+  scene(place(pile(150, 16, ['apple', 'greenapple'], 15, 2), { x: 330, y: 1426 }), place(basket(160, 56, '#b98b5a'), { x: 330, y: 1426 }));
+  scene(place(bottle(26, 74, '#8fb070', '#c99a6a'), { x: 520, y: 1460 }), place(bottle(26, 80, '#7d2f4a', '#3b2f2a'), { x: 556, y: 1460 }), place(jar(30, 46, '#e8a03a', 0, P.cornflower), { x: 596, y: 1460 }), place(crate(150, 70, '#b98552'), { x: 560, y: 1424 }));
+  scene(place(cabbage(26, 9), { x: 940, y: 1470 }), place(cabbage(22, 10), { x: 980, y: 1480 }));
   const top = poly([[150, back], [1050, back], [1132, front], [68, front]]);
   let seams = '';
   for (let i = 1; i < 6; i++) { const t = i / 6; seams += line([[150 + 900 * t, back], [68 + 1064 * t, front]]); }

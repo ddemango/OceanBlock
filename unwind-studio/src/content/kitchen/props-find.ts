@@ -282,7 +282,7 @@ export function veg(x: number, y: number, r: number, kind: Veg, g: Rng): Shape[]
     case 'orange': { const c = g.pick(['#f08a2b', '#ee7d22', '#f39a3a']); return [ol(circle(x, y, r), c, 1, -0.26), hl(ellipse(x - r * 0.35, y - r * 0.38, r * 0.34, r * 0.2, -30), 0.4), sh(circle(x + r * 0.2, y + r * 0.1, r * 0.09), '#b85a14')]; }
     case 'egg': case 'brownegg': {
       const c = kind === 'egg' ? g.pick(['#f7f0e2', '#f3ead8']) : g.pick(['#e0b78a', '#d9ab7a', '#e6c296']);
-      return [ol(xf(blob([[0, -r * 1.15], [r * 0.7, -r * 0.55], [r * 0.85, r * 0.3], [0, r], [-r * 0.85, r * 0.3], [-r * 0.7, -r * 0.55]]), { rot: rot * 1.5, x, y }), c, 1, -0.25), hl(xf(ellipse(-r * 0.3, -r * 0.45, r * 0.18, r * 0.3, 20), { rot: rot * 1.5, x, y }), 0.6)];
+      return [ol(xf(eggPath(r), { rot: rot * 1.5, x, y }), c, 1, -0.25), hl(xf(ellipse(-r * 0.3, -r * 0.45, r * 0.18, r * 0.3, 20), { rot: rot * 1.5, x, y }), 0.6)];
     }
     case 'pepper': { const c = g.pick(['#d8362c', '#f2b92e', '#5c9a45']); return [ol(xf(blob([[-r * 0.8, -r * 0.8], [0, -r * 0.6], [r * 0.8, -r * 0.8], [r * 0.9, r * 0.2], [r * 0.4, r * 1.1], [-r * 0.4, r * 1.1], [-r * 0.9, r * 0.2]], 0.9), { rot, x, y }), c, 1, -0.28), hl(xf(ellipse(-r * 0.4, -r * 0.1, r * 0.16, r * 0.5), { rot, x, y }), 0.4), sh(xf(rect(-r * 0.14, -r * 1.15, r * 0.28, r * 0.5, 2), { rot, x, y }), '#3f6b34')]; }
     case 'beet': { const c = '#7d2240'; return [ol(xf(blob([[0, -r], [r * 0.9, -r * 0.4], [r * 0.7, r * 0.6], [0, r * 1.3], [-r * 0.7, r * 0.6], [-r * 0.9, -r * 0.4]]), { rot, x, y }), c, 1, -0.3), sh(xf(leaf(0, -r, r * 1.2, r * 0.3, -70) + leaf(0, -r, r * 1.1, r * 0.3, -110), { rot, x, y }), '#5c8a45'), hl(xf(ellipse(-r * 0.35, -r * 0.2, r * 0.14, r * 0.3), { rot, x, y }), 0.3)]; }
@@ -442,8 +442,9 @@ export function ladle(h: number): Shape[] {
   const r = h * 0.17;
   return [stroke(M(0, 0) + Q(h * 0.02, h * 0.4, 0, h * 0.74), '#7a8288', h * 0.06), stroke(M(0, 0) + Q(h * 0.02, h * 0.4, 0, h * 0.74), '#c9d0d5', h * 0.02), sh(circle(0, h * 0.04, h * 0.018), '#f7efdc'), ol(sector(0, h * 0.76, r, 0, 180), '#aeb6bb', 1.2, -0.4), ol(ellipse(0, h * 0.76, r, r * 0.25), '#7a8288', 1, -0.3), hl(ellipse(-r * 0.5, h * 0.76 + r * 0.45, r * 0.2, r * 0.12, 30), 0.5)];
 }
-export function egg(r: number, col = '#e9cfa6'): Shape[] {
-  return [ol(blob([[0, -r * 1.15], [r * 0.7, -r * 0.55], [r * 0.85, r * 0.3], [0, r], [-r * 0.85, r * 0.3], [-r * 0.7, -r * 0.55]]), col, 1.2, -0.3), hl(ellipse(-r * 0.3, -r * 0.45, r * 0.18, r * 0.32, 20), 0.7), sh(circle(r * 0.3, r * 0.2, r * 0.04) + circle(r * 0.1, r * 0.5, r * 0.035) + circle(-r * 0.2, r * 0.1, r * 0.03), shade(col, -0.2))];
+export const eggPath = (r: number) => M(0, -r * 1.15) + CB(r * 0.5, -r * 1.15, r * 0.85, -r * 0.45, r * 0.85, r * 0.1) + CB(r * 0.85, r * 0.65, r * 0.45, r, 0, r) + CB(-r * 0.45, r, -r * 0.85, r * 0.65, -r * 0.85, r * 0.1) + CB(-r * 0.85, -r * 0.45, -r * 0.5, -r * 1.15, 0, -r * 1.15) + 'Z';
+export function egg(r: number, col = '#ecd4ae'): Shape[] {
+  return [ol(eggPath(r), col, 1.2, -0.3), hl(ellipse(-r * 0.3, -r * 0.45, r * 0.18, r * 0.32, 20), 0.7), sh(circle(r * 0.3, r * 0.2, r * 0.04) + circle(r * 0.1, r * 0.5, r * 0.035) + circle(-r * 0.2, r * 0.1, r * 0.03), shade(col, -0.2))];
 }
 export function cherries(s: number): Shape[] {
   return [stroke(curve([[-s * 0.28, s * 0.15], [-s * 0.18, -s * 0.3], [s * 0.05, -s * 0.62]]) + curve([[s * 0.28, s * 0.22], [s * 0.22, -s * 0.22], [s * 0.05, -s * 0.62]]), '#5a7a3a', s * 0.04), sh(leaf(s * 0.05, -s * 0.62, s * 0.36, s * 0.12, -20), '#6f9a52'), stroke(line([[s * 0.08, -s * 0.62], [s * 0.36, -s * 0.66]]), '#4f7a3f', 1), ol(circle(-s * 0.28, s * 0.28, s * 0.22), '#b8202e', 1), ol(circle(s * 0.28, s * 0.35, s * 0.22), '#c8283a', 1), hl(ellipse(-s * 0.35, s * 0.2, s * 0.07, s * 0.04, -30), 0.7), hl(ellipse(s * 0.21, s * 0.27, s * 0.07, s * 0.04, -30), 0.7)];

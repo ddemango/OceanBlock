@@ -800,3 +800,34 @@ export function flowers(seed: number, n: number, w: number, cols: string[]): Sha
 
 /** Five-point sparkle for sunlight glints. */
 export const sparkle = (r: number) => [sh(star(0, 0, r, r * 0.3, 4, 0), '#fff6d2', { opacity: 0.8 })];
+
+/** Board wall or floor: planks with grain, horizontal or vertical. */
+export function planks(x0: number, y0: number, w: number, h: number, seed: number, base: string, horizontal = true, pw = 26): Shape[] {
+  const g = rng(seed);
+  const out: Shape[] = [sh(rect(x0, y0, w, h), shade(base, -0.35))];
+  let grain = '', knots = '';
+  const n = Math.ceil((horizontal ? h : w) / pw);
+  for (let i = 0; i < n; i++) {
+    const c = shade(base, g.range(-0.12, 0.1));
+    if (horizontal) {
+      const y = y0 + i * pw, hh = Math.min(pw, y0 + h - y) - 1.5;
+      out.push(sh(rect(x0, y, w, hh), c));
+      for (let k = 0; k < w / 120; k++) { const x = x0 + g.range(0, w - 60); grain += line([[x, y + g.range(4, hh - 4)], [x + g.range(30, 80), y + g.range(4, hh - 4)]]); }
+      if (g.next() > 0.5) knots += ellipse(x0 + g.range(20, w - 20), y + hh / 2, 6, 3);
+    } else {
+      const x = x0 + i * pw, ww = Math.min(pw, x0 + w - x) - 1.5;
+      out.push(sh(rect(x, y0, ww, h), c));
+      for (let k = 0; k < h / 120; k++) { const y = y0 + g.range(0, h - 60); grain += line([[x + g.range(4, ww - 4), y], [x + g.range(4, ww - 4), y + g.range(30, 80)]]); }
+      if (g.next() > 0.5) knots += ellipse(x + ww / 2, y0 + g.range(20, h - 20), 3, 6);
+    }
+  }
+  out.push(stroke(grain, shade(base, -0.3), 1, { opacity: 0.6 }), sh(knots, shade(base, -0.4)));
+  return out;
+}
+
+/** Curly wood shaving. */
+export function shaving(seed: number): Shape[] {
+  const g = rng(seed);
+  const r = g.range(6, 11);
+  return [stroke(curve([[-r * 1.6, 0], [-r, -r], [0, -r * 0.4], [r * 0.2, r * 0.5], [-r * 0.6, r * 0.4], [-r * 0.3, -r * 0.3], [r, -r * 0.8], [r * 1.8, 0]]), '#e9c98e', 2.4), stroke(curve([[-r * 1.6, 0], [-r, -r], [0, -r * 0.4]]), '#c99a5e', 1)];
+}

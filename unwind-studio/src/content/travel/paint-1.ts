@@ -53,10 +53,10 @@ R('roof-front', rect(0, 70, 600, 82), 'roof');
 R('roof-side', poly([[600, 70], [830, sy(830, 70)], [830, sy(830, 152)], [600, 152]]), 'roofDark');
 R('facade-front', rect(0, 150, 600, 750), 'plaster');
 R('facade-side', poly([[600, 150], [830, sy(830, 150)], [830, sy(830, 900)], [600, 900]]), 'plasterShade');
-R('cornice-front', rect(0, 150, 600, 22), 'cream');
-R('cornice-side', sq(600, 830, 150, 172), 'stoneLight');
-R('band-front', rect(0, 372, 600, 15), 'cream');
-R('band-side', sq(600, 830, 372, 387), 'stoneLight');
+R('cornice-front', rect(0, 150, 600, 26), 'cream');
+R('cornice-side', sq(600, 830, 150, 176), 'stoneLight');
+R('band-front', rect(0, 368, 600, 20), 'cream');
+R('band-side', sq(600, 830, 368, 388), 'stoneLight');
 
 const slats = (x: number, y: number, w: number, h: number) => {
   let d = '';
@@ -113,7 +113,6 @@ R('planter-pot', poly([[514, 834], [578, 834], [568, 900], [524, 900]]), 'roof')
 R('planter-rim', rect(508, 826, 76, 16, 4), 'roofDark');
 R('side-window', sq(628, 740, 722, 862), 'glass');
 R('side-door', sq(770, 816, 700, 900), 'shutter');
-R('side-step', poly([[766, sy(766, 900)], [822, sy(822, 900)], [826, sy(826, 900) + 14], [762, sy(762, 900) + 14]]), 'stoneLight');
 
 // ---------- striped awning ----------
 {
