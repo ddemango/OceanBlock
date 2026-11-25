@@ -209,7 +209,7 @@ check('tapping with the wrong number does not fill the region', (await filled())
 await pick(right); await tapRegion(first);
 check('tapping with the matching number fills the region', (await filled()) === 1 && (await pstate()).fills[regions[first]] === right);
 await tapRegion(first); await tapRegion(first);
-check('repeated taps do not increase progress', (await filled()) === 1 && (await page.getByTestId('progress-label').innerText()).startsWith('1 of'));
+check('repeated taps do not increase progress', (await filled()) === 1 && (await page.getByTestId('progress-label').textContent()).startsWith('1 of'));
 // a fill affects only the intended region
 check('a fill affects only the intended region', (await page.evaluate(() => document.querySelectorAll('.preg.filled').length)) === 1);
 await page.getByTestId('undo').click();
@@ -321,7 +321,7 @@ check('a wrong guess changes nothing (no penalty)', (await fstate()).found.lengt
 await tapWorld(T[0].x, T[0].y);
 check('tapping a target finds it', eq((await fstate()).found, [T[0].id]) && (await page.locator(`.target.found[data-target="${T[0].id}"]`).count()) === 1);
 await tapWorld(T[0].x, T[0].y); await tapWorld(T[0].x, T[0].y);
-check('an object counts exactly once', (await fstate()).found.length === 1 && (await page.getByTestId('found-count').innerText()).startsWith('1 of'));
+check('an object counts exactly once', (await fstate()).found.length === 1 && (await page.getByTestId('found-count').textContent()).startsWith('1 of'));
 await page.getByTestId('hint').click();
 await page.waitForTimeout(600);
 const hinted = await page.locator('.target.hinted').getAttribute('data-target');
@@ -528,7 +528,7 @@ if ((await page.evaluate(() => 'serviceWorker' in navigator)) && !BASE.includes(
   await page.waitForFunction(() => window.__jigsaw?.assets, null, { timeout: 10000 });
   check('artwork loads offline from the cache', true);
   await open('#/settings');
-  check('Settings reports offline readiness', (await page.getByTestId('offline-status').innerText()) === 'Ready');
+  check('Settings reports offline readiness', (await page.getByTestId('offline-status').textContent()) === 'Ready');
   await ctx.setOffline(false);
 } else console.log('SKIP  offline checks (need the production build with its service worker)');
 

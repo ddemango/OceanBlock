@@ -117,11 +117,11 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
     g.clearRect(0, 0, W, H);
     g.setTransform(dpr * v.s, 0, 0, dpr * v.s, dpr * v.x, dpr * v.y);
     // board
-    g.fillStyle = 'rgba(128,118,100,0.16)';
+    g.fillStyle = 'rgba(242,241,236,0.07)';
     g.fillRect(0, 0, geom.width, geom.height);
     const a = R.assets;
     if (a) {
-      if (st.guide && !R.completed) { g.globalAlpha = 0.22; g.drawImage(a.src, 0, 0, geom.width, geom.height); g.globalAlpha = 1; }
+      if (st.guide && !R.completed) { g.globalAlpha = 0.26; g.drawImage(a.src, 0, 0, geom.width, geom.height); g.globalAlpha = 1; }
       const m = geom.margin, sw = geom.pw + 2 * m, sh = geom.ph + 2 * m;
       const drawGroup = (gr: JigsawState['groups'][number]) => {
         for (const id of gr.pieces) { const p = geom.pieces[id]; g.drawImage(a.sprites[id], p.x - m + gr.x, p.y - m + gr.y, sw, sh); }
@@ -157,9 +157,9 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
           const pulse = reducedMotion() ? 0.8 : 0.55 + 0.45 * Math.sin(age / 220);
           animating = !reducedMotion();
           g.save();
-          g.fillStyle = `rgba(111,143,168,${0.28 * pulse})`; g.fill(a.paths[R.hint.piece]);
+          g.fillStyle = `rgba(241,206,74,${0.4 * pulse})`; g.fill(a.paths[R.hint.piece]);
           g.lineWidth = 4 / v.s; g.strokeStyle = `rgba(255,255,255,${pulse})`; g.stroke(a.paths[R.hint.piece]);
-          g.lineWidth = 2 / v.s; g.strokeStyle = `rgba(60,96,125,${pulse})`; g.stroke(a.paths[R.hint.piece]);
+          g.lineWidth = 2 / v.s; g.strokeStyle = `rgba(241,206,74,${pulse})`; g.stroke(a.paths[R.hint.piece]);
           g.restore();
         }
       }
@@ -170,7 +170,7 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
         g.globalAlpha = k; g.drawImage(a.src, 0, 0, geom.width, geom.height); g.globalAlpha = 1;
       }
     }
-    g.lineWidth = 2 / v.s; g.strokeStyle = 'rgba(128,118,100,0.55)';
+    g.lineWidth = 1.5 / v.s; g.strokeStyle = 'rgba(242,241,236,0.45)';
     g.strokeRect(0, 0, geom.width, geom.height);
     if (animating) R.raf = requestAnimationFrame(draw);
   }, [geom, st, R]);

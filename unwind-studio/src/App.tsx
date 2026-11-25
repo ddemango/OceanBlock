@@ -66,7 +66,7 @@ export function App() {
   }, [prefs.theme, prefs.motion]);
   useEffect(() => { if (route.name !== 'play') window.scrollTo(0, 0); }, [route]);
 
-  if (!ready) return <div className="splash"><div className="spinner" /><p>Unwind Studio</p></div>;
+  if (!ready) return <div className="splash"><div className="spinner" /><p>unwind</p></div>;
 
   const banner = notice && <div className="notice" role="status"><span>{notice}</span><button className="iconbtn" onClick={() => setNotice(null)} aria-label="Dismiss"><Icon name="close" size={18} /></button></div>;
 
@@ -79,7 +79,7 @@ export function App() {
   return (
     <div className="shell">
       <nav className="nav" aria-label="Main">
-        <a className="brand" href={href({ name: 'home' })} aria-label="Unwind Studio home"><span className="brand-mark" aria-hidden="true" /><span>Unwind<br />Studio</span></a>
+        <a className="brand" href={href({ name: 'home' })} aria-label="Unwind Studio home"><span className="brand-mark" aria-hidden="true" /><span>unwind<i>studio</i></span></a>
         {NAV.map((n) => (
           <a key={n.label} href={href(n.route)} className={n.match.includes(route.name) ? 'on' : ''} aria-current={n.match.includes(route.name) ? 'page' : undefined} data-testid={`nav-${n.route.name}`}>
             <Icon name={n.icon} /><span>{n.label}</span>

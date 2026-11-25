@@ -3,7 +3,7 @@ import type { Mode } from '../content/types';
 import { dailyPick, shuffledFor } from '../lib/daily';
 import { href } from '../router';
 import { localDate, useApp } from '../store/app';
-import { ActivityCard, ArtThumb, MODE_ICON } from '../ui/common';
+import { ActivityCard, ArtThumb, ModeGlyph } from '../ui/common';
 import { Icon } from '../ui/Icon';
 import { variantLabel } from './labels';
 
@@ -30,22 +30,33 @@ export function Home() {
   return (
     <div className="page">
       <header className="hero">
-        <p className="eyebrow">Unwind Studio</p>
-        <h1>{greeting}.<br /><em>Find your moment.</em></h1>
-        <p className="lede">Three calm ways to spend a little time with beautiful artwork. No timers, no pressure — everything saves as you go.</p>
+        <div>
+          <p className="kicker">{greeting} · {new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+          <h1>Find<br />your<br /><em>moment.</em></h1>
+          <p className="lede">Three calm ways to spend time with a picture. No timers, no scores, no pressure — and everything saves as you go.</p>
+        </div>
+        <div className="hero-stack" aria-label="Today’s pictures">
+          {picks.map((a) => (
+            <a key={a.id} className="print" href={href({ name: 'activity', id: a.id })} aria-label={`${a.title}, today’s ${MODE_LABEL[a.mode].toLowerCase()}`}>
+              <ArtThumb activity={a} />
+              <span>{MODE_LABEL[a.mode]} — {a.title}</span>
+            </a>
+          ))}
+        </div>
       </header>
 
       <section aria-label="Activities" className="modes">
-        {MODES.map(({ mode, line }) => {
+        {MODES.map(({ mode, line }, i) => {
           const pick = picks.find((p) => p.mode === mode)!;
           return (
             <a key={mode} className="modecard" data-mode={mode} href={href({ name: 'explore', mode })} data-testid={`mode-${mode}`}>
+              <ModeGlyph mode={mode} />
               <ArtThumb activity={pick} />
               <span className="modecard-body">
-                <span className="modecard-ic"><Icon name={MODE_ICON[mode]} size={22} /></span>
+                <span className="modecard-no">0{i + 1}</span>
                 <strong>{MODE_LABEL[mode]}</strong>
                 <span>{line}</span>
-                <small>{activitiesOf(mode).length} to explore</small>
+                <small>{activitiesOf(mode).length} pictures <Icon name="next" size={14} /></small>
               </span>
             </a>
           );

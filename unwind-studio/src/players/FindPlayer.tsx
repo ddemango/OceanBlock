@@ -153,7 +153,8 @@ export function FindPlayer({ activity: a, onRestart }: { activity: FindActivity;
       <div ref={hostRef} className="stage-host" tabIndex={0} data-testid="stage" aria-label={`${a.title}: ${state.found.length} of ${targets.length} objects found. Arrow keys pan, plus and minus zoom, Enter guesses at the centre.`}>
         <svg className="stage-svg" aria-hidden="true">
           <g ref={gRef}>
-            <g dangerouslySetInnerHTML={{ __html: scene }} />
+            <clipPath id="us-scene-clip"><rect width={a.width} height={a.height} /></clipPath>
+            <g clipPath="url(#us-scene-clip)" dangerouslySetInnerHTML={{ __html: scene }} />
             <g className="fmarks" pointerEvents="none">
               {state.found.map((id) => ring(id, 'fmark'))}
               {burst && ring(burst, 'fburst')}

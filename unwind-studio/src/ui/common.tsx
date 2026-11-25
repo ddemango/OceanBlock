@@ -6,6 +6,17 @@ import { href, type Route } from '../router';
 import { toggleFavorite, useApp, type ProgressRecord } from '../store/app';
 import { Icon } from './Icon';
 
+/** Large geometric mark for each activity, used as a graphic on colour fields. */
+export function ModeGlyph({ mode }: { mode: Activity['mode'] }) {
+  return (
+    <svg className="glyph" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+      {mode === 'puzzle' && <path d="M8 22h30c-3-4-4-7-4-10a12 12 0 0124 0c0 3-1 6-4 10h38v30c4-3 7-4 10-4a12 12 0 010 24c-3 0-6-1-10-4v24H8V62c4 3 7 4 10 4a12 12 0 000-24c-3 0-6 1-10 4z" />}
+      {mode === 'paint' && <path d="M50 4c20 26 34 40 34 58a34 34 0 01-68 0C16 44 30 30 50 4z" />}
+      {mode === 'find' && <path fillRule="evenodd" d="M42 6a36 36 0 0129 57l25 25-9 9-25-25A36 36 0 1142 6zm0 14a22 22 0 100 44 22 22 0 000-44z" />}
+    </svg>
+  );
+}
+
 export const MODE_ICON = { puzzle: 'puzzle', paint: 'paint', find: 'find' } as const;
 
 /** Artwork thumbnail rendered from the real playable content. */
