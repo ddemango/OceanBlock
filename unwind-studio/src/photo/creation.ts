@@ -64,8 +64,8 @@ export function creationActivities(c: Creation): Activity[] {
   };
   const paint: PaintActivity = {
     ...base, id: ids.paint, mode: 'paint', title: c.title,
-    blurb: `Your photo as a paint-by-number: ${c.paint.regions.length} areas in ${c.paint.palette.length} colours. Or colour it however you like.`,
-    width: c.paint.width, height: c.paint.height, palette: c.paint.palette, regions: c.paint.regions,
+    blurb: `Your photo as a paint-by-number: each area you colour brings back that part of your photo, ${c.paint.regions.length} areas in all. Or colour it however you like.`,
+    width: c.paint.width, height: c.paint.height, palette: c.paint.palette, regions: c.paint.regions, image: c.image,
   };
   const find: FindActivity = {
     ...base, id: ids.find, mode: 'find', title: c.title,

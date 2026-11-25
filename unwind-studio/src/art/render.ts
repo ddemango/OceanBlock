@@ -38,6 +38,8 @@ export const OUTLINE = '#9a958c';
  */
 export function paintSvg(a: PaintActivity, fills: Record<string, string> | 'complete', pxWidth?: number): string {
   const hex = new Map(a.palette.map((p) => [p.id, p.hex]));
+  // a finished photo painting is the photo itself
+  if (a.image && fills === 'complete') return wrap(a.width, a.height, imageTag(a.image, a.width, a.height), '', pxWidth);
   let inner = `<rect width="${a.width}" height="${a.height}" fill="${PAPER}"/>`;
   for (const r of a.regions) {
     const c = fills === 'complete' ? hex.get(r.color) : fills[r.id];

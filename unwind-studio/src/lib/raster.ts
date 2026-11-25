@@ -36,7 +36,15 @@ export function rasterize(svg: string, pxWidth: number, aspect: number): Promise
 }
 
 /** The photo under an activity's artwork, if it was made from one. */
-const photoOf = (a: Activity) => (a.mode === 'puzzle' ? a.art.image : a.mode === 'find' ? a.image : undefined);
+const photoOf = (a: Activity) => (a.mode === 'puzzle' ? a.art.image : a.image);
+
+/** A photo painting with no colours given, or with every area in its own colour, shows the photo. */
+function photoPaintDone(a: Activity, fills: Record<string, string> | undefined): boolean {
+  if (a.mode !== 'paint' || !a.image) return false;
+  if (!fills) return true;
+  const hex = new Map(a.palette.map((p) => [p.id, p.hex.toLowerCase()]));
+  return a.regions.every((r) => fills[r.id]?.toLowerCase() === hex.get(r.color));
+}
 
 export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -76,6 +84,7 @@ export function rasterIllustration(art: Illustration, pxWidth: number): Promise<
 export function rasterActivity(a: Activity, fills: Record<string, string> | undefined, pxWidth: number): Promise<HTMLCanvasElement> {
   const { width, height } = activitySize(a);
   const photo = photoOf(a);
+  if (a.mode === 'paint' && !photoPaintDone(a, fills)) return rasterize(activitySvg(a, fills), pxWidth, width / height);
   if (!photo) return rasterize(activitySvg(a, fills), pxWidth, width / height);
   if (a.mode === 'puzzle') return rasterIllustration(a.art, pxWidth);
   return rasterPhoto(photo, a.mode === 'find' ? findSvg({ ...a, image: undefined }) : null, pxWidth, width / height);

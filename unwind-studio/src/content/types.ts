@@ -51,6 +51,8 @@ export interface PaintActivity extends ActivityBase {
   regions: PaintRegion[];
   /** Non-interactive line work drawn above all regions (thin strokes only). */
   detail?: Shape[];
+  /** For paintings made from the user's photo: each correctly painted area reveals this photo. */
+  image?: string;
 }
 
 export interface FindItem {

@@ -41,6 +41,19 @@ const Regions = memo(function Regions({ a, hexes, highlight, wrong, focus }: { a
   );
 });
 
+/** Paintings made from a photo: every correctly painted area shows that part of the real photo. */
+const PhotoReveal = memo(function PhotoReveal({ a, fills }: { a: PaintActivity; fills: Record<string, string> }) {
+  if (!a.image) return null;
+  return (
+    <g pointerEvents="none">
+      <mask id="us-photo-mask" maskUnits="userSpaceOnUse" x="0" y="0" width={a.width} height={a.height}>
+        {a.regions.map((r) => { const on = fills[r.id] === r.color; return <path key={r.id} d={r.d} fill={on ? '#fff' : '#000'} stroke={on ? '#fff' : '#000'} strokeWidth={1.2} />; })}
+      </mask>
+      <image href={a.image} x="0" y="0" width={a.width} height={a.height} preserveAspectRatio="none" mask="url(#us-photo-mask)" />
+    </g>
+  );
+});
+
 const Labels = memo(function Labels({ a, geom, state, scale, highlight }: { a: PaintActivity; geom: PaintGeometry; state: PaintState; scale: number; highlight: string | null }) {
   const num = useMemo(() => new Map(a.palette.map((p) => [p.id, p.number])), [a]);
   return (
@@ -274,6 +287,7 @@ export function PaintPlayer({ activity: a, variant, onRestart }: { activity: Pai
           <g ref={gRef}>
             <rect width={a.width} height={a.height} fill={PAPER} className="ppaper" />
             <Regions a={a} hexes={hexes} highlight={highlight} wrong={wrong} focus={focus} />
+            {variant === 'pbn' && <PhotoReveal a={a} fills={state.fills} />}
             <g pointerEvents="none" dangerouslySetInnerHTML={{ __html: detail }} />
             {variant === 'pbn' && <Labels a={a} geom={geom} state={state} scale={scale} highlight={highlight} />}
           </g>
