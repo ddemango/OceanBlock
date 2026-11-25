@@ -497,3 +497,10 @@ body.flash #fx-overlay { background: rgba(255, 255, 255, 0.75); transition: none
 .logo-bottom { font-size: clamp(52px, 15vw, 104px); color: var(--gold); }
 .ld-logo i { font-style: normal; font-size: 34px; color: var(--gold); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); }
 .ld-logo b { color: var(--gold); }
+/* the big glossy "D's" badge */
+.logo-ds { display: flex; justify-content: center; margin-bottom: -10px; }
+.ds-mark { width: clamp(130px, 40vw, 220px); height: auto; overflow: visible; filter: drop-shadow(0 4px 0 rgba(29, 38, 56, .35)); }
+.ds-burst { transform-origin: 95px 82px; animation: dsPulse 2.4s ease-in-out infinite; filter: blur(.5px); }
+@keyframes dsPulse { 50% { transform: scale(1.12); opacity: .6; } }
+.ld-logo i { -webkit-text-stroke: 0; text-shadow: none; display: flex; justify-content: center; margin-bottom: -8px; }
+.ld-logo i .ds-mark { width: 170px; }
