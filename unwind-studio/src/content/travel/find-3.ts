@@ -43,7 +43,7 @@ scene(sh(rect(0, 0, W, 460), BRICK));
   // tinted panes
   for (let ring = 0; ring < 4; ring++) {
     const r0 = 160 + ring * 120, r1 = r0 + 120, n = 6 + ring * 3;
-    for (let i = 0; i < n; i++) if (g.next() < 0.35) scene(sh(sector(cx, cy, r1, 180 + (180 * i) / n, 180 + (180 * (i + 1)) / n, r0), g.pick(['#ffffff', '#cfe2ea', '#f6e8c8']), { opacity: 0.3 }));
+    for (let i = 0; i < n; i++) if (g.next() < 0.5) scene(sh(sector(cx, cy, r1, 180 + (180 * i) / n, 180 + (180 * (i + 1)) / n, r0), g.pick(['#ffffff', '#cfe2ea', '#f6e8c8']), { opacity: 0.3 }));
   }
   // glazing bars
   let bars = '';
@@ -100,18 +100,21 @@ function wheel(r: number): Shape[] {
   scene(sh(rect(x0, top - 14, x1 - x0, 30, 10), '#5a5a62'), sh(rect(x0, top - 14, x1 - x0, 8, 6), '#7a7a82'));
   scene(sh(rect(x0, top + 22, x1 - x0, 100), cream), sh(rect(x0, top + 18, x1 - x0, 4) + rect(x0, top + 124, x1 - x0, 4) + rect(x0, bot - 30, x1 - x0, 4), GOLD));
   const g = rng(11), coats = ['#2f4a6a', '#6b3f22', '#3f6b5a', '#8a3a4a', '#5a5a7a'];
+  const wxs: number[] = [];
   for (let i = 0; i < 8; i++) {
     const wx = x0 + 34 + i * 86;
-    if (i === 3) {
-      // door
-      scene(sh(rect(wx - 6, top + 22, 74, bot - top - 26, 3), shade(body, 0.08)), stroke(rect(wx, top + 32, 62, bot - top - 46, 3), GOLD, 1.6), sh(rect(wx + 8, top + 40, 46, 70, 4), '#9cc4d8'), sh(rect(wx + 50, top + 150, 8, 22, 2), GOLD));
-      continue;
-    }
-    scene(sh(rect(wx, top + 34, 64, 76, 8), '#9cc4d8'), sh(rect(wx, top + 34, 64, 76, 8), '#ffffff', { opacity: 0.15 }));
-    if (g.next() < 0.7) scene(place(figure(150, g.pick(coats), 40 + i), { x: wx + 32, y: top + 168 }));
+    if (i === 3) continue;
+    wxs.push(wx);
+    scene(sh(rect(wx, top + 34, 64, 76, 8), '#9cc4d8'), sh(rect(wx + 4, top + 38, 56, 30, 6), '#ffffff', { opacity: 0.18 }));
+    if (g.next() < 0.75) scene(place(figure(112, g.pick(coats), 40 + i), { x: wx + 32 + g.range(-8, 8), y: top + 176 }));
     scene(sh(M(wx, top + 34) + L(wx + 16, top + 34) + Q(wx + 10, top + 70, wx, top + 110) + 'Z', '#c8a24a'), sh(M(wx + 64, top + 34) + L(wx + 48, top + 34) + Q(wx + 54, top + 70, wx + 64, top + 110) + 'Z', '#c8a24a'));
-    scene(stroke(rect(wx, top + 34, 64, 76, 8), GOLD, 2.4));
-    scene(sh(rect(wx + 4, top + 150, 56, 50, 4), shade(body, 0.1)), stroke(rect(wx + 10, top + 156, 44, 38, 3), GOLD, 1));
+  }
+  // lower body drawn over the passengers so they sit inside the windows
+  scene(sh(rect(x0, top + 110, x1 - x0, 12), cream), sh(rect(x0, top + 122, x1 - x0, bot - top - 122), body), sh(rect(x0, top + 124, x1 - x0, 4) + rect(x0, bot - 30, x1 - x0, 4), GOLD));
+  for (const wx of wxs) scene(stroke(rect(wx, top + 34, 64, 76, 8), GOLD, 2.4), sh(rect(wx + 4, top + 150, 56, 50, 4), shade(body, 0.1)), stroke(rect(wx + 10, top + 156, 44, 38, 3), GOLD, 1));
+  {
+    const wx = x0 + 34 + 3 * 86;
+    scene(sh(rect(wx - 6, top + 22, 74, bot - top - 26, 3), shade(body, 0.08)), stroke(rect(wx, top + 32, 62, bot - top - 46, 3), GOLD, 1.6), sh(rect(wx + 8, top + 40, 46, 70, 4), '#9cc4d8'), sh(rect(wx + 50, top + 150, 8, 22, 2), GOLD));
   }
   target('binoculars', 'Binoculars', place(binoculars(46, '#2f3a33'), { x: x0 + 34 + 5 * 86 + 30, y: top + 92, rot: -6 }));
   scene(sh(rect(x1 - 8, top + 80, 30, 26, 4) + rect(x1 + 20, top + 86, 16, 14, 7), '#2a2a2e'));
@@ -122,8 +125,8 @@ function wheel(r: number): Shape[] {
   scene(sh(rect(x0, base - 10, 470, 40), '#2a2a2e'), sh(rect(x0, base + 26, 470, 8), '#8c2b2b'));
   // cab
   scene(sh(rect(x0, 520, 150, base - 520), green), sh(rect(x0 - 10, 506, 170, 22, 6), '#2a2a2e'), sh(rect(x0 + 30, 550, 80, 70, 6), '#ffe9a8'), stroke(rect(x0 + 30, 550, 80, 70, 6), GOLD, 3), sh(rect(x0 + 10, 640, 130, 4), GOLD));
-  scene(place(figure(130, '#2f3a4a', 77), { x: x0 + 70, y: 690 }));
-  scene(sh(rect(x0 + 30, 550, 80, 50, 6), '#ffffff', { opacity: 0.2 }));
+  scene(place(figure(100, '#2f3a4a', 77), { x: x0 + 70, y: 668 }));
+  scene(sh(rect(x0, 620, 150, base - 620), green), sh(rect(x0 + 10, 640, 130, 4), GOLD), stroke(rect(x0 + 30, 550, 80, 70, 6), GOLD, 3), sh(rect(x0 + 34, 554, 72, 24, 4), '#ffffff', { opacity: 0.2 }));
   // boiler
   scene(sh(rect(x0 + 150, 600, 300, 130, 10), green), sh(rect(x0 + 150, 606, 300, 22), shade(green, 0.18)), sh(rect(x0 + 150, 700, 300, 30), shade(green, -0.2)));
   scene(sh(rect(x0 + 200, 600, 8, 130) + rect(x0 + 300, 600, 8, 130) + rect(x0 + 400, 600, 8, 130), GOLD));
@@ -159,7 +162,7 @@ scene(sh(rect(0, 820, W, H - 820), `url(#${ID}-plat)`));
     for (let x = -((r * 37) % w); x < W; x += w) {
       const c = g.pick(['#c9bea9', '#c2b6a0', '#d0c5b0', '#bdb19b']);
       scene(sh(rect(x + 2, y0 + 2, w - 4, y1 - y0 - 4, 3), c, { stroke: '#9a907e', strokeWidth: 1 }));
-      if (g.next() < 0.3) scene(stroke(curve([[x + w * 0.2, y0 + (y1 - y0) * 0.4], [x + w * 0.4, y0 + (y1 - y0) * 0.55], [x + w * 0.5, y0 + (y1 - y0) * 0.45]]), '#a89c86', 1));
+      if (g.next() < 0.55) scene(stroke(curve([[x + w * 0.2, y0 + (y1 - y0) * 0.4], [x + w * 0.4, y0 + (y1 - y0) * 0.55], [x + w * 0.5, y0 + (y1 - y0) * 0.45]]), '#a89c86', 1));
     }
   }
 }
@@ -173,6 +176,13 @@ function column(x: number, top: number, bot: number): Shape[] {
   ];
 }
 scene(column(150, 488, 980), column(1060, 488, 940));
+for (const [hx, seed] of [[150, 81], [1060, 83]] as [number, number][]) {
+  const g = rng(seed);
+  scene(stroke(line([[hx - 30, 660], [hx - 30, 690]]) + line([[hx + 30, 660], [hx + 30, 690]]), IRON, 2));
+  for (let i = 0; i < 12; i++) scene(sh(leaf(hx + g.range(-34, 34), 690 + g.range(-6, 10), g.range(16, 26), 6, g.range(40, 140)), g.pick(['#4f7a3a', '#5c8f4f'])));
+  for (let i = 0; i < 9; i++) scene(sh(circle(hx + g.range(-30, 30), 686 + g.range(-8, 14), 6), g.pick(['#d2452f', '#f2c14e', '#e8799f', '#fbf6e8'])));
+  scene(ol(M(hx - 36, 690) + Q(hx, 740, hx + 36, 690) + 'Z', '#8a5a38', 1));
+}
 {
   // hanging sign with a little train pictogram
   scene(stroke(line([[256, 490], [256, 530]]) + line([[384, 490], [384, 530]]), IRON, 3), ol(rect(236, 528, 168, 64, 6), '#2f4a6a', 1.4), stroke(rect(242, 534, 156, 52, 4), '#efe2c2', 2));
@@ -202,7 +212,7 @@ scene(column(150, 488, 980), column(1060, 488, 940));
   scene(shadow(lx, 1104, 40, 8), sh(rect(lx - 18, 1060, 36, 44, 4), IRON), sh(rect(lx - 7, 700, 14, 370), IRON), sh(rect(lx - 7, 700, 4, 370), IRON_L), sh(rect(lx - 12, 900, 24, 10, 3), GOLD));
   scene(stroke(M(lx, 720) + Q(lx + 50, 700, lx + 60, 740), IRON, 4), sh(circle(lx, 660, 50), `url(#${ID}-glow)`), ol(poly([[lx - 22, 640], [lx + 22, 640], [lx + 16, 700], [lx - 16, 700]]), '#fff3c4', 1, -0.5), sh(poly([[lx - 28, 640], [lx + 28, 640], [lx, 616]]), IRON), sh(rect(lx - 18, 698, 36, 8, 2), IRON));
 }
-target('railway-lantern', 'Railway lantern', place(railLantern(54, '#c8322a'), { x: 620, y: 900 }));
+target('railway-lantern', 'Railway lantern', place(railLantern(54, '#c8322a'), { x: 744, y: 900 }));
 
 // ---- centre: porter's barrow piled with luggage ----
 {
@@ -287,6 +297,10 @@ target('railway-lantern', 'Railway lantern', place(railLantern(54, '#c8322a'), {
   // a row of cases at the front right
   scene(place(suitcase(150, 110, '#3f7d6e', { seed: 61 }), { x: 1000, y: 1480 }), place(suitcase(110, 150, '#c9a06a', { seed: 63, straps: false }), { x: 1130, y: 1492 }));
   scene(place(flatCase(150, 34, '#7a3a3a', 65), { x: 1004, y: 1374 }));
+  // mail sacks and parcels
+  scene(shadow(560, 1478, 90, 10), ol(blob([[490, 1478], [482, 1420], [500, 1380], [540, 1376], [560, 1420], [556, 1478]], 0.8), '#b8a888', 1), stroke(line([[492, 1396], [548, 1392]]), '#6b5a3a', 3));
+  scene(ol(rect(560, 1416, 70, 60, 2), '#c9a06a', 1), stroke(line([[595, 1416], [595, 1476]]) + line([[560, 1446], [630, 1446]]), '#8a3a2a', 2.4), ol(rect(574, 1384, 48, 32, 2), '#d9b98a', 1), stroke(line([[598, 1384], [598, 1416]]), '#8a3a2a', 2));
+  scene(ol(xf(rect(-14, -8, 28, 16, 2), { rot: 20, x: 640, y: 1384 }), '#efe2c2', 0.8), sh(xf(circle(-8, 0, 3), { rot: 20, x: 640, y: 1384 }), '#c8322a'));
   target('apple', 'Apple', place(apple(36, '#c8322a'), { x: 1040, y: 1338 }));
   target('passport', 'Passport', place(passport(46, '#2f4a3a'), { x: 690, y: 1420, rot: 24 }));
   scene(ol(xf(rect(-30, -20, 60, 40, 2), { rot: -10, x: 820, y: 1440 }), '#efe2c2', 1, -0.2), stroke(xf(line([[-22, -8], [22, -8]]) + line([[-22, 0], [16, 0]]) + line([[-22, 8], [20, 8]]), { rot: -10, x: 820, y: 1440 }), '#9a907e', 1.2));

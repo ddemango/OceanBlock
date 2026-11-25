@@ -3,7 +3,7 @@ import type { Shape } from '../../art/types';
 import type { FindActivity, FindItem } from '../types';
 import {
   M, L, Q, ol, shadow, P, planks, tiles, floor, gingham, wallpaper, plate, bowl, mug, jug, cookPot, kettle, fryingPan, colander, utensil, teaTowel,
-  jar, tin, spiceJar, bottle, basket, basketHandle, sack, pile, veg, leek, cabbage, herbPot, flowerVase, clock, bloomer,
+  jar, tin, spiceJar, bottle, basket, basketHandle, sack, crate, pile, veg, leek, cabbage, herbPot, flowerVase, clock, bloomer,
   whisk, rollingPin, ovenGlove, teacup, ladle, egg, cherries, sittingCat, lemon, key, saltShaker, scissors, carrot, butterfly, woodenSpoon,
 } from './props-find';
 
