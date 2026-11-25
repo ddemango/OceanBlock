@@ -172,6 +172,30 @@ def register_app(bundle, name):
     return False
 
 
+def team_id(bundle):
+    """The Apple team (App ID prefix) that owns a registered bundle id."""
+    r = call('GET', f'/bundleIds?filter[identifier]={bundle}&limit=5') or {'data': []}
+    for b in r['data']:
+        if b['attributes']['identifier'] == bundle:
+            return b['attributes'].get('seedId')
+    return None
+
+
+def preflight(bundle):
+    """Print TEAM_ID=... for the workflow, and fail clearly if the app record is missing."""
+    tid = team_id(bundle)
+    if not tid:
+        print(f'::error::Bundle id {bundle} is not registered on this Apple account.')
+        return False
+    print(f'TEAM_ID={tid}')
+    apps = call('GET', f'/apps?filter[bundleId]={bundle}&limit=1') or {'data': []}
+    if not apps['data']:
+        print(f'::error::No App Store Connect app record uses {bundle} yet. Create it once at appstoreconnect.apple.com → Apps → + → New App, choosing this bundle id, then run this workflow again.')
+        return False
+    print('App record:', apps['data'][0]['attributes']['name'])
+    return True
+
+
 def resolve_app():
     """Optionally target another app by bundle id (ASC_BUNDLE_ID), e.g. Unwind Studio."""
     global APP_ID
@@ -187,6 +211,8 @@ def resolve_app():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'preflight':
+        sys.exit(0 if preflight(os.environ.get('ASC_BUNDLE_ID', '').strip()) else 1)
     if len(sys.argv) > 1 and sys.argv[1] == 'register-app':
         ok = register_app(os.environ.get('ASC_BUNDLE_ID', '').strip(), os.environ.get('ASC_APP_NAME', 'Unwind Studio'))
         sys.exit(0 if ok else 1)

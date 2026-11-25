@@ -54,8 +54,8 @@ works offline from first launch.
    developer.apple.com → Identifiers → **+** → App IDs. SKU can be `unwind-studio`.
 
 **Upload a build:** GitHub → Actions → **Unwind Studio → TestFlight** → Run workflow.
-It uses the repository's existing Apple secrets (`ASC_KEY_P8`, `ASC_KEY_ID`,
-`ASC_ISSUER_ID`, `APPLE_TEAM_ID`), signs automatically, and uploads. The build appears
+It uses the repository's App Store Connect API key secrets (`ASC_KEY_P8`, `ASC_KEY_ID`,
+`ASC_ISSUER_ID`), looks up the Apple team from the account, signs automatically, and uploads. The build appears
 in TestFlight 5–20 minutes later.
 
 **Add testers:** Actions → **App Store Connect** → Run workflow with action
