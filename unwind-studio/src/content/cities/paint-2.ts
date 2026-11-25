@@ -56,6 +56,26 @@ R('cloud-3', blob([[40, 270], [80, 250], [140, 252], [190, 270], [150, 288], [60
 R('bay', rect(0, 440, W, 260), 'bay');
 R('far-hills-1', M(0, 452) + curve([[0, 422], [50, 404], [120, 392], [210, 404], [260, 430], [300, 452]], 0.8).replace(/^M/, 'L') + 'Z', 'hills');
 R('far-hills-2', blob([[240, 452], [330, 418], [420, 406], [520, 424], [600, 452]], 0.8), 'hills');
+// the great orange bridge across the strait
+R('gate-tower-north', poly([[44, 448], [48, 318], [62, 318], [66, 448]]), 'red', [55, 400]);
+R('gate-tower-south', poly([[166, 448], [170, 318], [184, 318], [188, 448]]), 'red', [177, 400]);
+R('gate-deck', rect(0, 428, 228, 12, 2), 'red', [116, 434]);
+{
+  const sagPts = (x0: number, x1: number, y0: number, y1: number, low: number) => {
+    const pts: Pt[] = [];
+    for (let i = 0; i <= 12; i++) {
+      const t = i / 12;
+      pts.push([x0 + (x1 - x0) * t, y0 + (y1 - y0) * t + (low - (y0 + y1) / 2) * 4 * t * (1 - t)]);
+    }
+    return pts;
+  };
+  const main = sagPts(62, 170, 322, 322, 420);
+  let h = '';
+  for (const [x, y] of main.slice(1, -1)) h += line([[x, y], [x, 428]]);
+  detail.push(stroke(h, '#c4584b', 1));
+  detail.push(stroke(curve(main, 0.9) + curve(sagPts(-30, 48, 420, 322, 395), 0.9) + curve(sagPts(184, 236, 322, 420, 392), 0.9), '#9c3a31', 2.2));
+  detail.push(stroke(line([[46, 350], [64, 350]]) + line([[168, 350], [186, 350]]) + line([[46, 384], [64, 384]]) + line([[168, 384], [186, 384]]), '#8a2f28', 1.6));
+}
 R('island', blob([[160, 500], [180, 482], [220, 478], [246, 500]], 0.8), 'hills');
 // sailboat
 R('boat-hull', M(46, 548) + L(150, 548) + Q(140, 566, 120, 566) + L(70, 566) + Q(54, 562, 46, 548) + 'Z', 'red');
@@ -216,7 +236,7 @@ detail.push(stroke(line([[92, 986], [112, 986]]) + line([[128, 986], [148, 986]]
 
 const a: PaintActivity = {
   id: 'cities-paint-2', version: 1, mode: 'paint', title: 'Cable Car Hill',
-  blurb: 'A cheerful cable car clangs up a steep street of painted row houses, with sailboats out on the bay below.',
+  blurb: 'A cheerful cable car clangs up a steep San Francisco street of painted row houses, with the Golden Gate Bridge glowing across the bay.',
   collectionId: 'cities', categories: ["Cities"], difficulty: 'Detailed',
   width: W, height: H, palette, regions, detail,
 };
