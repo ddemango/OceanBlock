@@ -23,14 +23,24 @@ export const MODE_ICON = { puzzle: 'puzzle', paint: 'paint', find: 'find' } as c
 export function ArtThumb({ activity, fills, stamp, className = '' }: { activity: Activity; fills?: Record<string, string>; stamp?: string | number; className?: string }) {
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const [visible, setVisible] = useState(typeof IntersectionObserver === 'undefined');
+  const ref = useRef<HTMLDivElement>(null);
+  // draw the artwork only when the card comes near the screen, so long lists stay quick
   useEffect(() => {
+    if (visible || !ref.current) return;
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { setVisible(true); io.disconnect(); } }, { rootMargin: '300px' });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, [visible]);
+  useEffect(() => {
+    if (!visible) return;
     let alive = true;
     setFailed(false);
     thumbUrl(activity, fills, String(stamp ?? '')).then((u) => alive && setUrl(u)).catch(() => alive && setFailed(true));
     return () => { alive = false; };
-  }, [activity, stamp]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activity, stamp, visible]); // eslint-disable-line react-hooks/exhaustive-deps
   if (failed) return <div className={`thumb thumb-failed ${className}`} role="img" aria-label="Artwork unavailable"><Icon name="gallery" /><span>Artwork unavailable</span></div>;
-  return <div className={`thumb ${className}`}>{url ? <img src={url} alt="" draggable={false} /> : <div className="thumb-wait" />}</div>;
+  return <div ref={ref} className={`thumb ${className}`}>{url ? <img src={url} alt="" draggable={false} /> : <div className="thumb-wait" />}</div>;
 }
 
 export function ModeBadge({ mode }: { mode: Activity['mode'] }) {

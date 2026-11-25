@@ -3,7 +3,8 @@ import { ACTIVITIES, COLLECTIONS } from '../src/content/catalog';
 import { validateActivity, validateCatalog } from '../src/content/validate';
 
 const only = process.argv[2];
-const acts = only ? ACTIVITIES.filter((a) => a.collectionId === only) : ACTIVITIES;
+const wanted = only?.split(',');
+const acts = wanted ? ACTIVITIES.filter((a) => wanted.some((w) => a.collectionId === w || a.id === w)) : ACTIVITIES;
 const issues = only ? acts.flatMap(validateActivity) : validateCatalog(ACTIVITIES, COLLECTIONS);
 for (const a of acts) {
   if (a.mode === 'puzzle') console.log(`${a.id}: "${a.title}" ${a.art.width}x${a.art.height}, ${a.art.shapes.length} shapes`);

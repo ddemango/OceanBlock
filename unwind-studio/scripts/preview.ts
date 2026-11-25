@@ -13,7 +13,8 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 
 const arg = process.argv[2] ?? 'all';
-const acts = ACTIVITIES.filter((a) => arg === 'all' || a.collectionId === arg || a.id === arg);
+const wanted = arg.split(',');
+const acts = ACTIVITIES.filter((a) => !a.id.endsWith('-jigsaw') && (arg === 'all' || wanted.some((w) => a.collectionId === w || a.id === w)));
 if (!acts.length) { console.error(`Nothing matches "${arg}"`); process.exit(1); }
 const out = resolve('.preview');
 mkdirSync(out, { recursive: true });

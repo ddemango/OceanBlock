@@ -6,14 +6,17 @@ works offline and scales cleanly to any zoom level.
 
 An activity is one file that default-exports a typed object
 (`src/content/types.ts`). Each collection lives in `src/content/<collection>/`
-with `puzzle.ts`, `paint.ts`, `find.ts`, plus any shared helper files you add
-there (for example `props.ts`).
+(for example `paint-1.ts`, `find-2.ts`, plus shared helper files such as
+`props.ts`) and is listed in `src/content/catalog.ts`.
+
+Every hidden-object scene is automatically offered as a jigsaw too (the same
+artwork, id `<scene id>-jigsaw`), so a good scene gives you two activities.
 
 ## Workflow
 
 ```bash
-npm run art:preview -- <collectionId|activityId>   # PNGs written to .preview/
-npm run art:validate -- <collectionId>             # must print "No errors"
+npm run art:preview -- <collectionId|activityId>[,<id>…]   # PNGs written to .preview/
+npm run art:validate -- <collectionId|activityId>[,<id>…]  # must print "No errors"
 ```
 
 Look at the PNGs after every change. Validation proves the data is playable;
@@ -91,7 +94,8 @@ origin, then `place()` them.
 `id` (`<collection>-<mode>`), `version`, `title`, `blurb` (one sentence),
 `collectionId`, `difficulty` (`Relaxed` | `Moderate` | `Detailed`) and
 `categories`, chosen from: `Seaside`, `Travel`, `Interiors`, `Still life`,
-`Garden`, `Flowers`, `Birds`, `Architecture`, `Cozy`.
+`Garden`, `Flowers`, `Birds`, `Architecture`, `Cozy`, `Woodland`, `Animals`,
+`Kitchen`, `Food`, `Winter`.
 
 If you ever bundle external artwork instead, add `attribution`
 (`author`, `license`, `source`); it is shown in Settings → Credits.

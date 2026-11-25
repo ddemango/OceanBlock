@@ -42,12 +42,12 @@ export function thumbUrl(a: Activity, fills?: Record<string, string>, stamp = ''
   let p = thumbs.get(key);
   if (!p) {
     const { width, height } = activitySize(a);
-    p = rasterize(activitySvg(a, fills), 560, width / height).then(
+    p = rasterize(activitySvg(a, fills), 480, width / height).then(
       (c) => new Promise<string>((res, rej) => c.toBlob((b) => (b ? res(URL.createObjectURL(b)) : rej(new Error('encode failed'))), 'image/png')),
     );
     p.catch(() => thumbs.delete(key));
     thumbs.set(key, p);
-    if (thumbs.size > 60) thumbs.delete(thumbs.keys().next().value!);
+    if (thumbs.size > 140) thumbs.delete(thumbs.keys().next().value!);
   }
   return p;
 }
