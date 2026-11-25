@@ -490,3 +490,10 @@ body.flash #fx-overlay { background: rgba(255, 255, 255, 0.75); transition: none
 .lv-node.hard::after, .lv-node.boss::after { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); padding: 1px 6px; border-radius: 8px; border: 2px solid var(--ink); font-size: 10px; font-weight: 900; color: #fff; white-space: nowrap; }
 .lv-node.hard::after { content: 'HARD'; background: #ff7a1a; }
 .lv-node.boss::after { content: 'BOSS'; background: #e0352b; }
+
+/* ---------- D's Cannon Blast logo ---------- */
+.logo-ds { font-weight: 900; line-height: .9; font-size: clamp(30px, 9vw, 56px); color: var(--gold); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); }
+.logo-top { font-size: clamp(46px, 13.5vw, 92px); }
+.logo-bottom { font-size: clamp(52px, 15vw, 104px); color: var(--gold); }
+.ld-logo i { font-style: normal; font-size: 34px; color: var(--gold); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); }
+.ld-logo b { color: var(--gold); }

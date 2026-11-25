@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: status | add-testers | invite | gamecenter
+        description: status | add-testers | invite | gamecenter | rename
         default: status
       emails:
-        description: Comma-separated tester emails (for add-testers)
+        description: Comma-separated tester emails (add-testers) or the new app name (rename)
         default: d.s.demango@gmail.com,davide@advanta-ai.com
 
 jobs:
