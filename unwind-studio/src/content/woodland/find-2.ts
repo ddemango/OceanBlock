@@ -269,7 +269,6 @@ scene(...place(fern(170, -80, '#8db35e', 144), { x: 380, y: 1500 }), ...place(fe
 target('ladybird', 'Ladybird', place(ladybird(), { x: 120, y: 1360, s: 0.75, rot: -30 }));
 scene(...place(brownMushrooms(151), { x: 520, y: 1460 }), ...place(brownMushrooms(152, '#a5754a'), { x: 180, y: 1260, s: 0.8 }));
 target('toadstool', 'Red toadstool', place(toadstool(), { x: 1012, y: 1096, s: 0.66 }));
-target('pinecone', 'Pine cone', place(pinecone(), { x: 1150, y: 1440, s: 0.75, rot: 70 }));
 scene(...place(fern(190, -100, '#5f8a45', 161), { x: 1140, y: 1500 }), ...place(fern(170, -150, '#4e6b38', 162), { x: 1180, y: 1500 }));
 {
   const g = rng(171);
@@ -278,6 +277,8 @@ scene(...place(fern(190, -100, '#5f8a45', 161), { x: 1140, y: 1500 }), ...place(
   for (let i = 0; i < 18; i++) lv += leaf(g.range(300, 1100), g.range(1250, 1490), g.range(14, 22), 6, g.range(0, 360));
   scene(sh(lv, '#c49a5c', { opacity: 0.9 }));
 }
+
+target('pinecone', 'Pine cone', place(pinecone(), { x: 1060, y: 1462, s: 0.72, rot: 70 }));
 
 // ------------------------------------------------------------------ sunlight
 scene(sh(poly([[760, 0], [880, 0], [620, 1500], [420, 1500]]) + poly([[960, 0], [1020, 0], [900, 1500], [780, 1500]]), '#fff6d2', { opacity: 0.1 }));
