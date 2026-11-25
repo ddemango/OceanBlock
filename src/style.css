@@ -484,3 +484,9 @@ body.flash #fx-overlay { background: rgba(255, 255, 255, 0.75); transition: none
 .ld-text { margin-top: 6vh; font-weight: 900; font-size: 20px; color: #fff; text-shadow: 0 2px 0 var(--ink); }
 .ld-bar { width: min(260px, 70vw); height: 18px; border-radius: 10px; background: #1d2638; border: 3px solid #1d2638; overflow: hidden; }
 .ld-bar i { display: block; height: 100%; width: 10%; border-radius: 8px; background: linear-gradient(#9dff7a, #2fbf3a); transition: width .25s; }
+
+/* ---------- HARD / BOSS markers ---------- */
+.boss-tag.hard { color: #ff7a1a; }
+.lv-node.hard::after, .lv-node.boss::after { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); padding: 1px 6px; border-radius: 8px; border: 2px solid var(--ink); font-size: 10px; font-weight: 900; color: #fff; white-space: nowrap; }
+.lv-node.hard::after { content: 'HARD'; background: #ff7a1a; }
+.lv-node.boss::after { content: 'BOSS'; background: #e0352b; }

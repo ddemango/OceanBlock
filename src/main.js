@@ -1,7 +1,7 @@
 import './style.css';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
-import { getLevel, getChallenge, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
+import { getLevel, getChallenge, isHard, BLOCKS, RAFT_TOP, RAFT_Z } from './levels.js';
 import { buildEnvironment, buildCannon, buildRaft, THEMES, themeForLevel } from './scenery.js';
 import { crateTexture, drumTexture, drumLidTexture, buoyTexture, beamTexture, ironTexture, tntTexture, iceTexture, balloonTexture } from './textures.js';
 import * as sfx from './audio.js';
@@ -1405,7 +1405,7 @@ function renderMap() {
   nodes.forEach((lv, i) => {
     const el = document.createElement('div');
     const done = lv < cur;
-    el.className = 'lv-node' + (lv === cur ? ' current' : done ? '' : ' locked');
+    el.className = 'lv-node' + (lv === cur ? ' current' : done ? '' : ' locked') + (isHard(lv) ? ' hard' : lv % 10 === 0 ? ' boss' : '');
     el.style.left = pts[i].x + '%';
     el.style.top = pts[i].y + '%';
     el.textContent = lv;
@@ -1754,6 +1754,7 @@ function showBoosters() {
   state.mode = 'boosters';
   $('boost-title').innerHTML = `Level ${save.level}`;
   if (save.level % 10 === 0) $('boost-title').innerHTML = `<span class="boss-tag">BOSS</span> Level ${save.level}`;
+  else if (isHard(save.level)) $('boost-title').innerHTML = `<span class="boss-tag hard">HARD</span> Level ${save.level}`;
   refreshBoosters();
   show('boosters');
 }
@@ -1812,7 +1813,8 @@ function beginLevel(boosts, def) {
   const lv = state.level;
   if (state.challenge) {
     /* the challenge has its own intro popup */
-  } else if (lv % 10 === 0) setTimeout(() => popup('BOSS LEVEL!', '#ff5a3c', 'double coins'), 300);
+  } else if (state.def.hard) setTimeout(() => popup('HARD LEVEL!', '#ff5a3c', 'fewer shots · 1.5× coins'), 300);
+  else if (lv % 10 === 0) setTimeout(() => popup('BOSS LEVEL!', '#ff5a3c', 'double coins'), 300);
   else if (lv % 5 === 1 && lv > 1) setTimeout(() => popup(THEMES[state.theme].label, '#ffe7b8', `Chapter ${Math.floor((lv - 1) / 5) + 1}`), 300);
   if (boosts.triple) setTimeout(() => popup('TRIPLE SHOT!', '#5bc8ff', '10 shots'), lv % 5 === 1 || lv % 10 === 0 ? 1400 : 300);
   if (lv === 1 && !save.tutorialDone) $('hint').classList.remove('hidden');
@@ -1837,6 +1839,7 @@ function onWin() {
   const stars = ratio <= 0.4 ? 3 : ratio <= 0.7 ? 2 : 1;
   if (state.challenge) return onChallengeWin(stars);
   let reward = 20 + state.shots * 2 + (stars - 1) * 10 + (state.bonus || 0);
+  if (state.def.hard) reward = Math.round(reward * 1.5);
   if (state.level % 10 === 0) {
     reward *= 2; // boss bonus
     stat('bosses');
