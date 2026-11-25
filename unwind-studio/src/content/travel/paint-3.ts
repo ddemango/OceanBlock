@@ -1,6 +1,5 @@
 import { rect, ellipse, circle, poly, line, curve, blob, sector, stroke } from '../../art/kit';
 import type { Shape } from '../../art/types';
-import type { Pt } from '../../art/geometry';
 import type { PaintActivity, PaintRegion, PaletteColor } from '../types';
 import { n, scallop } from './props-paint';
 
@@ -35,13 +34,13 @@ const archDoor = (x0: number, x1: number, yTop: number, yBot: number) => {
 };
 
 // ---------- sky and sea ----------
-R('sky', rect(0, 0, W, 340), 'sky');
-R('cloud-1', blob([[120, 120], [160, 92], [220, 98], [262, 76], [330, 88], [372, 116], [320, 134], [170, 136]], 0.9), 'cream');
+R('sky', rect(0, 0, W, 272), 'sky');
+R('cloud-1', blob([[420, 110], [460, 82], [520, 88], [562, 66], [630, 78], [672, 106], [620, 124], [470, 126]], 0.9), 'cream');
 R('cloud-2', blob([[700, 70], [740, 50], [800, 56], [850, 44], [912, 62], [940, 86], [860, 96], [730, 94]], 0.9), 'cream');
-R('island-1', curve([[0, 300], [80, 286], [170, 262], [250, 276], [330, 304], [400, 334]], 0.8) + 'L0 334Z', 'island');
-R('island-2', curve([[820, 334], [870, 314], [930, 306], [W, 312]], 0.8) + `L${W} 334Z`, 'island');
-R('sea', rect(0, 330, W, H - 330), 'sea');
-R('sea-horizon', rect(0, 330, W, 26), 'seaLight');
+R('island-1', curve([[0, 248], [90, 226], [190, 206], [280, 214], [380, 238], [470, 266]], 0.8) + 'L0 266Z', 'island');
+R('island-2', curve([[700, 266], [780, 244], [870, 236], [W, 244]], 0.8) + `L${W} 266Z`, 'island');
+R('sea', rect(0, 262, W, H - 262), 'sea');
+R('sea-horizon', rect(0, 262, W, 28), 'seaLight');
 R('sea-shallows', curve([[700, 1250], [760, 1130], [860, 1060], [940, 1010], [W, 990]], 0.8) + `L${W} ${H}Z`, 'seaLight');
 
 // sailboat
@@ -61,12 +60,7 @@ R('church-body', rect(540, 470, 196, 210), 'white');
 R('church-side', poly([[736, 470], [772, 452], [772, 668], [736, 680]]), 'shade');
 R('church-drum', rect(580, 436, 116, 36, 3), 'shade');
 R('church-dome', sector(638, 440, 80, 180, 360), 'blue');
-{
-  const pts: Pt[] = [];
-  for (let a = 196; a <= 272; a += 6) pts.push([638 + Math.cos((a * Math.PI) / 180) * 74, 440 + Math.sin((a * Math.PI) / 180) * 74]);
-  for (let a = 268; a >= 200; a -= 6) pts.push([652 + Math.cos((a * Math.PI) / 180) * 56, 446 + Math.sin((a * Math.PI) / 180) * 56]);
-  R('church-dome-light', blob(pts, 0.4), 'blueLight');
-}
+R('church-dome-light', ellipse(604, 402, 32, 13, -42), 'blueLight');
 R('church-finial', circle(638, 354, 9), 'blueLight');
 R('church-door', archDoor(610, 666, 560, 680), 'blue');
 R('church-rose', circle(638, 516, 15), 'teal');
@@ -85,6 +79,8 @@ R('house-r-window', rect(926, 588, 44, 44, 3), 'teal');
 // terrace wall
 R('terrace-wall', rect(300, 676, 700, 112), 'shade');
 R('terrace-cap', rect(300, 668, 700, 16, 3), 'sand');
+R('terrace-niche-1', archDoor(420, 452, 704, 760), 'blue');
+R('terrace-niche-2', archDoor(800, 832, 704, 760), 'blue');
 
 // house far below, beside the sea
 R('low-house', rect(852, 852, 148, 110), 'white');
@@ -104,6 +100,7 @@ R('lane-ground', poly([[300, 784], [760, 784], [xR(yTop), yTop], [xR(yBot), yBot
     R(`step-${k + 1}-tread`, poly([[xL(ym), ym], [xR(ym), ym], [xR(y1), y1], [xL(y1), y1]]), 'sand');
   }
 }
+R('lane-kerb', poly([[452, 820], [472, 820], [362, H], [336, H]]), 'white');
 R('parapet', poly([[700, 820], [728, 788], [W, 1150], [W, H], [900, H]]), 'white');
 R('parapet-cap', poly([[722, 778], [740, 778], [W, 1126], [W, 1152], [726, 796]]), 'sand');
 
@@ -126,6 +123,13 @@ R('left-shutter-l', rect(44, 364, 34, 112, 2), 'teal');
 R('left-shutter-r', rect(160, 364, 34, 112, 2), 'teal');
 R('left-glass', rect(82, 368, 74, 104), 'blue');
 R('left-ledge', rect(64, 474, 110, 14, 3), 'sand');
+R('ledge-plant', scallop(119, 466, 40, 16, 8), 'leaf');
+R('ledge-flowers', scallop(119, 458, 22, 10, 6), 'magenta');
+for (const [i, x] of [[1, 70], [2, 226]] as [number, number][]) {
+  R(`wall-pot-${i}-leaves`, scallop(x, 640, 34, 20, 8), 'leaf');
+  R(`wall-pot-${i}-flowers`, scallop(x - 4, 630, 20, 12, 6), i === 1 ? 'pink' : 'magenta');
+  R(`wall-pot-${i}`, poly([[x - 22, 650], [x + 22, 650], [x + 16, 690], [x - 16, 690]]), 'terra');
+}
 R('left-door-frame', archDoor(104, 256, 812, 1206), 'sand');
 R('left-door', archDoor(118, 242, 826, 1206), 'blue');
 R('left-step', rect(92, 1204, 176, 22, 3), 'stone');
@@ -134,16 +138,17 @@ R('left-pot-leaves', scallop(48, 1116, 40, 30, 8), 'leaf');
 R('left-pot-flowers', scallop(52, 1100, 22, 16, 7), 'pink');
 
 // ---------- bougainvillea tumbling over the left house ----------
-R('vine-mass', blob([[0, 120], [60, 150], [140, 170], [220, 196], [296, 220], [360, 262], [378, 330], [352, 420], [334, 520], [348, 640], [318, 700], [296, 620], [282, 520], [250, 420], [190, 330], [110, 300], [40, 330], [0, 340]], 0.8), 'leaf');
-R('vine-bloom-1', scallop(60, 200, 70, 46, 9), 'magenta');
-R('vine-bloom-2', scallop(196, 228, 64, 40, 9), 'magenta');
-R('vine-bloom-3', scallop(312, 300, 46, 52, 8), 'magenta');
-R('vine-bloom-4', scallop(320, 460, 30, 50, 7), 'magenta');
-R('vine-bloom-5', scallop(326, 610, 22, 40, 6), 'magenta');
-R('vine-light-1', scallop(110, 180, 42, 24, 7), 'pink');
-R('vine-light-2', scallop(250, 210, 36, 22, 7), 'pink');
-R('vine-light-3', scallop(318, 372, 24, 30, 6), 'pink');
-R('vine-light-4', scallop(22, 300, 26, 20, 6), 'pink');
+R('vine-mass', blob([[150, 250], [190, 214], [250, 196], [310, 206], [366, 240], [384, 300], [370, 380], [352, 470], [346, 560], [354, 650], [332, 720], [306, 650], [300, 560], [296, 470], [276, 380], [230, 320], [170, 300], [120, 290], [76, 270], [104, 248]], 0.8), 'leaf');
+R('vine-bloom-1', scallop(232, 240, 62, 36, 9), 'magenta');
+R('vine-bloom-2', scallop(330, 292, 44, 52, 8), 'magenta');
+R('vine-bloom-3', scallop(340, 424, 26, 46, 7), 'magenta');
+R('vine-bloom-4', scallop(328, 562, 22, 40, 6), 'magenta');
+R('vine-bloom-5', scallop(326, 668, 18, 32, 6), 'magenta');
+R('vine-bloom-6', scallop(132, 272, 40, 20, 7), 'magenta');
+R('vine-light-1', scallop(272, 222, 34, 18, 7), 'pink');
+R('vine-light-2', scallop(352, 346, 20, 26, 6), 'pink');
+R('vine-light-3', scallop(190, 262, 26, 15, 6), 'pink');
+R('vine-light-4', scallop(334, 500, 16, 24, 6), 'pink');
 
 // ---------- line work ----------
 detail.push(stroke(line([[119, 420], [156, 420]]) + line([[119, 368], [119, 472]]), '#fbfaf4', 3));
@@ -153,10 +158,23 @@ detail.push(stroke(line([[119, 420], [156, 420]]) + line([[119, 368], [119, 472]
   detail.push(stroke(s, '#23777b', 1.3));
 }
 detail.push(stroke(line([[180, 830], [180, 1206]]) + circle(166, 1030, 4) + circle(194, 1030, 4), '#173f7a', 2));
+detail.push(stroke(curve([[300, 160], [312, 150], [324, 160]]) + curve([[324, 160], [336, 150], [348, 160]]) + curve([[360, 196], [368, 189], [376, 196]]) + curve([[376, 196], [384, 189], [392, 196]]) + curve([[760, 170], [770, 162], [780, 170]]) + curve([[780, 170], [790, 162], [800, 170]]), '#4a5a72', 2));
 detail.push(stroke(line([[906, 480], [906, 376]]), '#3a3a3a', 1.6));
-detail.push(stroke(curve([[30, 420], [70, 416], [110, 420]]) + curve([[480, 380], [530, 376], [580, 380]]) + curve([[440, 420], [470, 417], [500, 420]]) + curve([[760, 740], [800, 736], [840, 740]]) + curve([[930, 1080], [960, 1076], [990, 1080]]) + curve([[800, 1220], [840, 1216], [880, 1220]]) + curve([[700, 360], [760, 357], [820, 360]]), '#ffffff', 2, { opacity: 0.75 }));
+detail.push(stroke(curve([[480, 380], [530, 376], [580, 380]]) + curve([[440, 420], [470, 417], [500, 420]]) + curve([[760, 740], [800, 736], [840, 740]]) + curve([[930, 1080], [960, 1076], [990, 1080]]) + curve([[800, 1220], [840, 1216], [880, 1220]]) + curve([[700, 330], [760, 327], [820, 330]]), '#ffffff', 2, { opacity: 0.75 }));
 detail.push(stroke(line([[300, 250], [300, 1250]]) + line([[736, 470], [736, 680]]), '#b7c2d1', 1.6));
-detail.push(stroke(curve([[0, 160], [80, 190], [180, 220], [270, 250], [330, 310], [340, 420], [326, 560]]), '#5a3f2e', 2, { opacity: 0.7 }));
+detail.push(stroke(curve([[110, 262], [180, 250], [260, 236], [330, 270], [352, 380], [332, 520], [330, 660]]), '#5a3f2e', 2, { opacity: 0.7 }));
+{
+  let d = '';
+  for (const [y, x0] of [[706, 300], [730, 330], [754, 300], [778, 330]] as [number, number][]) for (let x = x0; x < W; x += 60) d += line([[x, y], [x + 44, y]]);
+  detail.push(stroke(d, '#b7c2d1', 1.4));
+  const ys = Array.from({ length: 7 }, (_, k) => yTop + (yBot - yTop) * Math.pow(k / 6, 1.2));
+  let t = '';
+  for (let k = 0; k < 6; k++) {
+    const y0 = ys[k] + (ys[k + 1] - ys[k]) * 0.3, y1 = ys[k + 1];
+    for (const f of [0.3, 0.62]) { const xa = xL(y0) + (xR(y0) - xL(y0)) * f, xb = xL(y1) + (xR(y1) - xL(y1)) * f; t += line([[xa, y0], [xb, y1]]); }
+  }
+  detail.push(stroke(t, '#cdb48a', 1.4));
+}
 
 const activity: PaintActivity = {
   id: 'travel-paint-3', version: 1, mode: 'paint', title: 'Whitewashed Village',

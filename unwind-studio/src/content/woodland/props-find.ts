@@ -550,9 +550,9 @@ export function fern(len: number, ang: number, col: string, seed = 1): Shape[] {
   for (let i = 1; i < 10; i++) {
     const [x, y] = pts[i], [nx, ny] = pts[i + 1];
     const a = (Math.atan2(ny - y, nx - x) * 180) / Math.PI;
-    const s = len * 0.22 * (1 - i / 11);
-    l1 += leaf(x, y, s, s * 0.22, a - 62);
-    l2 += leaf(x, y, s, s * 0.22, a + 62);
+    const s = len * 0.3 * (1 - i / 12);
+    l1 += leaf(x, y, s, s * 0.3, a - 55);
+    l2 += leaf(x, y, s, s * 0.3, a + 55);
   }
   return [stroke(curve(pts), shade(col, -0.25), Math.max(1, len / 90)), sh(l1, col), sh(l2, shade(col, -0.12))];
 }
@@ -590,7 +590,10 @@ export function foliage(seed: number, w: number, h: number, cols: string[], n = 
     const a = g.range(0, Math.PI * 2), r = Math.sqrt(g.next());
     const x = Math.cos(a) * r * w * 0.45, y = -h * 0.4 + Math.sin(a) * r * h * 0.55;
     const k = g.int(0, cols.length - 1);
-    groups[k] += blob([[x - 14, y], [x - 8, y - 12], [x + 6, y - 13], [x + 15, y - 2], [x + 8, y + 9], [x - 6, y + 9]], 1);
+    const rr = g.range(10, 17);
+    const pts: Pt[] = [];
+    for (let j = 0; j < 8; j++) pts.push(polar(x, y, rr * (j % 2 ? g.range(0.75, 0.9) : 1), j * 45 + g.range(-8, 8)));
+    groups[k] += blob(pts, 1);
   }
   groups.forEach((d, k) => d && out.push(sh(d, cols[k])));
   return out;

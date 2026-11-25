@@ -32,8 +32,8 @@ function trunk(x: number, base: number, top: number, w: number, seed: number): S
   out.push(sh(blob([[x - w / 2 - 70, base + 10], [x - w / 2 - 20, base - 16], [x - w / 4, base], [x - w / 2 - 20, base + 8]], 0.8) + blob([[x + w / 2 + 80, base + 12], [x + w / 2 + 20, base - 18], [x + w / 4, base], [x + w / 2 + 20, base + 8]], 0.8), '#5e4630'));
   // moss
   let ms = '';
-  for (let i = 0; i < 10; i++) ms += ellipse(x - w / 2 + g.range(0, w * 0.5), base - g.range(10, 260), g.range(8, 18), g.range(4, 8));
-  out.push(sh(ms, '#7fa35a', { opacity: 0.85 }));
+  for (let i = 0; i < 10; i++) ms += ellipse(x - w * 0.3 + g.range(0, w * 0.3), base - g.range(10, 200), g.range(6, 12), g.range(3, 6));
+  out.push(sh(ms, '#5f7a3e', { opacity: 0.7 }));
   return out;
 }
 
@@ -133,7 +133,7 @@ scene(...trunk(1100, 1080, -10, 150, 37));
 scene(sh(ellipse(1088, 690, 34, 50), '#2a1c14'), stroke(ellipse(1088, 690, 36, 52), '#7d5f40', 6));
 target('owl', 'Owl', place(owl(), { x: 1088, y: 734, s: 0.68 }));
 scene(sh(blob([[1050, 736], [1088, 726], [1126, 736], [1120, 748], [1056, 748]], 0.8), '#5e4630'));
-scene(...place(squirrel(), { x: 1040, y: 520, s: 0.8, rot: -80 }));
+scene(...place(squirrel(), { x: 1150, y: 610, s: 0.8, rot: -90 }));
 // bracket fungi on the right trunk
 scene(sh(blob([[1028, 900], [1010, 890], [1004, 876], [1030, 880]], 0.9) + blob([[1032, 930], [1008, 924], [1000, 910], [1030, 912]], 0.9), '#d9b46a'), sh(blob([[1028, 896], [1012, 888], [1018, 884], [1030, 886]], 0.9), '#f0d48a'));
 
@@ -189,10 +189,15 @@ scene(sh(poly(Q), '#f6efdc'));
   scene(sh(poly([[612, 994], [650, 980], [670, 996], [632, 1008]]), '#f3dca0'), sh(poly([[612, 990], [650, 976], [670, 992], [632, 1004]]), '#f8eccc'), sh(poly([[616, 989], [650, 978], [665, 989]]), '#8db35e'));
   scene(...plate(780, 1090, 56));
   {
-    let berries = '';
     const g = rng(61);
-    for (let i = 0; i < 12; i++) berries += blob([[0, 0], [5, -2], [6, 4], [0, 10], [-6, 4], [-5, -2]].map(([x, y]) => [x + 760 + g.range(-30, 30), y + 1078 + g.range(-10, 8)] as Pt), 1);
-    scene(sh(berries, '#d6362e'), sh(circle(752, 1076, 1) + circle(770, 1082, 1) + circle(780, 1072, 1) + circle(742, 1084, 1), '#f3c94f'));
+    let berries = '', tops = '', seeds = '';
+    for (let i = 0; i < 7; i++) {
+      const x = 754 + (i % 4) * 14 - 20 + g.range(-3, 3), y = 1080 + Math.floor(i / 4) * 10 + g.range(-2, 2);
+      berries += blob([[x - 7, y - 4], [x + 7, y - 4], [x + 5, y + 5], [x, y + 11], [x - 5, y + 5]], 1);
+      tops += leaf(x, y - 4, 7, 2.5, -150) + leaf(x, y - 4, 7, 2.5, -30) + leaf(x, y - 4, 6, 2.5, -90);
+      seeds += circle(x - 2, y, 0.8) + circle(x + 2, y + 2, 0.8) + circle(x, y + 6, 0.8);
+    }
+    scene(sh(berries, '#d6362e'), sh(seeds, '#f3c94f'), sh(tops, '#5f8a45'));
   }
   // teapot
   const tp = '#e7dcc4';
@@ -211,7 +216,7 @@ target('feather', 'Feather', place(feather('#9aa7b0', '#3d4650'), { x: 560, y: 1
 // ------------------------------------------------------------------ grass across the meadow
 {
   const g = rng(91);
-  for (let i = 0; i < 70; i++) {
+  for (let i = 0; i < 150; i++) {
     const y = g.range(640, 1480), x = g.range(0, WD);
     if (y > 900 && y < 1240 && x > 240 && x < 1020) continue;
     const s = 0.5 + (y - 600) / 700;
@@ -222,6 +227,19 @@ scene(...place(flowers(111, 14, 160, ['#f3ead2', '#f2c84b', '#c9a0d9']), { x: 69
 scene(...place(flowers(114, 16, 200, ['#f3ead2', '#f2c84b']), { x: 620, y: 720 }), ...place(flowers(115, 8, 90, ['#f6b8c8', '#f3ead2']), { x: 980, y: 800 }));
 target('butterfly', 'Butterfly', place(butterfly('#e8833a'), { x: 712, y: 770, s: 0.62, rot: 20 }));
 target('bee', 'Bumblebee', place(bee(), { x: 1100, y: 1208, s: 1 }));
+{
+  const g = rng(97);
+  let clover = '', pebble = '', daisy = '';
+  for (let i = 0; i < 40; i++) {
+    const x = g.range(0, WD), y = g.range(1240, 1490);
+    if (x > 620 && x < 1200 && y > 1300 && y < 1410) continue;
+    for (let k = 0; k < 3; k++) clover += circle(x + Math.cos(k * 2.1) * 5, y + Math.sin(k * 2.1) * 4, 4.2);
+  }
+  for (let i = 0; i < 24; i++) pebble += ellipse(g.range(0, WD), g.range(1250, 1490), g.range(4, 9), g.range(2.5, 5));
+  for (let i = 0; i < 30; i++) { const x = g.range(0, WD), y = g.range(1000, 1490); if (x > 240 && x < 1020 && y < 1240) continue; for (let k = 0; k < 6; k++) daisy += petal(x, y, 5, 1.8, k * 60); }
+  scene(sh(clover, '#4e7a38', { opacity: 0.9 }), sh(pebble, '#b6ae9e'), sh(daisy, '#fbf6ea'));
+}
+scene(...place(flowers(116, 12, 160, ['#f2c84b', '#f3ead2', '#c9a0d9']), { x: 160, y: 1180 }), ...place(flowers(117, 10, 120, ['#f6b8c8', '#f3ead2']), { x: 560, y: 1290 }), ...place(flowers(118, 10, 140, ['#f3ead2', '#e8833a']), { x: 360, y: 1300 }));
 // squirrel by the blanket nibbling
 scene(...place(squirrel('#b85a2a'), { x: 1040, y: 980, s: 0.72 }));
 
@@ -250,7 +268,7 @@ target('hedgehog', 'Hedgehog', place(hedgehog(), { x: 290, y: 1440, s: 0.85 }));
 scene(...place(fern(170, -80, '#8db35e', 144), { x: 380, y: 1500 }), ...place(fern(150, -110, '#6f8f4e', 145), { x: 420, y: 1500 }), ...place(fern(150, -45, '#5f8a45', 146), { x: 230, y: 1500 }));
 target('ladybird', 'Ladybird', place(ladybird(), { x: 120, y: 1360, s: 0.75, rot: -30 }));
 scene(...place(brownMushrooms(151), { x: 520, y: 1460 }), ...place(brownMushrooms(152, '#a5754a'), { x: 180, y: 1260, s: 0.8 }));
-target('toadstool', 'Red toadstool', place(toadstool(), { x: 980, y: 1130, s: 0.7 }));
+target('toadstool', 'Red toadstool', place(toadstool(), { x: 1012, y: 1096, s: 0.66 }));
 target('pinecone', 'Pine cone', place(pinecone(), { x: 1150, y: 1440, s: 0.75, rot: 70 }));
 scene(...place(fern(190, -100, '#5f8a45', 161), { x: 1140, y: 1500 }), ...place(fern(170, -150, '#4e6b38', 162), { x: 1180, y: 1500 }));
 {

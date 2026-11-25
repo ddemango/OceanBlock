@@ -41,7 +41,7 @@ R('wall', rect(0, 0, W, 610), 'cream');
 }
 R('wainscot', rect(0, 604, W, 150), 'sageL');
 R('wainscot-rail', rect(0, 590, W, 26), 'woodM');
-for (const x of [40, 110, 760, 830, 900, 970]) detail.push(stroke(line([[x, 620], [x, 740]]), '#9fb388', 2));
+for (const x of [36, 770, 980]) detail.push(stroke(line([[x, 620], [x, 740]]), '#9fb388', 2));
 
 // ---------- shelf with a jug and a plate ----------
 R('plate-rim', circle(888, 250, 82), 'corn');
@@ -64,7 +64,7 @@ R('table-plank-1', rect(0, 740, W, 140), 'woodL');
 R('table-plank-2', rect(0, 880, W, 150), 'woodM');
 R('table-plank-3', rect(0, 1030, W, 150), 'woodL');
 R('table-edge', rect(0, 1180, W, 70), 'woodD');
-detail.push(stroke(curve([[740, 780], [860, 786], [1000, 780]]) + curve([[0, 960], [30, 964], [62, 960]]) + curve([[934, 966], [970, 970], [1000, 966]]) + curve([[0, 1110], [40, 1114], [80, 1110]]) + curve([[880, 1110], [940, 1116], [1000, 1110]]), '#9c6a3e', 1.6));
+detail.push(stroke(curve([[760, 836], [880, 842], [1000, 836]]) + curve([[0, 960], [30, 964], [62, 960]]) + curve([[934, 966], [970, 970], [1000, 966]]) + curve([[0, 1110], [40, 1114], [80, 1110]]) + curve([[880, 1110], [940, 1116], [1000, 1110]]), '#9c6a3e', 1.6));
 
 // ---------- olive oil bottle and a crock of spoons ----------
 {
@@ -74,7 +74,7 @@ detail.push(stroke(curve([[740, 780], [860, 786], [1000, 780]]) + curve([[0, 960
   R('oil-glint', rect(84, 600, 11, 160, 5), 'sageL');
   R('oil-label', rect(98, 676, 64, 66, 6), 'linen');
   R('oil-cork', rect(110, 422, 32, 36, 6), 'woodM');
-  detail.push(stroke(line([[112, 698], [148, 698]]) + line([[116, 716], [144, 716]]), INK, 1.6));
+  detail.push(stroke(line([[112, 720], [148, 720]]) + line([[116, 732], [144, 732]]), INK, 1.6));
 }
 R('spoon-1', rect(820, 470, 14, 150, 6), 'woodL');
 R('spoon-1-bowl', ellipse(827, 470, 22, 34, -6), 'woodL');

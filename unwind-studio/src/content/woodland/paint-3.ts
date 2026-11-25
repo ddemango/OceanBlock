@@ -45,8 +45,18 @@ bat('bat-2', 190, 360, 0.95);
   }
   R('forest', poly([...pts.map(([x, y]) => [Math.min(1000, x), y] as Pt), [1000, 1000], [1000, 1250], [0, 1250]]), 'forest');
 }
-R('bush-l', clampPath(lobed(120, 1200, 220, 110, 9, 0.12, 5), 1), 'leafDark');
-R('bush-r', clampPath(lobed(890, 1210, 220, 120, 9, 0.12, 15), 1), 'leafDark');
+R('mist', clampPath(blob([[0, 1050], [160, 1030], [340, 1056], [520, 1034], [700, 1060], [880, 1036], [1000, 1050], [1000, 1100], [820, 1092], [640, 1108], [460, 1090], [280, 1106], [100, 1092], [0, 1100]], 0.8)), 'dusk');
+{
+  const pts: Pt[] = [[0, 1170]];
+  const hs = [70, 44, 86, 56, 78, 50, 92, 60, 74, 48, 84, 58, 70];
+  for (let i = 0; i < hs.length; i++) {
+    const x = 20 + i * 78;
+    pts.push([x - 26, 1166 - hs[i] * 0.35], [x, 1166 - hs[i]], [x + 26, 1166 - hs[i] * 0.35], [x + 39, 1170]);
+  }
+  R('forest-near', poly([...pts.map(([x, y]) => [Math.max(0, Math.min(1000, x)), y] as Pt), [1000, 1170], [1000, 1250], [0, 1250]]), 'leafDark');
+}
+R('bush-l', clampPath(lobed(120, 1210, 200, 90, 9, 0.12, 5), 1), 'moss');
+R('bush-r', clampPath(lobed(890, 1220, 200, 90, 9, 0.12, 15), 1), 'forest');
 
 // ---------------------------------------------------------------- leaves and berries
 function sprig(id: string, pts: Pt[], w0: number, w1: number, leaves: [number, number, number][], col = 'bark') {
@@ -66,10 +76,9 @@ function berries(id: string, cx: number, cy: number, n: number, seed: number, st
     const rr = i === 0 ? 0 : 31 + r.range(-3, 5);
     pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * 0.8]);
   }
-  D(pts.map(([x, y]) => {
-    const dx = stalkFrom[0] - x, dy = stalkFrom[1] - y, L = Math.hypot(dx, dy) || 1;
-    return line([stalkFrom, [x + (dx / L) * 15, y + (dy / L) * 15]]);
-  }).join(''), '#5a3f2c', 1.8, 0.85);
+  const top = pts.reduce((a, b) => (b[1] < a[1] ? b : a));
+  D(line([stalkFrom, [top[0], top[1] - 15]]), '#5a3f2c', 2, 0.85);
+  D(pts.filter((p) => p !== top).map(([x, y]) => line([[x, y - 14], [x + (top[0] - x) * 0.25, y - 22]])).join(''), '#5a3f2c', 1.6, 0.8);
   pts.slice(1).concat([pts[0]]).forEach(([x, y], i) => {
     R(`${id}-${i + 1}`, circle(x, y, 16), 'berry');
     D(line([[x - 2, y + 10], [x + 2, y + 10]]) + line([[x, y + 8], [x, y + 12]]), '#6e1f1c', 1.2, 0.7);

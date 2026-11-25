@@ -43,7 +43,7 @@ export function planks(x: number, y: number, w: number, h: number, count: number
     }
     if (g.next() < 0.5) { const along = g.range(0.15, 0.85) * len, cx = vertical ? a + size * g.range(0.3, 0.7) : x + along, cy = vertical ? y + along : a + size * g.range(0.3, 0.7); knots += ellipse(cx, cy, vertical ? size * 0.09 : size * 0.22, vertical ? size * 0.22 : size * 0.09); }
   }
-  return [sh(rect(x, y, w, h), col), sh(lt, shade(col, 0.07)), sh(dk, shade(col, -0.07)), stroke(grain, shade(col, -0.2), 0.8, { opacity: 0.55 }), stroke(knots, shade(col, -0.32), 1.1), stroke(seams, shade(col, -0.4), 1.6)];
+  return [sh(rect(x, y, w, h), col), sh(lt, shade(col, 0.07)), sh(dk, shade(col, -0.07)), stroke(grain, shade(col, -0.2), 0.8, { opacity: 0.55 }), stroke(knots, shade(col, -0.32), 1.1), stroke(seams, shade(col, -0.4), 1.6)].filter((p) => p.d);
 }
 
 /** Square tiles in mixed tones, grout lines and an optional little motif in each tile. */
@@ -58,7 +58,7 @@ export function tiles(x: number, y: number, w: number, h: number, s: number, col
   }
   for (let ty = y + s; ty < y + h; ty += s) gl += line([[x, ty], [x + w, ty]]);
   for (let tx = x + s; tx < x + w; tx += s) gl += line([[tx, y], [tx, y + h]]);
-  const out = byCol.map((d, i) => sh(d, cols[i]));
+  const out = byCol.map((d, i) => sh(d, cols[i])).filter((p) => p.d);
   if (motif) out.push(sh(mot, motif, { opacity: 0.85 }));
   out.push(stroke(gl, grout, 1.2));
   return out;
