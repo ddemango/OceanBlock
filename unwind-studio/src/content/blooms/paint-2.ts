@@ -153,6 +153,7 @@ const activity: PaintActivity = {
   blurb: 'A round little robin warms the snowy branch, framed by glossy holly and bright red berries while the first flakes drift down.',
   collectionId: 'blooms',
   categories: ['Birds', 'Winter', 'Garden'],
+  season: { from: '12-01', to: '02-28', label: 'winter' },
   difficulty: 'Moderate',
   width: W, height: H,
   palette: [

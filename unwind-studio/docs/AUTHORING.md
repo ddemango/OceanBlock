@@ -95,7 +95,14 @@ origin, then `place()` them.
 `collectionId`, `difficulty` (`Relaxed` | `Moderate` | `Detailed`) and
 `categories`, chosen from: `Seaside`, `Travel`, `Interiors`, `Still life`,
 `Garden`, `Flowers`, `Birds`, `Architecture`, `Cozy`, `Woodland`, `Animals`,
-`Kitchen`, `Food`, `Winter`.
+`Kitchen`, `Food`, `Winter`, `Holidays`, `Seasons`, `Sports`, `Cities`,
+`Fairytale`, `Friends`.
+
+`season` (optional): `{ from: 'MM-DD', to: 'MM-DD', label }` marks a holiday
+or seasonal picture. Home shows everything in season today under "In season"
+(shortest windows first, so a holiday leads its season) and features that
+collection. Windows may wrap past New Year (`12-01` → `02-28`). Every day of
+the year should have at least one picture in season; a test checks this.
 
 If you ever bundle external artwork instead, add `attribution`
 (`author`, `license`, `source`); it is shown in Settings → Credits.

@@ -1,6 +1,7 @@
 import { ACTIVITIES, activitiesOf, COLLECTIONS, getActivity, MODE_LABEL, ownCollections } from '../content/catalog';
 import type { Mode } from '../content/types';
 import { dailyPick, shuffledFor } from '../lib/daily';
+import { seasonalNow, seasonTitle } from '../lib/season';
 import { href } from '../router';
 import { localDate, useApp } from '../store/app';
 import { ActivityCard, ArtThumb, ModeGlyph, ProgressBar } from '../ui/common';
@@ -24,7 +25,9 @@ export function Home() {
   const recent = Object.values(progress).filter((p) => !p.completed && getActivity(p.activityId)).sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 6);
   const picks = MODES.map((m) => dailyPick(ACTIVITIES, m.mode, today)!).filter(Boolean);
   const week = Math.floor(Date.now() / (7 * 86400000));
-  const featured = COLLECTIONS[week % COLLECTIONS.length];
+  const seasonal = seasonalNow(ACTIVITIES);
+  // in a holiday or seasonal window, that collection is the one to feature
+  const featured = (seasonal.length && COLLECTIONS.find((c) => c.id === seasonal[0].collectionId)) || COLLECTIONS[week % COLLECTIONS.length];
   const cover = getActivity(featured.coverActivityId)!;
   const touched = new Set(Object.values(progress).map((p) => p.activityId));
   const fresh = shuffledFor(ACTIVITIES.filter((a) => !touched.has(a.id)), today);
@@ -72,6 +75,15 @@ export function Home() {
           </section>
         );
       })()}
+
+      {seasonal.length > 0 && (
+        <section aria-labelledby="h-season">
+          <div className="sect-head"><h2 id="h-season">In season: {seasonTitle(seasonal)}</h2></div>
+          <div className="rail" data-testid="seasonal">
+            {seasonal.map((a) => <ActivityCard key={a.id} activity={a} note={`${MODE_LABEL[a.mode]} · ${a.season!.label.charAt(0).toUpperCase() + a.season!.label.slice(1)}`} />)}
+          </div>
+        </section>
+      )}
 
       <section aria-labelledby="h-modes">
         <div className="sect-head"><h2 id="h-modes">Choose an activity</h2></div>

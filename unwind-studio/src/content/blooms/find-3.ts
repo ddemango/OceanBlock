@@ -333,6 +333,7 @@ const activity: FindActivity = {
   blurb: 'A crackling fire, stockings on the mantel and a sleepy dog, while birds visit the frosty branch outside.',
   collectionId: 'blooms',
   categories: ['Winter', 'Cozy', 'Birds'],
+  season: { from: '12-01', to: '02-28', label: 'winter' },
   difficulty: 'Moderate',
   width: W, height: H,
   defs:

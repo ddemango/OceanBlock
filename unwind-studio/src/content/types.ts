@@ -18,6 +18,8 @@ interface ActivityBase {
   attribution?: { author: string; license: string; source?: string };
   /** Made by the user from their own photo (kept on this device). */
   own?: boolean;
+  /** When this picture is in season, e.g. { from: '11-01', to: '11-30', label: 'Thanksgiving' }. Dates are MM-DD; a window may wrap past New Year. */
+  season?: { from: string; to: string; label: string };
 }
 
 export interface PuzzleActivity extends ActivityBase {
