@@ -331,3 +331,42 @@ export function balloonTexture(color = '#ff5a8a') {
   for (let x = 0; x < 256; x += 64) g.fillRect(x, 0, 28, 128);
   return toTexture(c);
 }
+
+// Twisted rope: diagonal strands.
+export function ropeTexture() {
+  const [c, g] = canvas(128, 32);
+  g.fillStyle = '#d9b77a';
+  g.fillRect(0, 0, 128, 32);
+  g.strokeStyle = '#a77d42';
+  g.lineWidth = 5;
+  for (let x = -40; x < 170; x += 16) {
+    g.beginPath(); g.moveTo(x, 34); g.lineTo(x + 24, -2); g.stroke();
+  }
+  g.strokeStyle = 'rgba(255,240,200,0.6)';
+  g.lineWidth = 2;
+  for (let x = -34; x < 170; x += 16) {
+    g.beginPath(); g.moveTo(x, 34); g.lineTo(x + 24, -2); g.stroke();
+  }
+  const t = toTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+
+// Ship deck planks (light warm wood with dark seams).
+export function plankTexture(base = '#c98d52') {
+  const [c, g] = canvas(256, 256);
+  g.fillStyle = base;
+  g.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 8; i++) {
+    g.fillStyle = i % 2 ? 'rgba(255,220,170,0.12)' : 'rgba(90,45,15,0.1)';
+    g.fillRect(i * 32, 0, 32, 256);
+    g.fillStyle = '#6b3a18';
+    g.fillRect(i * 32, 0, 3, 256);
+    g.fillRect(i * 32, (i * 97) % 256, 32, 3);
+    g.fillStyle = 'rgba(90,45,15,0.25)';
+    for (let k = 0; k < 4; k++) g.fillRect(i * 32 + 8 + k * 5, 0, 1, 256);
+  }
+  const t = toTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}

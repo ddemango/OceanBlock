@@ -688,7 +688,7 @@ function ballisticVelocity(from, to) {
 }
 
 // Hold a finger down to keep firing (auto-fire), drag to sweep the aim.
-const FIRE_INTERVAL = 280;
+const FIRE_INTERVAL = 190; // rapid fire while holding
 const pointer = { down: false, x: 0, y: 0 };
 
 function onPointerDown(e) {
@@ -2052,6 +2052,21 @@ window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector
 
 goHome();
 frame();
+
+// Loading screen: fill the bar while the first frames render, then fade it away.
+{
+  const bar = document.querySelector('#loading .ld-bar i');
+  let pct = 10;
+  const tick = setInterval(() => {
+    pct = Math.min(100, pct + 12 + Math.random() * 14);
+    if (bar) bar.style.width = pct + '%';
+    if (pct >= 100) {
+      clearInterval(tick);
+      setTimeout(() => $('loading').classList.add('done'), 250);
+      setTimeout(() => $('loading').remove(), 900);
+    }
+  }, 160);
+}
 
 initNative();
 
