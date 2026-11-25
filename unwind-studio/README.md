@@ -42,7 +42,9 @@ Screenshots from the run are written to `.preview/e2e/`.
 ## iPhone and iPad app (TestFlight)
 
 The same web app is wrapped as a native iOS app with [Capacitor](https://capacitorjs.com)
-(project in `ios/`, bundle id `com.unwindstudio.app`). In the native app, haptics use the
+(project in `ios/`, bundle id `com.unwindstudio.app`). Its App Store name is
+"Unwind with Ma Dukes"; the label under the home-screen icon is "Ma Dukes"
+(`CFBundleDisplayName` in `ios/App/App/Info.plist`). In the native app, haptics use the
 Taptic Engine, saving an image opens the share sheet, and all content is bundled so it
 works offline from first launch.
 
