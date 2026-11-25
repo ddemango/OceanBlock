@@ -94,7 +94,7 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const trayRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const R = useRef({
+  const R = useRef({ discard: false,
     assets: null as Assets | null, stage: null as Stage | null, raf: 0, completed, doneAt: completed ? -1e9 : 0,
     hint: null as { piece: number; t0: number } | null, flash: null as { pieces: number[]; t0: number } | null,
     dragging: -1, held: -1,
@@ -284,7 +284,7 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
     });
     R.stage = s; setStage(s);
     (window as unknown as Record<string, unknown>).__jigsaw = { st, geom, stage: s, get assets() { return R.assets; } };
-    return () => { save(); s.destroy(); R.stage = null; cancelAnimationFrame(R.raf); R.raf = 0; };
+    return () => { delete (window as unknown as Record<string, unknown>).__jigsaw; if (!R.discard) save(); s.destroy(); R.stage = null; cancelAnimationFrame(R.raf); R.raf = 0; };
   }, [geom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- dragging out of the tray ----
@@ -421,7 +421,7 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
       overlay={<>
         {showDone && <Completion activity={activity} detail={`${count} pieces`} onClose={() => setShowDone(false)} onReplay={() => { setShowDone(false); setConfirmReplay(true); }} />}
         {showRef && <Dialog title="Reference picture" onClose={() => setShowRef(false)} wide><div className="refimg" dangerouslySetInnerHTML={{ __html: illustrationSvg(art) }} /></Dialog>}
-        {confirmReplay && <ReplayConfirm activity={activity} onCancel={() => setConfirmReplay(false)} onConfirm={onRestart} />}
+        {confirmReplay && <ReplayConfirm activity={activity} onCancel={() => setConfirmReplay(false)} onConfirm={() => { R.discard = true; onRestart(); }} />}
       </>}
     >
       <canvas ref={canvasRef} className="stage-canvas" tabIndex={0} aria-label={`Jigsaw table: ${activity.title}. ${placed} of ${st.count} pieces placed.`} data-testid="stage" />

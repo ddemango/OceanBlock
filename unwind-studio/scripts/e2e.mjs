@@ -36,8 +36,14 @@ async function open(hash) {
   await page.goto(BASE + hash);
   await page.waitForFunction(() => window.__unwind?.getApp().ready);
   await page.waitForTimeout(400);
-  const ok = page.getByTestId('tutorial-ok');
-  if (await ok.count()) await ok.click();
+  await dismissTutorial(page);
+}
+async function dismissTutorial(pg) {
+  const ok = pg.getByTestId('tutorial-ok');
+  if (!(await ok.count())) return;
+  await pg.waitForTimeout(350); // let the sheet finish sliding in
+  await ok.click();
+  await ok.waitFor({ state: 'detached', timeout: 3000 });
 }
 const saved = () => page.waitForFunction(() => window.__unwind.getApp().saveStatus === 'saved', null, { timeout: 5000 });
 const stageBox = () => page.getByTestId('stage').boundingBox();
@@ -292,7 +298,18 @@ await open('#/play/coastal-find/default');
 await page.waitForFunction(() => window.__find);
 const T = await page.evaluate(() => window.__find.targets.map((t) => ({ id: t.id, name: t.name, ...window.__find.pointInside(t.id) })));
 const fstate = () => page.evaluate(() => JSON.parse(JSON.stringify(window.__find.state)));
-async function tapWorld(x, y) { const pt = await toPage('__find', x, y); await page.mouse.click(pt.x, pt.y); await page.waitForTimeout(30); }
+async function tapWorld(x, y) {
+  let pt = await toPage('__find', x, y);
+  // as a player would: if the spot is off-screen or under a floating control, move the view first
+  const clear = await page.evaluate(([px, py]) => !!document.elementFromPoint(px, py)?.closest('[data-testid="stage"]'), [pt.x, pt.y]);
+  if (!clear) {
+    await page.evaluate(([wx, wy]) => window.__find.stage.focus(wx, wy, 2), [x, y]);
+    await page.waitForTimeout(560);
+    pt = await toPage('__find', x, y);
+  }
+  await page.mouse.click(pt.x, pt.y);
+  await page.waitForTimeout(30);
+}
 check('scene lists 10–20 targets, each with a thumbnail and name', T.length >= 10 && T.length <= 20 && (await page.locator('.target img').count()) === T.length, `${T.length} targets`);
 // visible in the scene: every target's own pixels are present on screen (not fully covered)
 const vis = await page.evaluate(() => window.__find.visibility());
@@ -373,9 +390,11 @@ await page.locator('[data-activity="garden-paint"] .fav').click();
 await open('#/gallery?tab=favorites');
 check('a favourited activity appears under Favourites', (await page.getByTestId('gallery-favorites').locator('[data-activity="garden-paint"]').count()) === 1);
 await page.getByTestId('tab-completed').click();
+await page.getByTestId('gallery-completed').waitFor();
 check('finished activities appear in My Gallery', (await page.getByTestId('gallery-completed').locator('[data-entry]').count()) === 3);
 await shot('gallery-completed');
 await page.getByTestId('tab-progress').click();
+await page.getByTestId('gallery-progress').waitFor();
 check('in-progress activities are listed for resuming', (await page.getByTestId('gallery-progress').locator('.card').count()) >= 3);
 // search + filters
 await open('#/explore?mode=find');
@@ -398,8 +417,76 @@ check('replaying a finished activity starts fresh but keeps its gallery entry', 
 await saved();
 await page.evaluate(() => new Promise((res) => { const r = indexedDB.open('unwind-studio'); r.onsuccess = () => { const t = r.result.transaction('kv', 'readwrite'); const st = t.objectStore('kv'); const k = 'v1/progress/garden-puzzle|64'; const g = st.get(k); g.onsuccess = () => { const v = g.result; v.state = { v: 1, garbage: true }; st.put(v, k); }; t.oncomplete = res; }; }));
 await open('#/play/garden-puzzle/64');
+await page.reload();
 await page.waitForFunction(() => window.__jigsaw?.assets);
 check('a corrupted save is discarded gracefully and the activity starts fresh', (await jstate()).tray.length === 64 && (await page.locator('.notice').count()) === 1);
+
+// in-game "Play again" after finishing
+await open('#/play/coastal-find/default');
+await page.waitForFunction(() => window.__find);
+await page.getByText('Play again').first().click();
+await page.getByTestId('confirm').click();
+await page.waitForTimeout(400);
+check('Play again inside an activity starts fresh and keeps the gallery entry', (await fstate()).found.length === 0 && await page.evaluate(() => window.__unwind.getApp().gallery.some((g) => g.id === 'coastal-find|default')));
+await page.goto(BASE + '#/'); await page.waitForTimeout(300); await saved();
+check('the fresh game is what gets saved', await page.evaluate(() => { const p = window.__unwind.getApp().progress['coastal-find|default']; return !p || p.state.found.length === 0; }));
+
+// ---- touch input (emulated phone, real touch events) ----
+{
+  const tctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
+  const tp = await tctx.newPage();
+  tp.on('pageerror', (e) => errors.push('pageerror(touch): ' + e.message));
+  const cdp = await tctx.newCDPSession(tp);
+  const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map((p, i) => ({ x: p.x, y: p.y, id: i })) });
+  const topen = async (hash) => { await tp.goto(BASE + hash); await tp.waitForFunction(() => window.__unwind?.getApp().ready); await tp.waitForTimeout(500); await dismissTutorial(tp); };
+  const tpage = async (key, x, y) => { const v = await tp.evaluate((k) => window[k].stage.view, key); const b = await tp.getByTestId('stage').boundingBox(); return { x: b.x + x * v.s + v.x, y: b.y + y * v.s + v.y }; };
+  await topen('#/play/library-puzzle/36');
+  await tp.waitForFunction(() => window.__jigsaw?.assets);
+  const g = await tp.evaluate(() => ({ pw: window.__jigsaw.geom.pw, ph: window.__jigsaw.geom.ph, tray: window.__jigsaw.st.tray.slice(0, 3), pieces: window.__jigsaw.geom.pieces.map((p) => ({ x: p.x, y: p.y })) }));
+  // swipe sideways on the tray: scrolls, takes no piece
+  const scroller = tp.locator('.jtray-scroll');
+  const sb2 = await scroller.boundingBox();
+  await touch('touchStart', [{ x: sb2.x + 300, y: sb2.y + 50 }]);
+  for (let i = 1; i <= 8; i++) await touch('touchMove', [{ x: sb2.x + 300 - i * 25, y: sb2.y + 50 }]);
+  await touch('touchEnd', []);
+  await tp.waitForTimeout(300);
+  check('touch: swiping the tray sideways scrolls it without lifting a piece', (await tp.evaluate(() => window.__jigsaw.st.tray.length)) === 36 && (await scroller.evaluate((e) => e.scrollLeft)) > 40);
+  await scroller.evaluate((e) => { e.scrollLeft = 0; });
+  await tp.waitForTimeout(150);
+  // drag a piece up out of the tray to its place (the piece rides 44px above the finger)
+  const id = g.tray[0];
+  const pb = await tp.locator(`[data-piece="${id}"]`).boundingBox();
+  const from = { x: pb.x + pb.width / 2, y: pb.y + pb.height / 2 };
+  const dest = await tpage('__jigsaw', g.pieces[id].x + g.pw / 2, g.pieces[id].y + g.ph / 2);
+  const to = { x: dest.x, y: dest.y + 44 };
+  await touch('touchStart', [from]);
+  // lift straight up first (as the tutorial describes), then carry it across
+  for (let i = 1; i <= 4; i++) await touch('touchMove', [{ x: from.x, y: from.y - i * 20 }]);
+  const mid = { x: from.x, y: from.y - 80 };
+  for (let i = 1; i <= 10; i++) await touch('touchMove', [{ x: mid.x + ((to.x - mid.x) * i) / 10, y: mid.y + ((to.y - mid.y) * i) / 10 }]);
+  await touch('touchEnd', []);
+  await tp.waitForTimeout(200);
+  check('touch: dragging a piece up from the tray places and locks it', await tp.evaluate((pid) => window.__jigsaw.st.groups.some((gr) => gr.locked && gr.pieces.includes(pid)), id));
+  // pinch on a find scene: zooms, registers no guess
+  await topen('#/play/library-find/default');
+  await tp.waitForFunction(() => window.__find);
+  const before = await tp.evaluate(() => ({ z: window.__find.stage.zoom, found: window.__find.state.found.length }));
+  const fbx = await tp.getByTestId('stage').boundingBox();
+  const cx = fbx.x + fbx.width / 2, cy = fbx.y + fbx.height / 2;
+  await touch('touchStart', [{ x: cx - 30, y: cy }, { x: cx + 30, y: cy }]);
+  for (let i = 1; i <= 8; i++) await touch('touchMove', [{ x: cx - 30 - i * 12, y: cy }, { x: cx + 30 + i * 12, y: cy }]);
+  await touch('touchEnd', []);
+  await tp.waitForTimeout(200);
+  const after = await tp.evaluate(() => ({ z: window.__find.stage.zoom, found: window.__find.state.found.length }));
+  check('touch: pinching zooms the scene and never counts as a guess', after.z > before.z * 2 && after.found === before.found, `zoom ${before.z.toFixed(2)} → ${after.z.toFixed(2)}`);
+  const tgt = await tp.evaluate(() => { const f = window.__find; const t = f.targets.find((x) => !f.state.found.includes(x.id)); f.stage.focus(f.pointInside(t.id).x, f.pointInside(t.id).y, 3); return { id: t.id, ...f.pointInside(t.id) }; });
+  await tp.waitForTimeout(600);
+  const tpt = await tpage('__find', tgt.x, tgt.y);
+  await tp.touchscreen.tap(tpt.x, tpt.y);
+  await tp.waitForTimeout(150);
+  check('touch: tapping a target after pinch-zoom finds it', await tp.evaluate((tid) => window.__find.state.found.includes(tid), tgt.id));
+  await tctx.close();
+}
 
 // layouts
 for (const [name, w, h] of [['phone', 390, 844], ['tablet', 820, 1180], ['desktop', 1440, 900]]) {

@@ -32,7 +32,7 @@ export function FindPlayer({ activity: a, onRestart }: { activity: FindActivity;
   const hostRef = useRef<HTMLDivElement>(null);
   const gRef = useRef<SVGGElement>(null);
   const trayRef = useRef<HTMLDivElement>(null);
-  const R = useRef({ state, completed, stage: null as Stage | null, misses: 0 }).current;
+  const R = useRef({ discard: false, state, completed, stage: null as Stage | null, misses: 0 }).current;
   R.state = state; R.completed = completed;
 
   const save = useCallback((s: FindState, done: boolean) => persist(a, variant, s, s.found.length / targets.length, done, R.stage?.saved(), startedAt), [a, targets, R, startedAt]);
@@ -96,7 +96,7 @@ export function FindPlayer({ activity: a, onRestart }: { activity: FindActivity;
       emptyPoint: () => probe(null, 30),
       pointOutside: (id: string) => { const b = boxes.get(id)!; return probe(null, 3, { x: b.x1 + 12, y: (b.y0 + b.y1) / 2 }); },
     };
-    return () => { save(R.state, R.completed); s.destroy(); R.stage = null; };
+    return () => { delete (window as unknown as Record<string, unknown>).__find; if (!R.discard) save(R.state, R.completed); s.destroy(); R.stage = null; };
   }, [a, geom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hint = () => {
@@ -147,7 +147,7 @@ export function FindPlayer({ activity: a, onRestart }: { activity: FindActivity;
       }
       overlay={<>
         {showDone && <Completion activity={a} detail={`${targets.length} objects found`} onClose={() => setShowDone(false)} onReplay={() => { setShowDone(false); setConfirmReplay(true); }} closeLabel="Review the scene" />}
-        {confirmReplay && <ReplayConfirm activity={a} onCancel={() => setConfirmReplay(false)} onConfirm={onRestart} />}
+        {confirmReplay && <ReplayConfirm activity={a} onCancel={() => setConfirmReplay(false)} onConfirm={() => { R.discard = true; onRestart(); }} />}
       </>}
     >
       <div ref={hostRef} className="stage-host" tabIndex={0} data-testid="stage" aria-label={`${a.title}: ${state.found.length} of ${targets.length} objects found. Arrow keys pan, plus and minus zoom, Enter guesses at the centre.`}>

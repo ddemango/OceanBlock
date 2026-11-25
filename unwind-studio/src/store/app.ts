@@ -255,7 +255,13 @@ export function resetTutorials() {
   queue('tutorials', {}, 50);
 }
 
-export const setNotice = (notice: string | null) => set({ notice });
+let noticeTimer: ReturnType<typeof setTimeout> | null = null;
+export const setNotice = (notice: string | null) => {
+  set({ notice });
+  if (noticeTimer) clearTimeout(noticeTimer);
+  // informational notices clear themselves; the storage warning set at start-up stays until dismissed
+  noticeTimer = notice ? setTimeout(() => set({ notice: null }), 9000) : null;
+};
 
 export async function clearAllData() {
   pending.clear();

@@ -81,7 +81,7 @@ export function PaintPlayer({ activity: a, variant, onRestart }: { activity: Pai
   const hostRef = useRef<HTMLDivElement>(null);
   const gRef = useRef<SVGGElement>(null);
   const paletteRef = useRef<HTMLDivElement>(null);
-  const R = useRef({ state, completed, stage: null as Stage | null, eraser, focus: null as string | null }).current;
+  const R = useRef({ discard: false, state, completed, stage: null as Stage | null, eraser, focus: null as string | null }).current;
   R.state = state; R.completed = completed; R.eraser = eraser; R.focus = focus;
 
   const hexes = useMemo(() => fillHexes(state, a), [state.fills, a]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -200,7 +200,7 @@ export function PaintPlayer({ activity: a, variant, onRestart }: { activity: Pai
     });
     R.stage = s; setStage(s);
     (window as unknown as Record<string, unknown>).__paint = { geom, stage: s, regionColours: a.regions.map((r) => r.color), get state() { return R.state; } };
-    return () => { persist(a, variant, R.state, doneCount(R.state, a) / a.regions.length, R.completed, s.saved(), startedAt); s.destroy(); R.stage = null; };
+    return () => { delete (window as unknown as Record<string, unknown>).__paint; if (!R.discard) persist(a, variant, R.state, doneCount(R.state, a) / a.regions.length, R.completed, s.saved(), startedAt); s.destroy(); R.stage = null; };
   }, [a, geom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const select = (v: string) => { setEraser(false); const n = { ...R.state, selected: v }; R.state = n; setState(n); persist(a, variant, n, doneCount(n, a) / a.regions.length, R.completed, R.stage?.saved(), startedAt); };
@@ -260,7 +260,7 @@ export function PaintPlayer({ activity: a, variant, onRestart }: { activity: Pai
       }
       overlay={<>
         {showDone && <Completion activity={a} detail={variant === 'pbn' ? `Paint by number · ${a.regions.length} areas` : 'Free colouring'} fills={hexes} onClose={() => setShowDone(false)} onReplay={() => { setShowDone(false); setConfirmReplay(true); }} closeLabel={variant === 'creative' ? 'Keep colouring' : 'Admire the artwork'} />}
-        {confirmReplay && <ReplayConfirm activity={a} onCancel={() => setConfirmReplay(false)} onConfirm={onRestart} />}
+        {confirmReplay && <ReplayConfirm activity={a} onCancel={() => setConfirmReplay(false)} onConfirm={() => { R.discard = true; onRestart(); }} />}
       </>}
     >
       <div ref={hostRef} className="stage-host" tabIndex={0} data-testid="stage" aria-label={`${a.title}: ${done} of ${a.regions.length} areas coloured. Press N for the next open area and Enter to colour it.`}>
