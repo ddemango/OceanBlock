@@ -327,6 +327,7 @@ export function candyCane(): Shape[] {
   for (let i = 0; i < 5; i++) stripes += xf(rect(-4, -10 - i * 10, 8, 4), { rot: -25, ox: 0, oy: -8 - i * 10 });
   return [
     sh(rect(-4.5, -46, 9, 46, 3) + sector(11, -46, 15.5, 180, 360, 6.5) + rect(17.5, -46, 9, 8, 3), '#fff8ec'),
+    stroke(rect(-4.5, -46, 9, 46, 3) + sector(11, -46, 15.5, 180, 360, 6.5) + rect(17.5, -46, 9, 8, 3), '#b9a490', 1),
     sh(stripes, '#d6453b'),
     sh(xf(rect(-3, -5, 6, 10), { rot: 30, x: 0, y: -56 }) + xf(rect(-3, -5, 6, 10), { rot: 90, x: 11, y: -58 }) + xf(rect(-3, -5, 6, 10), { rot: 150, x: 22, y: -52 }), '#d6453b'),
     stroke(line([[-2, -6], [-2, -40]]), '#ffffff', 1.4, { opacity: 0.8 }),
@@ -334,9 +335,11 @@ export function candyCane(): Shape[] {
 }
 
 /** Dog bone toy; about 56 wide, centred. */
-export function bone(col = '#f2ead8'): Shape[] {
+export function bone(col = '#e8d4b0'): Shape[] {
+  const d = rect(-20, -6, 40, 12, 4) + circle(-22, -7, 7) + circle(-22, 7, 7) + circle(22, -7, 7) + circle(22, 7, 7);
   return [
-    sh(rect(-20, -6, 40, 12, 4) + circle(-22, -7, 7) + circle(-22, 7, 7) + circle(22, -7, 7) + circle(22, 7, 7), col),
+    stroke(d, shade(col, -0.35), 2.4),
+    sh(d, col),
     sh(rect(-18, 1, 36, 5, 2) + circle(22, 8, 5) + circle(-22, 8, 5), shade(col, -0.12)),
     stroke(line([[-14, -3], [10, -3]]), '#ffffff', 1.6),
   ];
@@ -359,15 +362,17 @@ export function pineCone(col = '#8a5a34'): Shape[] {
   return out;
 }
 
-/** Felt slipper seen from the side, toe right; about 70 long, origin at sole centre. */
-export function slipper(col = '#6f8fb0', lining = '#f2ece0'): Shape[] {
+/** Cosy slipper seen from the side, toe right; about 76 long, origin at sole centre. */
+export function slipper(col = '#c97a7a', lining = '#f6efe2'): Shape[] {
+  let fluff = '';
+  for (let i = 0; i < 7; i++) fluff += circle(-32 + i * 5.5, -16 - Math.sin((i / 6) * Math.PI) * 3, 4.2);
   return [
-    sh(blob([[-34, 0], [-36, -12], [-26, -16], [-6, -14], [16, -22], [30, -18], [36, -6], [32, 0]], 0.8), col),
-    sh(blob([[-30, -12], [-24, -18], [-6, -16], [-12, -10]], 0.8), lining),
-    sh(blob([[0, -16], [16, -22], [30, -18], [26, -12], [8, -10]], 0.8), shade(col, 0.2)),
-    sh(circle(18, -20, 5), lining), sh(circle(17, -21, 2.2), '#ffffff'),
-    sh(rect(-36, -3, 70, 4, 2), '#5a4334'),
-    stroke(curve([[-20, -8], [0, -6], [24, -8]]), shade(col, -0.25), 1, { opacity: 0.6 }),
+    sh(blob([[-38, 0], [-38, -6], [38, -6], [40, 0]], 0.5), '#6e4a2e'),
+    sh(blob([[-36, -4], [-36, -16], [-20, -18], [-2, -20], [16, -30], [32, -26], [40, -12], [38, -4]], 0.8), col),
+    sh(blob([[0, -18], [16, -30], [32, -26], [36, -16], [22, -14]], 0.8), shade(col, 0.15)),
+    stroke(curve([[-30, -10], [0, -10], [30, -10]]), shade(col, -0.25), 1.4, { opacity: 0.7 }),
+    sh(fluff, lining),
+    sh(circle(16, -32, 7), lining), sh(circle(14, -34, 3), '#ffffff'),
   ];
 }
 
@@ -376,10 +381,17 @@ export function starOrnament(col = '#e0a53a'): Shape[] {
   return [stroke(line([[0, 0], [0, 10]]), '#a0262a', 1.4), sh(star(0, 26, 16, 7), col), sh(star(-1, 25, 9, 4), shade(col, 0.4)), sh(circle(0, 10, 2.5), shade(col, -0.2))];
 }
 
-/** Holly sprig: two leaves and berries; about 40 wide. */
+/** Holly sprig: two spiky leaves and berries; about 70 wide. */
 export function holly(s = 1): Shape[] {
-  const lf = (rot: number) => xf(blob([[0, 0], [8, -5], [14, -2], [20, -6], [26, -2], [32, -5], [36, 0], [32, 5], [26, 2], [20, 6], [14, 2], [8, 5]], 0.6), { rot, s });
-  return [sh(lf(-160) + lf(-20), '#3d6b3c'), sh(circle(-3 * s, -2 * s, 4 * s) + circle(3 * s, -3 * s, 4 * s) + circle(0, 3 * s, 4 * s), '#c9302c'), sh(circle(-4 * s, -3 * s, 1.2 * s) + circle(2 * s, -4 * s, 1.2 * s), '#ffffff', { opacity: 0.7 })];
+  const shape = blob([[0, 0], [6, -8], [12, -6], [18, -13], [24, -8], [31, -12], [40, 0], [31, 12], [24, 8], [18, 13], [12, 6], [6, 8]], 0.25);
+  const lf = (rot: number) => xf(shape, { rot, s });
+  const rib = (rot: number) => xf(line([[2, 0], [36, 0]]), { rot, s });
+  return [
+    sh(lf(-160) + lf(-20), '#2f6a3a'), sh(lf(-90), '#3d7b44'),
+    stroke(rib(-160) + rib(-20) + rib(-90), '#8fc07a', 1.2 * s),
+    sh(circle(-4 * s, -3 * s, 5 * s) + circle(4 * s, -4 * s, 5 * s) + circle(0, 4 * s, 5 * s), '#c9302c'),
+    sh(circle(-5.5 * s, -4.5 * s, 1.5 * s) + circle(2.5 * s, -5.5 * s, 1.5 * s) + circle(-1.5 * s, 2.5 * s, 1.5 * s), '#ffffff', { opacity: 0.75 }),
+  ];
 }
 
 // ------------------------------------------------------------------ scenery

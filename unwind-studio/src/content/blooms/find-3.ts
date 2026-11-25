@@ -69,21 +69,21 @@ scene(sh(rect(WX0, WY0, WX1 - WX0, WY1 - WY0), `url(#${ID}-snowsky)`));
   for (let i = 0; i < 50; i++) fl += circle(g.range(WX0, WX1), g.range(WY0, WY1), g.range(1.2, 3));
   scene(sh(fl, '#ffffff', { opacity: 0.9 }));
   // snowy branch with birds
-  scene(...place(branch(260, 180, 4, '#5c4633', 9), { x: WX1 + 20, y: 470 }));
-  scene(sh(blob([[WX1, 458], [1080, 456], [1000, 462], [930, 470], [1000, 466], [1080, 462], [WX1, 462]], 0.6), '#ffffff'));
+  scene(...place(branch(260, 180, 4, '#5c4633', 9), { x: WX1 + 20, y: 540 }));
+  scene(sh(blob([[WX1, 528], [1080, 526], [1000, 532], [930, 540], [1000, 536], [1080, 532], [WX1, 532]], 0.6), '#ffffff'));
   scene(...place(branch(180, 200, 9, '#5c4633', 6), { x: WX1 + 10, y: 600 }));
   scene(sh(blob([[WX1, 592], [1060, 594], [990, 616], [1060, 600], [WX1, 598]], 0.6), '#ffffff'));
-  scene(...place(songbird('chickadee'), { x: 1100, y: 462, s: 0.55, sx: -0.55 }), ...place(songbird('cardinal'), { x: 1030, y: 610, s: 0.55 }));
+  scene(...place(songbird('chickadee'), { x: 1104, y: 532, s: 0.55, sx: -0.55 }), ...place(songbird('cardinal'), { x: 1030, y: 610, s: 0.55 }));
   let ber = '';
-  for (let i = 0; i < 12; i++) ber += circle(g.range(940, 1150), g.range(470, 500), 3.4);
+  for (let i = 0; i < 12; i++) ber += circle(g.range(940, 1150), g.range(540, 566), 3.4);
   scene(sh(ber, '#c9302c'));
 }
-target('robin', 'Robin', place(robin(), { x: 978, y: 470, s: 0.62 }));
+target('robin', 'Robin', place(robin(), { x: 984, y: 538, s: 0.62 }));
 // frost
 {
   const g = rng(3);
   let fr = '';
-  for (const [cx, cy] of [[WX0, WY0], [WX1, WY0], [WX0, WY1], [WX1, WY1], [1040, WY1], [WX0, 480], [WX1, 480]] as Pt[]) for (let i = 0; i < 6; i++) fr += circle(cx + g.range(-40, 40), cy + g.range(-30, 30), g.range(12, 30));
+  for (const [cx, cy] of [[WX0, WY0], [WX1, WY0], [WX0, WY1], [WX1, WY1], [1040, WY1], [WX0, 380], [WX1, 640]] as Pt[]) for (let i = 0; i < 6; i++) fr += circle(cx + g.range(-40, 40), cy + g.range(-30, 30), g.range(12, 30));
   scene(sh(fr, '#ffffff', { opacity: 0.55 }));
   let crys = '';
   for (let i = 0; i < 14; i++) { const x = g.range(WX0 + 10, WX1 - 10), y = g.pick([g.range(WY0 + 8, WY0 + 60), g.range(WY1 - 60, WY1 - 8)]); for (let k = 0; k < 3; k++) { const a = (k * Math.PI) / 3; crys += line([[x - Math.cos(a) * 7, y - Math.sin(a) * 7], [x + Math.cos(a) * 7, y + Math.sin(a) * 7]]); } }
@@ -150,12 +150,28 @@ scene(sh(rect(450, 910, 300, 330) + sector(600, 910, 150, 180, 360), `url(#${ID}
 }
 // hearth
 scene(sh(rect(280, 1236, 640, 44, 4), '#a9a39a'), sh(rect(280, 1236, 640, 8, 4), '#c9c3ba'), stroke(line([[440, 1244], [440, 1280]]) + line([[600, 1244], [600, 1280]]) + line([[760, 1244], [760, 1280]]), '#8f8980', 2));
+// stacked logs on the right of the hearth, kettle on the left
+{
+  let ends = '', rings = '', bark = '';
+  const pile: [number, number][] = [[800, 1220], [832, 1220], [864, 1220], [896, 1220], [816, 1194], [848, 1194], [880, 1194], [832, 1168], [864, 1168], [848, 1142]];
+  for (const [x, y] of pile) { bark += circle(x, y, 16); ends += circle(x, y, 13); rings += circle(x, y, 8) + circle(x, y, 3.5); }
+  scene(sh(bark, '#6e4a2e'), sh(ends, '#d9b48a'));
+  scene(stroke(rings, '#a37548', 1.2));
+  scene(sh(blob([[300, 1236], [296, 1196], [316, 1176], [360, 1176], [380, 1196], [376, 1236]], 0.7), '#3f4347'), sh(rect(316, 1166, 44, 12, 4), '#2f2a28'), sh(circle(338, 1160, 6), '#c9a54a'),
+    stroke(curve([[304, 1190], [312, 1150], [338, 1140], [364, 1150], [372, 1190]]), '#2f2a28', 3), sh(poly([[378, 1210], [404, 1186], [408, 1192], [384, 1220]]), '#3f4347'), sh(ellipse(322, 1196, 6, 12), '#6a7378', { opacity: 0.7 }));
+}
 // mantel
 scene(sh(rect(290, 520, 620, 36, 3), WOOD), sh(rect(290, 520, 620, 8, 3), WOOD_LT), sh(rect(300, 556, 600, 10), shade(WOOD, -0.35)));
 scene(sh(poly([[330, 566], [370, 566], [362, 610], [338, 610]]) + poly([[830, 566], [870, 566], [862, 610], [838, 610]]), WOOD));
 
 // mirror above the mantel
 scene(sh(circle(600, 330, 158), '#c9a54a'), sh(circle(600, 330, 146), '#e0c06a'), sh(circle(600, 330, 134), `url(#${ID}-mirror)`));
+scene(sh(rect(520, 260, 160, 210, 4), '#d6e0e2', { opacity: 0.7 }), sh(rect(530, 270, 64, 90) + rect(606, 270, 64, 90) + rect(530, 372, 64, 90) + rect(606, 372, 64, 90), '#eef3f5', { opacity: 0.8 }));
+{
+  let bt = '';
+  for (let i = 0; i < 7; i++) bt += poly([[470 + i * 40, 216 + i * 2], [500 + i * 40, 218 + i * 2], [485 + i * 40, 244 + i * 2]]);
+  scene(sh(bt, '#c9a6a6', { opacity: 0.6 }));
+}
 scene(sh(poly([[520, 230], [560, 210], [470, 440], [450, 400]]) + poly([[600, 200], [620, 205], [520, 460], [500, 450]]), '#ffffff', { opacity: 0.22 }));
 {
   let beads = '';
@@ -274,9 +290,9 @@ scene(sh(rect(0, 1280, W, 6), '#5c4633'));
   scene(stroke(bw, '#8a6a44', 4));
 }
 target('yarn', 'Blue yarn ball', place(yarnBall('#8fb3d6'), { x: 236, y: 1424, s: 0.85 }));
-target('slipper', 'Slipper', place(slipper('#9fb8c8', '#f2ece0'), { x: 330, y: 1476, s: 0.9, rot: -6 }));
+target('slipper', 'Slipper', place(slipper('#c97a7a', '#f6efe2'), { x: 330, y: 1474, s: 0.9, rot: -4 }));
 scene(...place(sleepingDog('#d4a978', '#8a5a34'), { x: 640, y: 1430, s: 1.05 }));
-target('bone', 'Dog bone', place(bone('#f2ead8'), { x: 860, y: 1452, s: 0.85, rot: -18 }));
+target('bone', 'Dog bone', place(bone(), { x: 860, y: 1452, s: 0.85, rot: -18 }));
 // scattered pine needles & a fallen sprig
 {
   const g = rng(77);
