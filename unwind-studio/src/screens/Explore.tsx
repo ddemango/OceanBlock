@@ -13,6 +13,7 @@ export function Explore({ mode, fav }: { mode?: string; fav?: boolean }) {
   const [q, setQ] = useState('');
   const [diff, setDiff] = useState<Difficulty | null>(null);
   const [cat, setCat] = useState<string | null>(null);
+  const [more, setMore] = useState(false);
   const m = (['puzzle', 'paint', 'find'] as Mode[]).find((x) => x === mode);
   const needle = q.trim().toLowerCase();
   const list = ACTIVITIES.filter((a) =>
@@ -23,7 +24,7 @@ export function Explore({ mode, fav }: { mode?: string; fav?: boolean }) {
 
   return (
     <div className="page">
-      <header className="page-head"><h1>Explore</h1><p className="lede">Every picture can be enjoyed three ways. Browse by activity, mood or collection.</p></header>
+      <header className="page-head"><h1>Explore</h1><p className="lede">Tap any picture to see it up close and start.</p></header>
 
       <label className="search">
         <Icon name="search" size={20} />
@@ -35,11 +36,12 @@ export function Explore({ mode, fav }: { mode?: string; fav?: boolean }) {
         {(['puzzle', 'paint', 'find'] as Mode[]).map((x) => <button key={x} data-mode={x} className={`chip chip-mode ${m === x ? 'on' : ''}`} aria-pressed={m === x} onClick={() => setMode(x)}>{MODE_LABEL[x]}</button>)}
         <button className={`chip ${fav ? 'on' : ''}`} aria-pressed={!!fav} onClick={() => navigate({ name: 'explore', mode: m, fav: !fav }, true)} data-testid="filter-fav"><Icon name="heart" size={15} filled={!!fav} />Favourites</button>
       </div>
-      <div className="filters" role="group" aria-label="Difficulty">
+      {!(more || diff || cat) && <button className="linkbtn morefilters" onClick={() => setMore(true)} data-testid="more-filters"><Icon name="search" size={16} />More ways to filter: difficulty and themes</button>}
+      {(more || diff || cat) && <div className="filters" role="group" aria-label="Difficulty">
         {DIFFS.map((d) => <button key={d} className={`chip chip-quiet ${diff === d ? 'on' : ''}`} aria-pressed={diff === d} onClick={() => setDiff(diff === d ? null : d)}>{d}</button>)}
         <span className="filters-sep" />
         {CATEGORIES.map((c) => <button key={c} className={`chip chip-quiet ${cat === c ? 'on' : ''}`} aria-pressed={cat === c} onClick={() => setCat(cat === c ? null : c)}>{c}</button>)}
-      </div>
+      </div>}
 
       <section aria-labelledby="h-results">
         <div className="sect-head"><h2 id="h-results">{list.length} {list.length === 1 ? 'activity' : 'activities'}</h2>{(needle || diff || cat || m || fav) && <button className="linkbtn" onClick={clear}>Clear filters</button>}</div>

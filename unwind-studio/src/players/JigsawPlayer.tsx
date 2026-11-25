@@ -453,7 +453,7 @@ export function JigsawPlayer({ activity, count, onRestart }: { activity: PuzzleA
                 <button className={`chip ${st.edgesOnly ? 'on' : ''}`} aria-pressed={st.edgesOnly} onClick={() => toggle('edgesOnly')} data-testid="edges"><Icon name="edges" size={16} />Edges</button>
                 <button className={`chip ${st.guide ? 'on' : ''}`} aria-pressed={st.guide} onClick={() => toggle('guide')} data-testid="guide"><Icon name="guide" size={16} />Guide</button>
                 <button className="chip" onClick={() => setShowRef(true)} data-testid="reference"><Icon name="eye" size={16} />Picture</button>
-                <span className="tray-note" data-testid="tray-count">{st.tray.length} in tray</span>
+                <span className="tray-note" data-testid="tray-count">{st.tray.length} left</span>
               </>
             )}
           </div>

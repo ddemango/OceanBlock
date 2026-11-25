@@ -65,8 +65,9 @@ export function App() {
     const root = document.documentElement;
     if (prefs.theme === 'system') delete root.dataset.theme; else root.dataset.theme = prefs.theme;
     if (prefs.motion === 'system') delete root.dataset.motion; else root.dataset.motion = prefs.motion;
+    if (prefs.text === 'standard') delete root.dataset.text; else root.dataset.text = prefs.text;
     setNativeTheme(prefs.theme === 'dark' || (prefs.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches));
-  }, [prefs.theme, prefs.motion]);
+  }, [prefs.theme, prefs.motion, prefs.text]);
   useEffect(() => { if (route.name !== 'play') window.scrollTo(0, 0); }, [route]);
 
   if (!ready) return <div className="splash"><div className="spinner" /><p>Unwind with Ma Dukes</p></div>;

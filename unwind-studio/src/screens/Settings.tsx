@@ -44,6 +44,8 @@ export function Settings() {
 
       <section className="panel" aria-labelledby="s-look">
         <h2 id="s-look">Appearance</h2>
+        <div className="setrow"><span><strong>Text size</strong><small>Makes words and buttons bigger and easier to read.</small></span>
+          <Segmented<Prefs['text']> label="Text size" value={prefs.text} options={[['standard', 'Standard'], ['large', 'Large'], ['larger', 'Largest']]} onChange={(text) => setPrefs({ text })} /></div>
         <div className="setrow"><span><strong>Theme</strong><small>Artwork always keeps its original colours.</small></span>
           <Segmented<Prefs['theme']> label="Theme" value={prefs.theme} options={[['system', 'Auto'], ['light', 'Light'], ['dark', 'Dark']]} onChange={(theme) => setPrefs({ theme })} /></div>
         <div className="setrow"><span><strong>Motion</strong><small>Reduced motion removes animated transitions and celebrations.</small></span>

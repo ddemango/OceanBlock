@@ -6,7 +6,7 @@ import { cue } from '../lib/feedback';
 import { exportPng } from '../lib/raster';
 import type { Stage } from '../lib/stage';
 import { goBack, href, navigate } from '../router';
-import { addGalleryEntry, bumpStats, flushSaves, getApp, markTutorialSeen, progressKey, putProgress, resetProgress, setNotice, setPrefs, useApp, type ProgressRecord } from '../store/app';
+import { addGalleryEntry, bumpStats, flushSaves, getApp, markTutorialSeen, progressKey, putProgress, resetProgress, setNotice, useApp, type ProgressRecord } from '../store/app';
 import { ArtThumb, Confirm, Dialog, MODE_ICON, ProgressBar, toast } from '../ui/common';
 import { Icon } from '../ui/Icon';
 
@@ -63,7 +63,6 @@ export function PlayerShell(props: {
   live?: string;
 }) {
   const { activity: a } = props;
-  const sound = useApp((d) => d.prefs.sound);
   const seen = useApp((d) => d.tutorials[a.mode]);
   const [help, setHelp] = useState(!seen);
   useEffect(() => () => { void flushSaves(); }, []);
@@ -77,9 +76,8 @@ export function PlayerShell(props: {
           <p><span data-testid="progress-label">{props.progressLabel}</span> · <SaveStatus /></p>
         </div>
         <div className="pactions">
-          {props.onHint && <button className="iconbtn" onClick={props.onHint} aria-label={props.hintLabel ?? 'Hint'} data-testid="hint"><Icon name="hint" /></button>}
-          <button className="iconbtn" onClick={() => setPrefs({ sound: !sound })} aria-label={sound ? 'Turn sound off' : 'Turn sound on'} aria-pressed={sound}><Icon name={sound ? 'soundOn' : 'soundOff'} /></button>
-          <button className="iconbtn" onClick={() => setHelp(true)} aria-label="How to play" data-testid="help"><Icon name="help" /></button>
+          {props.onHint && <button className="pillbtn" onClick={props.onHint} aria-label={props.hintLabel ?? 'Hint'} data-testid="hint"><Icon name="hint" size={20} />Hint</button>}
+          <button className="pillbtn" onClick={() => setHelp(true)} aria-label="How to play" data-testid="help"><Icon name="help" size={20} />Help</button>
         </div>
       </header>
       <ProgressBar value={props.progress} label={`${a.title} progress`} />

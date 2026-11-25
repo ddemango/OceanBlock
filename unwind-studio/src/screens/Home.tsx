@@ -3,7 +3,7 @@ import type { Mode } from '../content/types';
 import { dailyPick, shuffledFor } from '../lib/daily';
 import { href } from '../router';
 import { localDate, useApp } from '../store/app';
-import { ActivityCard, ArtThumb, ModeGlyph } from '../ui/common';
+import { ActivityCard, ArtThumb, ModeGlyph, ProgressBar } from '../ui/common';
 import { Icon } from '../ui/Icon';
 import { variantLabel } from './labels';
 
@@ -51,12 +51,30 @@ export function Home() {
           )}
         </svg>
         <p className="hello">{greeting}</p>
-        <h1>Find your moment</h1>
-        <p className="sub">Take a breath, pick a picture, and go at your own pace. Everything saves as you go.</p>
+        <h1>What would you like to do today?</h1>
+        <p className="sub">Go at your own pace. Everything saves as you go.</p>
       </header>
 
+      {recent.length > 0 && (() => {
+        const p = recent[0], a = getActivity(p.activityId)!;
+        return (
+          <section aria-labelledby="h-continue">
+            <div className="sect-head"><h2 id="h-continue">Keep going</h2>{recent.length > 1 && <a href={href({ name: 'gallery', tab: 'progress' })}>See all {recent.length}</a>}</div>
+            <a className="resume" href={href({ name: 'play', id: a.id, variant: p.variant })} data-testid="resume">
+              <ArtThumb activity={a} />
+              <span>
+                <small>{MODE_LABEL[a.mode]} · {variantLabel(a, p.variant)}</small>
+                <strong>{a.title}</strong>
+                <ProgressBar value={p.progress} label={`${a.title} progress`} />
+                <span className="btn btn-primary">Continue <Icon name="next" size={16} /></span>
+              </span>
+            </a>
+          </section>
+        );
+      })()}
+
       <section aria-labelledby="h-modes">
-        <div className="sect-head"><h2 id="h-modes">What would you like to do?</h2></div>
+        <div className="sect-head"><h2 id="h-modes">Choose an activity</h2></div>
         <div className="modes">
           {MODES.map(({ mode, line }) => {
             const pick = picks.find((p) => p.mode === mode)!;
@@ -95,8 +113,8 @@ export function Home() {
       </section>
 
       {recent.length > 0 && (
-        <section aria-labelledby="h-continue">
-          <div className="sect-head"><h2 id="h-continue">Pick up where you left off</h2><a href={href({ name: 'gallery', tab: 'progress' })}>See all</a></div>
+        <section aria-labelledby="h-progress">
+          <div className="sect-head"><h2 id="h-progress">Everything in progress</h2><a href={href({ name: 'gallery', tab: 'progress' })}>See all</a></div>
           <div className="rail" data-testid="continue">
             {recent.map((p) => {
               const a = getActivity(p.activityId)!;

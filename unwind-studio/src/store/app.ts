@@ -19,6 +19,8 @@ export interface Prefs {
   haptics: boolean;
   theme: 'system' | 'light' | 'dark';
   motion: 'system' | 'reduced' | 'full';
+  /** Text and button size across the app. */
+  text: 'standard' | 'large' | 'larger';
 }
 
 export interface ProgressRecord {
@@ -68,7 +70,7 @@ const defaults = (): AppData => ({
   ready: false,
   storageOk: true,
   saveStatus: 'saved',
-  prefs: { sound: true, haptics: true, theme: 'system', motion: 'system' },
+  prefs: { sound: true, haptics: true, theme: 'system', motion: 'system', text: 'standard' },
   favorites: [],
   progress: {},
   gallery: [],

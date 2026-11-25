@@ -60,7 +60,7 @@ img, svg { display: block; }
 
 /* ---------- shell & navigation ---------- */
 .shell { min-height: 100dvh; }
-.main { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 28px); }
+.main { padding-top: env(safe-area-inset-top); padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 28px); }
 .nav { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); display: flex; gap: 4px;
   background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border-radius: 26px 26px 0 0; box-shadow: 0 -8px 30px -18px rgba(72, 68, 138, 0.45); }
 .nav a { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-decoration: none; font-size: 11.5px; font-weight: 700; color: var(--muted); border-radius: 18px; min-height: 48px; transition: background 0.2s, color 0.2s; }
@@ -96,7 +96,7 @@ img, svg { display: block; }
 .backlink { margin-bottom: -16px; align-self: flex-start; color: var(--ink); }
 
 /* the sky: a welcome that follows the time of day */
-.sky { position: relative; overflow: hidden; border-radius: 32px; min-height: 250px; padding: 26px 24px 28px; display: flex; flex-direction: column; justify-content: flex-end; color: #2a2b4a; box-shadow: var(--shadow); isolation: isolate;
+.sky { position: relative; overflow: hidden; border-radius: 32px; min-height: 168px; padding: 22px 22px 22px; display: flex; flex-direction: column; justify-content: flex-end; color: #2a2b4a; box-shadow: var(--shadow); isolation: isolate;
   background: linear-gradient(170deg, #cfe5fb 0%, #e6eefd 50%, #f8ecf6 100%); }
 .sky[data-time='morning'] { background: linear-gradient(170deg, #ffe7cf 0%, #fbd0c0 48%, #ecd9f3 100%); }
 .sky[data-time='evening'] { background: linear-gradient(170deg, #a9b3ee 0%, #d6b9e6 46%, #f9cbb6 100%); }
@@ -109,9 +109,9 @@ img, svg { display: block; }
 @keyframes drift { to { transform: translateX(22px); } }
 @keyframes twinkle { to { opacity: 0.25; } }
 .hello { font-size: 15.5px; font-weight: 800; opacity: 0.8; }
-.sky h1 { font-size: clamp(38px, 10.5vw, 62px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.02; margin: 2px 0 8px; }
+.sky h1 { font-size: clamp(30px, 8vw, 52px); font-weight: 900; letter-spacing: -0.025em; line-height: 1.06; margin: 2px 0 6px; max-width: 13ch; }
 .sky p.sub { font-size: 16.5px; font-weight: 600; max-width: 30ch; opacity: 0.86; line-height: 1.4; }
-@media (min-width: 700px) { .sky { min-height: 330px; padding: 40px; border-radius: 40px; } .sky p.sub { font-size: 18px; max-width: 36ch; } }
+@media (min-width: 700px) { .sky { min-height: 260px; padding: 40px; border-radius: 40px; } .sky p.sub { font-size: 18px; max-width: 36ch; } }
 
 /* three ways to play */
 .modes { display: grid; gap: 12px; }
@@ -284,7 +284,7 @@ input[role='switch']:checked::after { transform: translateX(22px); }
 .toast { background: var(--ink); color: var(--bg); padding: 12px 18px; border-radius: 99px; font-weight: 800; font-size: 14.5px; box-shadow: var(--shadow-lift); animation: rise 0.3s ease; }
 .notice { display: flex; align-items: center; gap: 10px; justify-content: space-between; background: color-mix(in srgb, var(--butter) 55%, var(--surface)); color: #3a3350; padding: 6px 6px 6px 18px; font-size: 14.5px; font-weight: 700; position: relative; z-index: 70; margin: 10px 14px 0; border-radius: 20px; }
 .notice .iconbtn { color: #3a3350; }
-.player ~ .notice { position: fixed; top: 70px; left: 0; right: 0; box-shadow: var(--shadow); }
+.player ~ .notice { position: fixed; top: calc(70px + env(safe-area-inset-top)); left: 0; right: 0; box-shadow: var(--shadow); }
 .splash { min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 16px; font-size: 20px; font-weight: 900; color: var(--muted); }
 .spinner { width: 40px; height: 40px; border-radius: 50%; background: conic-gradient(from 0deg, var(--peach), var(--butter), var(--mint), var(--sky), var(--lav), var(--peach)); -webkit-mask: radial-gradient(circle, transparent 11px, #000 12px); mask: radial-gradient(circle, transparent 11px, #000 12px); animation: spin 1.6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -443,3 +443,30 @@ input[role='switch']:checked::after { transform: translateX(22px); }
 .spinner-sm { width: 20px; height: 20px; -webkit-mask: radial-gradient(circle, transparent 5px, #000 6px); mask: radial-gradient(circle, transparent 5px, #000 6px); }
 .form-error { color: var(--danger); font-weight: 700; background: color-mix(in srgb, var(--danger) 10%, var(--surface)); padding: 12px 16px; border-radius: 16px; }
 .btn-quiet-danger { margin-top: 14px; color: var(--danger); background: transparent; box-shadow: none; padding-left: 0; }
+
+/* ---------- friendliness pass ---------- */
+/* labelled buttons in the game header */
+.pbar .pillbtn { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px 0 12px; margin-left: 6px; border: 0; border-radius: 99px; cursor: pointer;
+  font: inherit; font-weight: 800; font-size: 15.5px; color: var(--ink); background: color-mix(in srgb, var(--surface) 82%, transparent); flex: none; transition: transform 0.15s; }
+.pbar .pillbtn:active { transform: scale(0.95); }
+.pbar .pillbtn svg { color: var(--accent); }
+/* the start button stays in reach while choosing options on a phone */
+@media (max-width: 819px) {
+  .detail .cta { position: sticky; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 10px); z-index: 6; margin: 4px -10px 0; padding: 10px;
+    border-radius: 28px; background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: var(--shadow-lift); }
+  .detail .cta .btn-lg { flex: 1; justify-content: center; }
+}
+/* Explore: extra filters tucked away until asked for */
+.morefilters { align-self: flex-start; }
+/* the continue card on Home */
+.resume { display: grid; grid-template-columns: 112px 1fr; gap: 16px; align-items: center; text-decoration: none; background: var(--surface); border-radius: 28px; padding: 10px 18px 10px 10px; box-shadow: var(--shadow); color: var(--ink); }
+.resume .thumb { aspect-ratio: 1; border-radius: 20px; }
+.resume small { color: var(--accent); font-weight: 800; font-size: 14px; }
+.resume strong { display: block; font-size: 20px; font-weight: 900; line-height: 1.15; margin: 2px 0 8px; }
+.resume .bar { margin: 4px 0 10px; }
+.resume .btn { pointer-events: none; }
+/* larger text (Settings → Text size) */
+html[data-text='large'] .page, html[data-text='large'] .dialog, html[data-text='large'] .pbar, html[data-text='large'] .tray-tools { zoom: 1.12; }
+html[data-text='larger'] .page, html[data-text='larger'] .dialog, html[data-text='larger'] .pbar, html[data-text='larger'] .tray-tools { zoom: 1.25; }
+/* a calm solid strip behind the phone's clock and battery, so scrolled content never runs under them */
+.shell::before { content: ''; position: fixed; z-index: 40; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: var(--bg-top); pointer-events: none; }
