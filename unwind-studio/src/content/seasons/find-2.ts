@@ -1,4 +1,4 @@
-import { rect, ellipse, circle, poly, line, curve, blob, sh, stroke, place, shade, rng, linearGradient, radialGradient, waveBand } from '../../art/kit';
+import { leaf, rect, ellipse, circle, poly, line, curve, blob, sh, stroke, place, shade, rng, linearGradient, radialGradient, waveBand } from '../../art/kit';
 import type { Shape } from '../../art/types';
 import type { FindActivity, FindItem } from '../types';
 import {
@@ -7,6 +7,7 @@ import {
 } from './props-find';
 
 const ID = 'seasons-find-2';
+const xfLeaf = (x: number, y: number, l: number, rot: number) => leaf(x, y, l, l * 0.18, rot);
 const W = 1200, H = 1500;
 const items: FindItem[] = [];
 const scene = (...s: (Shape | Shape[])[]) => { items.push({ shapes: s.flat() }); };
@@ -22,7 +23,7 @@ const defs =
 // sky, kites, sun
 // =====================================================================
 scene(sh(rect(0, 0, W, 480), `url(#${ID}-sky)`));
-scene(sh(circle(960, 130, 150), `url(#${ID}-sun)`, { opacity: 0.35 }), sh(circle(960, 130, 54), '#fff4c4'));
+scene(sh(circle(960, 130, 130), '#fff6d0', { opacity: 0.18 }), sh(circle(960, 130, 96), '#fff6d0', { opacity: 0.25 }), sh(circle(960, 130, 72), '#fff6d0', { opacity: 0.35 }), sh(circle(960, 130, 54), '#fff4c4'));
 scene(sh(cloud(200, 120, 1.0) + cloud(640, 70, 0.8) + cloud(1100, 300, 0.6) + cloud(420, 330, 0.55), '#ffffff', { opacity: 0.9 }), sh(cloud(220, 128, 0.6) + cloud(660, 78, 0.5), '#eaf4f8'));
 scene(flyingGull(16), place([flyingGull(16)], { x: 330, y: 200 }), place([flyingGull(12)], { x: 760, y: 240 }), place([flyingGull(10)], { x: 810, y: 210 }), place([flyingGull(14)], { x: 1060, y: 380 }));
 // kites with strings running down to the beach
@@ -49,7 +50,6 @@ scene(grassTufts(0, 410, 260, 40, 14, 4, ['#7f9a5c', '#9ab86a'], 10));
   const x = 120, b = 432;
   scene(sh(poly([[x - 18, b], [x + 18, b], [x + 12, b - 110], [x - 12, b - 110]]), '#fbf6ea'), sh(poly([[x - 16, b - 22], [x + 16, b - 22], [x + 15, b - 44], [x - 15, b - 44]]) + poly([[x - 14, b - 66], [x + 14, b - 66], [x + 13, b - 88], [x - 13, b - 88]]), '#d8452f'));
   scene(sh(rect(x - 16, b - 126, 32, 18, 2), '#fff2b0'), sh(rect(x - 18, b - 110, 36, 4), '#3b3633'), sh(poly([[x - 18, b - 126], [x, b - 144], [x + 18, b - 126]]), '#d8452f'), stroke(line([[x - 8, b - 126], [x - 8, b - 108]]) + line([[x + 8, b - 126], [x + 8, b - 108]]), '#3b3633', 1.2));
-  scene(sh(poly([[x + 16, b - 118], [x + 120, b - 140], [x + 120, b - 100]]), '#fff6c8', { opacity: 0.35 }));
 }
 // sailboats
 scene(place(sailboat(60, '#5a7aa8', '#fbf6ea'), { x: 420, y: 520 }), place(sailboat(44, '#c8665a', '#f7e3b0'), { x: 560, y: 505 }), place(sailboat(36, '#3e8a7a', '#fbf6ea'), { x: 330, y: 500 }));
@@ -97,15 +97,15 @@ scene(place(deckchair(110, '#e8607a', '#fbf6ea'), { x: 520, y: 960 }), place(dec
 // surfboards stuck in the sand
 scene(place(surfboard(170, '#e8607a', '#fbf6ea'), { x: 470, y: 840, rot: -6 }), place(surfboard(150, '#7fb0d8', '#f2c14e'), { x: 418, y: 852, rot: 8 }));
 // sandcastles and beach toys
-scene(place(sandcastle(70, '#7fb0d8'), { x: 300, y: 1010 }));
-target('sandcastle', 'Sandcastle', place(sandcastle(100, '#d8452f'), { x: 800, y: 1040 }));
-target('bucket-spade', 'Bucket and spade', place(bucketSpade(62, '#5a8fd0'), { x: 890, y: 1040 }));
-scene(place(bucketSpade(48, '#e8607a', '#9cc48a'), { x: 200, y: 990 }));
-target('beach-ball', 'Beach ball', place(beachBall(30, ['#d8452f', '#f2c14e', '#5a8fd0']), { x: 640, y: 1020 }));
-target('starfish', 'Starfish', place(starfish(52, '#f39a5a'), { x: 1100, y: 1040, rot: 12 }));
-target('crab', 'Crab', place(crab(56), { x: 150, y: 1050 }));
-target('shell', 'Scallop shell', place(shell(40, '#f7d9c0'), { x: 420, y: 1060, rot: 10 }));
-scene(place(shell(22, '#f3e6c8'), { x: 1010, y: 1000, rot: -20 }), place(shell(18, '#f7d0c0'), { x: 560, y: 1070 }), place(starfish(26, '#e8b06a'), { x: 250, y: 1065, rot: -10 }));
+scene(place(sandcastle(70, '#7fb0d8'), { x: 330, y: 960 }));
+target('sandcastle', 'Sandcastle', place(sandcastle(100, '#d8452f'), { x: 790, y: 1000 }));
+target('bucket-spade', 'Bucket and spade', place(bucketSpade(62, '#5a8fd0'), { x: 880, y: 1004 }));
+scene(place(bucketSpade(48, '#e8607a', '#9cc48a'), { x: 230, y: 940 }));
+target('beach-ball', 'Beach ball', place(beachBall(30, ['#d8452f', '#f2c14e', '#5a8fd0']), { x: 640, y: 990 }));
+target('starfish', 'Starfish', place(starfish(52, '#f39a5a'), { x: 1070, y: 980, rot: 12 }));
+target('crab', 'Crab', place(crab(56), { x: 120, y: 990 }));
+target('shell', 'Scallop shell', place(shell(40, '#f7d9c0'), { x: 470, y: 990, rot: 10 }));
+scene(place(shell(22, '#f3e6c8'), { x: 1010, y: 960, rot: -20 }), place(shell(18, '#f7d0c0'), { x: 560, y: 1000 }), place(starfish(26, '#e8b06a'), { x: 290, y: 1000, rot: -10 }));
 scene(place(beachBall(18, ['#9cc48a', '#fbf6ea', '#e8607a']), { x: 1000, y: 905 }));
 
 // =====================================================================
@@ -185,6 +185,63 @@ scene(place(bucketSpade(40, '#f2c14e', '#d8452f'), { x: 40, y: 1360 }));
 {
   const x = 520;
   scene(sh(rect(x - 6, 1060, 12, 270), '#3f4a44'), sh(rect(x - 14, 1320, 28, 14, 3), '#3f4a44'), sh(poly([[x - 18, 1060], [x + 18, 1060], [x + 10, 1030], [x - 10, 1030]]), '#3f4a44'), sh(rect(x - 12, 1034, 24, 24), '#fbe7a1'), sh(poly([[x - 16, 1034], [x + 16, 1034], [x, 1018]]), '#3f4a44'));
+}
+
+// --- extra beach life
+{
+  const g = rng(55);
+  // swimmers with rubber rings and floating buoys
+  for (const [x, y, c] of [[520, 640, '#f2c14e'], [600, 690, '#e8607a'], [700, 660, '#7fb0d8']] as [number, number, string][]) scene(stroke(ellipse(x, y, 16, 6), c, 6), sh(circle(x, y - 8, 7), '#c98a5a'), sh(ellipse(x, y - 12, 7, 4), '#5a3a22'));
+  scene(sh(circle(150, 700, 7) + circle(980, 720, 6), '#d8452f'), sh(circle(380, 720, 6), '#f2c14e'));
+  // sparkles on the sea
+  let sp = '';
+  for (let i = 0; i < 30; i++) { const x = g.range(0, 740), y = g.range(505, 680); sp += M(x - 4, y) + L(x + 4, y) + M(x, y - 4) + L(x, y + 4); }
+  scene(stroke(sp, '#ffffff', 1.2, { opacity: 0.8 }));
+  // pebbles and seaweed along the tide line
+  let peb = '', peb2 = '', weed = '';
+  for (let i = 0; i < 40; i++) { const x = g.range(440, 1200), y = g.range(752, 780); (i % 2 ? (peb += ellipse(x, y, g.range(3, 6), g.range(2, 4))) : (peb2 += ellipse(x, y, g.range(3, 6), g.range(2, 4)))); }
+  for (let i = 0; i < 8; i++) { const x = g.range(460, 1180), y = g.range(758, 790); weed += curve([[x, y], [x + 10, y - 4], [x + 20, y + 2], [x + 30, y - 2]]); }
+  scene(sh(peb, '#b8aa98'), sh(peb2, '#d8ccb8'), stroke(weed, '#6f8a4a', 2.4));
+  // pennants on the huts and a windbreak
+  scene(bunting(0, 740, 440, 740, 14, 10, ['#d8452f', '#f2c14e', '#5a8fd0'], 14));
+  // picnic basket and cool box on the sand
+  scene(place([ol(rect(-36, -34, 72, 34, 4), '#c99a5b', 1), stroke(line([[-36, -22], [36, -22]]) + line([[-36, -11], [36, -11]]), '#8a6a3a', 1), sh(rect(-38, -40, 76, 8, 3), '#a8743e'), stroke(M(-20, -40) + Q(0, -62, 20, -40), '#8a6a3a', 3)], { x: 1000, y: 1012 }));
+  scene(place([ol(rect(-30, -40, 60, 40, 5), '#d8452f', 1), sh(rect(-32, -46, 64, 10, 3), '#fbf6ea'), sh(rect(-12, -50, 24, 6, 3), '#fbf6ea')], { x: 1150, y: 1010 }));
+  scene(place(towel(90, 30, '#f2c14e', '#5a8fd0'), { x: 380, y: 1004 }), place(sunglasses(30, '#d8452f', '#3d4f5c'), { x: 380, y: 998 }));
+  // a rowing boat pulled up on the sand
+  scene(ol(M(30, 880) + L(180, 880) + Q(170, 912, 140, 916) + L(56, 916) + Q(34, 910, 30, 880) + 'Z', '#5a8fd0', 1.2), sh(rect(34, 880, 144, 7), '#fbf6ea'), stroke(line([[90, 870], [140, 910]]), '#a8743e', 4));
+  // footprints
+  let fp = '';
+  for (let i = 0; i < 10; i++) fp += ellipse(700 + i * 22, 800 + i * 18 + (i % 2) * 8, 4, 6.5, -30);
+  scene(sh(fp, '#d4ae6c'));
+}
+// --- extra boardwalk details
+{
+  const g = rng(77);
+  let nails = '';
+  for (let i = 0; i < 9; i++) { const y = 1110 + (i + 0.5) * (390 / 9); for (let x = 60; x < W; x += 180) nails += circle(x + g.range(-4, 4), y, 2.2); }
+  scene(sh(nails, '#6b4a2a', { opacity: 0.6 }));
+  // beach bag with a rolled towel and a novel
+  scene(shadow(260, 1470, 60, 8), place([stroke(M(-30, -60) + Q(0, -100, 30, -60), '#c8665a', 5), ol(poly([[-44, -64], [44, -64], [38, 0], [-38, 0]]), '#f3e6c8', 1), sh(rect(-44, -40, 88, 12), '#c8665a'), ol(rect(-30, -80, 22, 30, 6), '#7fb0d8', 1), ol(rect(4, -86, 26, 30, 2), '#9cc48a', 1)], { x: 260, y: 1470 }));
+  // waste bin and potted palm by the lamp
+  scene(place([ol(rect(-26, -76, 52, 76, 6), '#3f6a5a', 1), sh(rect(-30, -84, 60, 12, 4), '#2f5446'), stroke(line([[-12, -64], [-12, -10]]) + line([[0, -64], [0, -10]]) + line([[12, -64], [12, -10]]), '#2f5446', 2)], { x: 470, y: 1336 }));
+  let fr = '';
+  for (let i = 0; i < 7; i++) fr += xfLeaf(1180, 1180, 70, -170 + i * 26);
+  scene(sh(fr, '#5f8a45'), place([ol(poly([[-26, -40], [26, -40], [20, 0], [-20, 0]]), '#c8693f', 1)], { x: 1170, y: 1240 }));
+  // fishing rod and a crate of shells
+  scene(place([ol(rect(-50, -36, 100, 36, 3), '#b98552', 1), sh(rect(-50, -20, 100, 4), '#7a5232')], { x: 380, y: 1490 }), place(shell(18, '#f7d9c0'), { x: 360, y: 1452 }), place(shell(16, '#f3e6c8'), { x: 396, y: 1454, rot: 20 }), place(starfish(20, '#e8b06a'), { x: 418, y: 1462 }));
+  // flags on the pier rail
+  scene(bunting(740, 518, 1200, 518, 12, 14, ['#d8452f', '#fbf6ea', '#5a8fd0'], 12));
+}
+
+// --- scattered extras
+{
+  const g = rng(99);
+  for (let i = 0; i < 8; i++) scene(place(shell(g.range(12, 18), g.pick(['#f7d9c0', '#f3e6c8', '#efc8b8'])), { x: g.range(40, 1160), y: g.range(860, 1015), rot: g.range(-30, 30) }));
+  for (const [x, y, s] of [[300, 300, 10], [330, 286, 8], [680, 420, 12], [500, 250, 9], [180, 440, 8], [1150, 520, 10]] as [number, number, number][]) scene(place([flyingGull(s)], { x, y }));
+  scene(place(gull(40), { x: 860, y: 1028 }), place(gull(36), { x: 140, y: 1028, sx: -1 }));
+  scene(place(sandcastle(54, '#f2c14e'), { x: 210, y: 1012 }), place(bucketSpade(36, '#9cc48a', '#e8607a'), { x: 258, y: 1014 }));
+  scene(place(parasol(130, '#9cc48a', '#fbf6ea'), { x: 300, y: 870, rot: -4 }), place(towel(80, 24, '#e8607a', '#fbf6ea'), { x: 260, y: 880 }));
 }
 
 const a: FindActivity = {

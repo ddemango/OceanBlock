@@ -177,7 +177,7 @@ export function letters(word: string, w: number, h: number, gap: number): string
     const a = x, b = x + w, m = x + w / 2;
     switch (ch) {
       case 'D': d += M(a, 0) + L(a, h) + L(a + w * 0.4, h) + Q(b, h, b, h / 2) + Q(b, 0, a + w * 0.4, 0) + 'Z'; break;
-      case 'I': d += line([[m, 0], [m, h]]); break;
+      case 'I': d += line([[a + w * 0.2, 0], [a + w * 0.2, h]]); break;
       case 'N': d += line([[a, h], [a, 0], [b, h], [b, 0]]); break;
       case 'E': d += line([[b, 0], [a, 0], [a, h], [b, h]]) + line([[a, h / 2], [b - w * 0.2, h / 2]]); break;
       case 'R': d += line([[a, h], [a, 0], [a + w * 0.55, 0]]) + Q(b, 0, b, h * 0.26) + Q(b, h * 0.52, a + w * 0.55, h * 0.52) + L(a, h * 0.52) + M(a + w * 0.45, h * 0.52) + L(b, h); break;

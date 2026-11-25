@@ -30,6 +30,16 @@ scene(place(cloud(220), { x: 210, y: 210 }), place(cloud(160, '#ffffff', 0.8), {
 scene(sh(blob([[0, HORIZON], [0, 420], [140, 400], [300, 424], [460, 396], [620, 418], [760, 404], [940, 426], [1100, 402], [1200, 416], [1200, HORIZON]], 0.6), '#a9c2b4'));
 scene(sh(blob([[0, HORIZON], [0, 448], [200, 436], [400, 452], [620, 438], [820, 452], [1040, 440], [1200, 450], [1200, HORIZON]], 0.6), '#8fb09a'));
 {
+  // a famous red suspension bridge across the bay on the horizon
+  const RED = '#c8553a', y0 = HORIZON - 10;
+  scene(sh(rect(250, y0 - 8, 420, 8), '#9a5a4a'));
+  for (const tx of [330, 590]) scene(sh(rect(tx - 7, 360, 14, y0 - 360), RED), sh(rect(tx - 9, 378, 18, 5) + rect(tx - 9, 404, 18, 5) + rect(tx - 9, 430, 18, 5), shade(RED, -0.2)));
+  scene(stroke(M(250, y0 - 50) + Q(290, 400, 330, 362) + Q(460, y0 - 20, 590, 362) + Q(630, 400, 670, y0 - 50), RED, 2.4));
+  let hangers = '';
+  for (let x = 350; x < 580; x += 16) { const t = (x - 330) / 260, y = 362 + (1 - (2 * t - 1) * (2 * t - 1)) * (y0 - 20 - 362) * 0.98; hangers += line([[x, y], [x, y0 - 8]]); }
+  scene(stroke(hangers, RED, 0.8, { opacity: 0.7 }));
+}
+{
   // control tower and terminal far off
   scene(sh(rect(1010, 330, 22, 120), '#c9d2d8'), sh(poly([[990, 330], [1052, 330], [1046, 300], [996, 300]]), '#5a7a8e'), sh(rect(994, 292, 54, 10, 2), '#e8eef0'), sh(rect(1018, 270, 6, 22), '#c9d2d8'), sh(circle(1021, 268, 4), '#d2452f'));
   const g = rng(2);

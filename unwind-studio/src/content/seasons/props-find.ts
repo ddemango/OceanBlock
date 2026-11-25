@@ -1004,7 +1004,7 @@ export function squirrel(s: number, col = '#c8662e'): Shape[] {
 export function rake(l: number): Shape[] {
   let tines = '';
   for (let i = 0; i < 9; i++) { const x = -0.16 * l + i * 0.04 * l; tines += line([[x, 0], [x * 1.1, 0.12 * l]]); }
-  return [stroke(line([[0, 0], [0, -0.85 * l]]), '#c99a62', 0.03 * l), stroke(tines, '#7d858a', 0.012 * l + 0.4), stroke(line([[-0.17 * l, 0], [0.17 * l, 0]]), '#5a6268', 0.025 * l)];
+  return [ol(rect(-0.016 * l, -0.86 * l, 0.032 * l, 0.86 * l, 0.016 * l), '#c99a62', 1), stroke(tines, '#7d858a', 0.012 * l + 0.4), ol(rect(-0.18 * l, -0.016 * l, 0.36 * l, 0.032 * l, 0.01 * l), '#6b747a', 1)];
 }
 
 /** Knitted scarf draped over a rail; origin at the top of the fold. */

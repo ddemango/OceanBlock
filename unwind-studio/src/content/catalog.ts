@@ -115,12 +115,16 @@ const SPECS: CollectionSpec[] = [
   { id: 'cafe', title: "Coffee & Good Company", theme: "Friends", description: "Good friends and good coffee: a corner coffeehouse, a lived-in city apartment, game night, two mugs by the window, a comfy sofa and pizza night.", puzzles: [], paints: [cafePaint1, cafePaint2, cafePaint3], finds: [cafeFind1, cafeFind2, cafeFind3] },
 ];
 
+// Pictures still being drawn carry the title "Placeholder" and stay out of the app until finished.
+const ready = <T extends Activity>(list: T[]) => list.filter((a) => a.title !== 'Placeholder');
+
 const ordered: Activity[] = [];
-export const COLLECTIONS: Collection[] = SPECS.map((s) => {
+export const COLLECTIONS: Collection[] = SPECS.map((s) => ({ ...s, puzzles: ready(s.puzzles), paints: ready(s.paints), finds: ready(s.finds) }))
+  .filter((s) => s.puzzles.length + s.paints.length + s.finds.length > 0).map((s) => {
   const puzzles = [...s.puzzles, ...s.finds.map(jigsawFromScene)];
   const acts: Activity[] = [...puzzles, ...s.paints, ...s.finds];
   ordered.push(...acts);
-  return { id: s.id, title: s.title, theme: s.theme, description: s.description, coverActivityId: puzzles[0].id, activityIds: acts.map((a) => a.id) };
+  return { id: s.id, title: s.title, theme: s.theme, description: s.description, coverActivityId: (puzzles[0] ?? acts[0]).id, activityIds: acts.map((a) => a.id) };
 });
 
 export const ACTIVITIES: Activity[] = ordered;

@@ -246,7 +246,7 @@ export function spiderWeb(r: number, col = '#f2eef8'): Shape[] {
   const bx = r * 0.5, by = r * 0.72, s = r * 0.32;
   return [
     sh(sector(0, 0, r, 0, 90), col, { opacity: 0.08 }),
-    stroke(sp, col, 1.2, { opacity: 0.9 }), stroke(rg, col, 1, { opacity: 0.85 }),
+    stroke(sp + rg, '#5a5070', 2.6, { opacity: 0.7 }), stroke(sp, col, 1.3), stroke(rg, col, 1.1),
     stroke(line([[bx, by - s * 0.8], [bx, by - s * 0.2]]), col, 0.8),
     stroke(curve([[bx - s * 0.1, by], [bx - s * 0.4, by - s * 0.2], [bx - s * 0.55, by + s * 0.1]]) + curve([[bx - s * 0.1, by + s * 0.1], [bx - s * 0.45, by + s * 0.1], [bx - s * 0.5, by + s * 0.4]]) + curve([[bx + s * 0.1, by], [bx + s * 0.4, by - s * 0.2], [bx + s * 0.55, by + s * 0.1]]) + curve([[bx + s * 0.1, by + s * 0.1], [bx + s * 0.45, by + s * 0.1], [bx + s * 0.5, by + s * 0.4]]), '#2a2236', s * 0.06),
     sh(circle(bx, by + s * 0.12, s * 0.26), '#3a2f4a'), sh(circle(bx, by - s * 0.12, s * 0.18), '#3a2f4a'),
@@ -622,9 +622,12 @@ export function candyCane(s: number): Shape[] {
   for (let i = 0; i <= 10; i++) pts.push([0, -i * s * 0.07]);
   for (let i = 1; i <= 12; i++) { const a = Math.PI - (i / 12) * Math.PI; pts.push([s * 0.15 + Math.cos(a) * s * 0.15, -s * 0.7 - Math.sin(a) * s * 0.15]); }
   pts.push([s * 0.3, -s * 0.62]);
+  const nrm = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)]; const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; return [-dy / l, dx / l] as Pt; });
+  const off = (i: number, k: number): Pt => [pts[i][0] + nrm[i][0] * k, pts[i][1] + nrm[i][1] * k];
+  const body = poly([...pts.map((_, i) => off(i, w / 2)), ...pts.map((_, i) => off(i, -w / 2)).reverse()]);
   let red = '';
-  for (let i = 0; i < pts.length - 1; i += 2) red += line([pts[i], pts[i + 1]]);
-  return [stroke(line(pts), '#c8b8b0', w + 2), stroke(line(pts), '#fbf6f2', w), stroke(red, '#d8283a', w * 0.9), stroke(line(pts.map(([x, y]) => [x - w * 0.22, y] as Pt)), '#ffffff', w * 0.18, { opacity: 0.6 })];
+  for (let i = 0; i < pts.length - 1; i += 2) red += poly([off(i, w / 2), off(i + 1, w / 2), off(i + 1, -w / 2), off(i, -w / 2)]);
+  return [sh(body, '#fbf6f2', { stroke: '#b8a8a0', strokeWidth: 1 }), sh(red, '#d8283a'), stroke(line(pts.map((_, i) => off(i, -w * 0.22))), '#ffffff', w * 0.16, { opacity: 0.55 })];
 }
 /** Wrapped present with ribbon and bow, origin bottom centre. */
 export function present(w: number, h: number, col: string, ribbon: string, pat = 0): Shape[] {
@@ -742,7 +745,7 @@ export function toySoldier(s: number, coat = '#c8352e', hat = '#2c2735'): Shape[
 }
 /** Gold star tree-topper, origin at its centre. */
 export function starTopper(r: number): Shape[] {
-  return [sh(circle(0, 0, r * 1.8), '#fff3c0', { opacity: 0.2 }), ol(star(0, 0, r, r * 0.45), H.gold, 1.4, -0.3), sh(star(0, 0, r * 0.55, r * 0.25), '#f8dc78'), hl(circle(-r * 0.2, -r * 0.25, r * 0.12), 0.7)];
+  return [sh(circle(0, 0, r * 1.3), '#ffe9a0', { opacity: 0.12 }), ol(star(0, 0, r, r * 0.45), H.gold, 1.4, -0.3), sh(star(0, 0, r * 0.55, r * 0.25), '#f8dc78'), hl(circle(-r * 0.2, -r * 0.25, r * 0.12), 0.7)];
 }
 /** Knitted mitten, origin at the cuff top, pointing down. */
 export function mitten(s: number, col: string, trim = '#fbf6ee'): Shape[] {

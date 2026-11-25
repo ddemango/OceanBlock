@@ -44,11 +44,11 @@ scene(sh(rect(0, SEA, W, RAIL - SEA + 20), `url(#${ID}-sea)`));
   // lighthouse on the little island
   scene(sh(poly([[650, SEA - 8], [664, SEA - 8], [661, SEA - 54], [653, SEA - 54]]), '#fbf6ec'), sh(rect(652, SEA - 40, 10, 8) + rect(652, SEA - 24, 12, 8), '#d2452f'), sh(rect(650, SEA - 62, 14, 8, 2), '#3a3a40'));
   // distant sailboat
-  scene(sh(poly([[880, SEA + 30], [930, SEA + 30], [922, SEA + 38], [888, SEA + 38]]), WHITE), sh(poly([[904, SEA + 28], [904, SEA - 26], [928, SEA + 26]]), '#fbf6ec'), sh(poly([[900, SEA + 28], [900, SEA - 14], [884, SEA + 26]]), '#e8799f'));
+  scene(place([sh(poly([[880, SEA + 30], [930, SEA + 30], [922, SEA + 38], [888, SEA + 38]]), WHITE), sh(poly([[904, SEA + 28], [904, SEA - 26], [928, SEA + 26]]), '#fbf6ec'), sh(poly([[900, SEA + 28], [900, SEA - 14], [884, SEA + 26]]), '#e8799f')], { x: -470 }));
   // waves
   const g = rng(7);
   for (let i = 0; i < 46; i++) { const y = g.range(SEA + 10, RAIL), x = g.range(0, W), w = g.range(16, 40) * (0.6 + (y - SEA) / 200); scene(stroke(M(x, y) + Q(x + w / 2, y - 5, x + w, y), '#e6f6fb', 1.6, { opacity: g.range(0.5, 0.9) })); }
-  target('dolphins', 'Pair of dolphins', [...place(dolphin(80, '#6f8fa8'), { x: 330, y: 600, rot: -16 }), ...place(dolphin(64, '#5f7f98'), { x: 420, y: 616, rot: -10 }), sh(ellipse(350, 640, 60, 6), '#e6f6fb', { opacity: 0.8 })]);
+  target('dolphins', 'Pair of dolphins', [...place(dolphin(80, '#6f8fa8'), { x: 690, y: 576, rot: -16 }), ...place(dolphin(64, '#5f7f98'), { x: 760, y: 594, rot: -10 }), sh(ellipse(712, 616, 60, 6), '#e6f6fb', { opacity: 0.8 })]);
 }
 
 // =====================================================================
@@ -146,7 +146,7 @@ scene(sh(rect(0, RAIL + 48, W, H - RAIL - 48), TEAK));
     scene(place(lounger(200, col), { x, y: 880 }));
     scene(place([sh(rect(-60, -50, 90, 8, 3), g.pick(['#fbf6ec', '#e8799f']))], { x, y: 880 }));
   }
-  scene(place(parasol(220, '#d2452f', '#fbf6ec', 200), { x: 240, y: 860 }));
+  scene(place(parasol(200, '#d2452f', '#fbf6ec', 150), { x: 250, y: 880 }));
   target('sun-hat', 'Sun hat', place(sunHat(70, '#efd9a0', '#d2452f'), { x: 70, y: 820 }));
   target('camera', 'Camera', place(camera(44, '#2f2f33', '#3f6b8e'), { x: 720, y: 830 }));
 }
@@ -169,7 +169,7 @@ target('beach-ball', 'Beach ball', place(beachBall(34), { x: 160, y: 1010 }));
     for (let i = 0; i < 4; i++) st += rect(-60 + i * 40, -122, 20, 14);
     scene(place([sh(rect(-60, -122, 160, 14, 3), '#fbf6ec'), sh(st, towel)], { x, y: 1360 }));
   }
-  scene(place(parasol(300, '#3f8fbf', '#fbf6ec', 280), { x: 360, y: 1340 }));
+  scene(place(parasol(260, '#3f8fbf', '#fbf6ec', 190), { x: 360, y: 1380 }));
   target('sunscreen', 'Sunscreen', place(sunscreen(56, '#f08a2b'), { x: 330, y: 1440 }));
   target('flip-flops', 'Flip-flops', place(flipFlops(60, '#e8799f', '#3f8fbf'), { x: 90, y: 1440, rot: 70 }));
   scene(place(book(50, '#7fb069', '#fbf6ec'), { x: 520, y: 1236, rot: 12 }));

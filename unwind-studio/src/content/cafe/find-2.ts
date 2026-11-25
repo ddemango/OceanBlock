@@ -127,6 +127,12 @@ target('sunglasses', 'Sunglasses', at(sunglasses(60, '#2b2622', '#3a5a6a'), 700,
 scene(at(paperback(44, K.teal), 790, 914, 1, 6), at(mug(26, '#fbf6ec', K.mustard), 846, 924));
 target('watering-can', 'Watering can', at(wateringCan(70, '#e0a83a'), 1140, 912));
 scene(at(monstera(240, 5, '#f0e6d4', 0.4), 70, 960));
+// crate of books and a floor cushion
+{
+  scene(ol(rect(110, 1020, 140, 90, 4), '#c99a5b', 1.2, -0.35), stroke(line([[110, 1050], [250, 1050]]) + line([[110, 1080], [250, 1080]]), '#a8743e', 2));
+  scene(at(bookStack(0, 0, 60, 3, rng(17)).shapes, 150, 1020), at(leafy(rng(5), 60, 40, 30, '#3f7f7a', 7), 215, 1020));
+  scene(ol(ellipse(600, 1012, 64, 20), '#d98a7a', 1, -0.3), ol(ellipse(600, 1000, 60, 18), '#e8a08a', 1, -0.3), stroke(ellipse(600, 1000, 36, 10), '#fbf6ec', 2));
+}
 
 // =====================================================================
 // dining table with Sunday brunch (foreground)
@@ -137,8 +143,14 @@ for (const x of [330, 870]) {
 }
 {
   const back = 1120, front = 1250;
+  scene(sh(rect(60, 1330, 1080, 170), '#c9d8c8'), stroke(line([[60, 1350], [1140, 1350]]) + line([[60, 1480], [1140, 1480]]), '#fbf6ec', 5), stroke(line([[60, 1362], [1140, 1362]]) + line([[60, 1468], [1140, 1468]]), '#7fb0b0', 2));
+  {
+    let d = '';
+    for (let x = 100; x < 1120; x += 60) d += poly([[x, 1415], [x + 30, 1395], [x + 60, 1415], [x + 30, 1435]]);
+    scene(stroke(d, '#e8b4a0', 2));
+  }
   scene(sh(rect(110, 1270, 30, 230, 4) + rect(1060, 1270, 30, 230, 4), '#8a5a34'));
-  target('slippers', 'Slippers', at(slippers(70, '#9cb4c8'), 620, 1440, 1, 80));
+  target('slippers', 'Slippers', at(slippers(76, '#9cb4c8'), 620, 1420, 1, -12));
   scene(at(basket(120, 50, '#c99a5b'), 860, 1410), sh(rect(820, 1380, 80, 30, 6), '#e8b4a0'), sh(rect(840, 1370, 70, 20, 6), '#9cc4c0'));
   scene(at(fern(rng(9), 110, 70, 56, K.terracotta, 11), 310, 1490));
   scene(shadow(600, 1490, 480, 12, 0.18));

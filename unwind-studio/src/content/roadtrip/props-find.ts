@@ -265,7 +265,7 @@ export function marshmallowStick(len: number): Shape[] {
   const ex = len, ey = -len * 0.28;
   return [
     stroke(curve([[0, 0], [len * 0.5, -len * 0.12], [ex, ey]]), '#7a5a35', 4),
-    ol(rect(ex - len * 0.04, ey - len * 0.085, len * 0.15, len * 0.17, len * 0.05), '#fbf3e0', 1, -0.25), sh(rect(ex + len * 0.05, ey - len * 0.085, len * 0.06, len * 0.17, len * 0.03), '#d9a560'),
+    ol(rect(ex - len * 0.06, ey - len * 0.11, len * 0.2, len * 0.22, len * 0.06), '#fbf3e0', 1, -0.25), sh(rect(ex + len * 0.07, ey - len * 0.11, len * 0.07, len * 0.22, len * 0.03), '#d9a560'),
     sh(ellipse(ex + len * 0.02, ey - len * 0.04, len * 0.025, len * 0.02), '#ffffff', { opacity: 0.8 }),
   ];
 }
