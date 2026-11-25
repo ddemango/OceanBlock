@@ -504,3 +504,8 @@ body.flash #fx-overlay { background: rgba(255, 255, 255, 0.75); transition: none
 @keyframes dsPulse { 50% { transform: scale(1.12); opacity: .6; } }
 .ld-logo i { -webkit-text-stroke: 0; text-shadow: none; display: flex; justify-content: center; margin-bottom: -8px; }
 .ld-logo i .ds-mark { width: 170px; }
+
+/* the D's Cannon Blast logo artwork */
+.logo-img { display: block; width: min(330px, 80vw); height: auto; margin: 0 auto -6px; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .35)); animation: logoIn .7s cubic-bezier(.3, 1.6, .5, 1) both; }
+.ld-logo-img { width: min(300px, 78vw); height: auto; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .3)); }
+@keyframes logoIn { from { transform: scale(.6); opacity: 0; } }
