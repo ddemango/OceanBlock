@@ -94,7 +94,7 @@ export function App() {
         {banner}
         <Boundary key={JSON.stringify(route)} onBack={() => navigate({ name: 'home' }, true)}>
           {route.name === 'home' && <Home />}
-          {route.name === 'explore' && <Explore mode={route.mode} fav={route.fav} />}
+          {route.name === 'explore' && <Explore mode={route.mode} fav={route.fav} fresh={route.fresh} />}
           {route.name === 'gallery' && <Gallery tab={route.tab} />}
           {route.name === 'settings' && <Settings />}
           {route.name === 'create' && <CreatePage />}

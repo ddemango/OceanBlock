@@ -473,3 +473,9 @@ html[data-text='larger'] .page, html[data-text='larger'] .dialog, html[data-text
 /* the app icon as the brand mark */
 .brand-mark { background: url('/icon-192.png') center / cover no-repeat; box-shadow: 0 2px 8px rgba(80, 40, 160, 0.25); }
 .brand-mark::before, .brand-mark::after { display: none; }
+/* ---- bigger library: new badges, home stats, show more ---- */
+.new-chip { color: #fff; background: linear-gradient(135deg, #7b5cf0, #c05ce0); padding: 5px 11px; letter-spacing: 0.02em; }
+.sky-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.sky-pills span { background: color-mix(in srgb, #fff 62%, transparent); border-radius: 99px; padding: 5px 13px; font-size: 14px; font-weight: 800; }
+.sky[data-time='night'] .sky-pills span { background: rgba(255, 255, 255, 0.16); }
+.showmore { display: flex; margin: 22px auto 0; justify-content: center; }

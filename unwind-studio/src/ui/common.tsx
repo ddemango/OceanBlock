@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { getCollection, MODE_LABEL } from '../content/catalog';
 import type { Activity } from '../content/types';
 import { thumbUrl } from '../lib/raster';
+import { isNew } from '../lib/season';
 import { href, type Route } from '../router';
 import { toggleFavorite, useApp, type ProgressRecord } from '../store/app';
 import { Icon } from './Icon';
@@ -77,7 +78,7 @@ export function ActivityCard({ activity, to, progress, wide = false, note }: { a
       <div className="card-art">
         <ArtThumb activity={activity} />
         <FavButton id={activity.id} title={activity.title} />
-        {rec?.completed && <span className="done-chip"><Icon name="check" size={14} />Done</span>}
+        {rec?.completed ? <span className="done-chip"><Icon name="check" size={14} />Done</span> : !rec && isNew(activity) && <span className="done-chip new-chip">New</span>}
       </div>
       <div className="card-body">
         <ModeBadge mode={activity.mode} />

@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 
 export type Route =
   | { name: 'home' }
-  | { name: 'explore'; mode?: string; fav?: boolean }
+  | { name: 'explore'; mode?: string; fav?: boolean; fresh?: boolean }
   | { name: 'gallery'; tab?: string }
   | { name: 'settings' }
   | { name: 'create' }
@@ -15,7 +15,7 @@ export function parseRoute(hash: string): Route {
   const seg = path.split('/').filter(Boolean).map(decodeURIComponent);
   const q = new URLSearchParams(query);
   switch (seg[0]) {
-    case 'explore': return { name: 'explore', mode: q.get('mode') ?? undefined, fav: q.get('fav') === '1' };
+    case 'explore': return { name: 'explore', mode: q.get('mode') ?? undefined, fav: q.get('fav') === '1', fresh: q.get('new') === '1' };
     case 'gallery': return { name: 'gallery', tab: q.get('tab') ?? undefined };
     case 'settings': return { name: 'settings' };
     case 'create': return { name: 'create' };
@@ -33,6 +33,7 @@ export function href(r: Route): string {
       const q = new URLSearchParams();
       if (r.mode) q.set('mode', r.mode);
       if (r.fav) q.set('fav', '1');
+      if (r.fresh) q.set('new', '1');
       const s = q.toString();
       return '#/explore' + (s ? '?' + s : '');
     }

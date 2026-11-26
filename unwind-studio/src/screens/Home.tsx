@@ -1,7 +1,7 @@
 import { ACTIVITIES, activitiesOf, COLLECTIONS, getActivity, MODE_LABEL, ownCollections } from '../content/catalog';
 import type { Mode } from '../content/types';
 import { dailyPick, shuffledFor } from '../lib/daily';
-import { seasonalNow, seasonTitle } from '../lib/season';
+import { newest, seasonalNow, seasonTitle, streak } from '../lib/season';
 import { href } from '../router';
 import { localDate, useApp } from '../store/app';
 import { ActivityCard, ArtThumb, ModeGlyph, ProgressBar } from '../ui/common';
@@ -26,6 +26,9 @@ export function Home() {
   const picks = MODES.map((m) => dailyPick(ACTIVITIES, m.mode, today)!).filter(Boolean);
   const week = Math.floor(Date.now() / (7 * 86400000));
   const seasonal = seasonalNow(ACTIVITIES);
+  const justAdded = newest(ACTIVITIES, 12);
+  const stats = useApp((d) => d.stats);
+  const run = streak(stats.days);
   // in a holiday or seasonal window, that collection is the one to feature
   const featured = (seasonal.length && COLLECTIONS.find((c) => c.id === seasonal[0].collectionId)) || COLLECTIONS[week % COLLECTIONS.length];
   const cover = getActivity(featured.coverActivityId)!;
@@ -56,6 +59,10 @@ export function Home() {
         <p className="hello">{greeting}</p>
         <h1>What would you like to do today?</h1>
         <p className="sub">Go at your own pace. Everything saves as you go.</p>
+        {(run > 1 || stats.completed > 0) && <p className="sky-pills" data-testid="home-stats">
+          {run > 1 && <span>{run} days in a row</span>}
+          {stats.completed > 0 && <span>{stats.completed} finished</span>}
+        </p>}
       </header>
 
       {recent.length > 0 && (() => {
@@ -135,6 +142,25 @@ export function Home() {
           </div>
         </section>
       )}
+
+      {justAdded.length > 0 && (
+        <section aria-labelledby="h-new">
+          <div className="sect-head"><h2 id="h-new">Just added</h2><a href={href({ name: 'explore', fresh: true })}>See all new</a></div>
+          <div className="rail" data-testid="just-added">{justAdded.map((a) => <ActivityCard key={a.id} activity={a} />)}</div>
+        </section>
+      )}
+
+      <section aria-labelledby="h-allcols">
+        <div className="sect-head"><h2 id="h-allcols">Collections</h2></div>
+        <div className="rail" data-testid="collections">
+          {COLLECTIONS.map((c) => (
+            <a key={c.id} className="card" href={href({ name: 'collection', id: c.id })}>
+              <div className="card-art"><ArtThumb activity={getActivity(c.coverActivityId)!} /></div>
+              <div className="card-body"><h3>{c.title}</h3><p className="meta">{c.theme} · {c.activityIds.length} activities</p></div>
+            </a>
+          ))}
+        </div>
+      </section>
 
       <section aria-labelledby="h-daily">
         <div className="sect-head"><h2 id="h-daily">Today’s picks</h2></div>

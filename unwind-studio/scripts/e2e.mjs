@@ -474,6 +474,21 @@ await open('#/explore?mode=find');
 }
 await page.getByLabel('Search activities').fill('Collector');
 check('Explore search narrows results', (await page.getByTestId('results').locator('.card').count()) === 1);
+// a big library stays easy to browse
+await open('#/explore');
+{
+  const first = await page.getByTestId('results').locator('.card').count();
+  await page.getByTestId('show-more').click();
+  const second = await page.getByTestId('results').locator('.card').count();
+  check('Explore shows a page at a time with Show more', first === 24 && second === 48, `${first} then ${second}`);
+  check('Explore lists every collection up front', (await page.getByTestId('explore-collections').locator('.card').count()) >= 14);
+  await page.getByTestId('filter-new').click();
+  await page.waitForTimeout(300);
+  const fresh = await page.getByTestId('results').locator('.card').count();
+  check('the New filter shows recently added pictures, marked New', fresh > 0 && (await page.getByTestId('results').locator('.new-chip').count()) > 0, `${fresh} shown`);
+}
+await open('#/');
+check('Home has a Just added row and every collection', (await page.getByTestId('just-added').locator('.card').count()) >= 6 && (await page.getByTestId('collections').locator('.card').count()) >= 14);
 // replay keeps the gallery entry, asks before discarding active progress
 await open('#/activity/garden-puzzle');
 await page.locator('[data-variant="64"]').click();
