@@ -180,7 +180,7 @@ void leaf; void circle; void ellipse; void shadow; void M; void L; void Q;
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'Thanksgiving Table',
   blurb: 'A family table laid for the harvest feast, with a golden turkey, warm pies and fall trees glowing outside the window.',
-  collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Relaxed',
   season: { from: '11-01', to: '11-30', label: 'Thanksgiving' },
   width: W, height: HT, defs, items,
 };

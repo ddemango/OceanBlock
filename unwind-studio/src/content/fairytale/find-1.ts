@@ -336,7 +336,7 @@ const activity: FindActivity = {
   id: ID, version: 2, mode: 'find',
   title: 'The Royal Ballroom',
   blurb: 'The music has stopped and the candles still glow, but someone has left a glass slipper on the grand marble stairs.',
-  collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Relaxed',
   width: WD, height: HT,
   defs:
     linearGradient(`${ID}-wall`, [[0, '#f6e6da'], [1, '#ecd4c4']]) +

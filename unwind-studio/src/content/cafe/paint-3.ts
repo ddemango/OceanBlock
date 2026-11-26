@@ -179,7 +179,7 @@ detail.push(stroke(xf(poly([[0, -26], [18, 0], [0, 26], [-18, 0]]), { rot: -26, 
 const activity: PaintActivity = {
   id: 'cafe-paint-3', version: 1, mode: 'paint', title: 'Pizza Night',
   blurb: 'An open box of pizza on the coffee table, with cold drinks, striped napkins, a hand of cards and a pair of dice, all seen from above.',
-  collectionId: 'cafe', categories: ["Friends", "Cozy"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'cafe', categories: ["Cozy", "Coffeehouse"], difficulty: 'Detailed',
   width: W, height: H, palette, regions, detail,
 };
 export default activity;

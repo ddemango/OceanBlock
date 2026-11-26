@@ -112,7 +112,7 @@ D(line([[734, 494], [786, 540]]) + line([[786, 494], [734, 540]]) + line([[760, 
 const activity: PaintActivity = {
   id: 'seasons-paint-3', version: 1, mode: 'paint', title: 'Sunflower Field',
   blurb: 'Tall sunflowers turn their faces to a bright summer sky while a bumblebee drifts by and a red barn naps on the far hill.',
-  collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Moderate',
   season: { from: '06-01', to: '08-31', label: 'summer' },
   width: W, height: H,
   palette: [

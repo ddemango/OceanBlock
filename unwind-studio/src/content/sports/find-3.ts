@@ -291,7 +291,7 @@ for (const [x, y, s] of [[300, 920, 1], [1180, 860, 0.8]] as [number, number, nu
 
 const a: FindActivity = {
   id: 'sports-find-3', version: 2, mode: 'find', title: 'Clubhouse at the Links', blurb: 'Iced tea on the clubhouse terrace, looking out over the ninth green and the tennis courts beyond.',
-  collectionId: 'sports', categories: ["Sports"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'sports', categories: ["Sports"], difficulty: 'Detailed',
   width: 1200, height: 1500, defs,
   items,
 };

@@ -181,7 +181,7 @@ scene(at(cushion(110, '#d98a7a', '#fbf6ec', 1, -12), 1080, 1490));
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'Game Night',
   blurb: 'Fairy lights, a half-finished board game, pizza and popcorn, with the dog asleep under the table.',
-  collectionId: 'cafe', categories: ["Friends", "Cozy"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'cafe', categories: ["Cozy", "Coffeehouse"], difficulty: 'Detailed',
   width: W, height: H, defs, items,
 };
 export default activity;

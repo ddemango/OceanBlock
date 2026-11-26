@@ -108,7 +108,7 @@ for (const [x, y] of [[40, 1150], [330, 1120], [600, 1210], [612, 1060], [420, 1
 const activity: PaintActivity = {
   id: 'fairytale-paint-1', version: 1, mode: 'paint', title: 'Castle Fireworks',
   blurb: 'Fireworks bloom over a hilltop castle of round red-roofed towers, while the village below glows warm in the night.',
-  collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Detailed',
   width: W, height: H,
   palette: [
     { id: 'nightDeep', number: 1, name: 'Midnight', hex: '#1e2547' },

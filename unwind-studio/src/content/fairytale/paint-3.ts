@@ -92,7 +92,7 @@ D(curve([[80, 620], [96, 660], [90, 700]]) + curve([[880, 360], [900, 400], [896
 const activity: PaintActivity = {
   id: 'fairytale-paint-3', version: 1, mode: 'paint', title: 'The Sleeping Dragon',
   blurb: 'A friendly green dragon snoozes curled on a heap of gold coins and goblets, lit by a lantern glowing in the cave.',
-  collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Relaxed',
   width: W, height: H,
   palette: [
     { id: 'caveD', number: 1, name: 'Cave shadow', hex: '#3a2d40' },

@@ -158,7 +158,7 @@ scene(petals(0, 1440, W, 60, 30, 141, ['#f7c6d0', '#ffffff'], 5));
 
 const a: FindActivity = {
   id: 'seasons-find-1', version: 1, mode: 'find', title: 'Spring Flower Market', blurb: 'Wander a cobbled square of striped flower stalls, blossom trees and bicycles laden with seedlings.',
-  collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Relaxed',
   season: { from: '03-01', to: '05-31', label: 'spring' },
   width: W, height: H, defs, items,
 };

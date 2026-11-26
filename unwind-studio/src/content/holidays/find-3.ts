@@ -233,7 +233,7 @@ void ellipse; void rect;
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'Christmas Morning',
   blurb: 'Stockings are full, the fire is crackling and sixteen little treasures are tucked around the tree and the hearth.',
-  collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Detailed',
   season: { from: '12-01', to: '12-31', label: 'Christmas' },
   width: W, height: HT, defs, items,
 };

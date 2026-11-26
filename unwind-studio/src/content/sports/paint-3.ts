@@ -188,7 +188,7 @@ D(reeds.map(([x, y, len, , rot]) => xf(line([[16, 0], [len * 0.8, 0]]), { rot, x
 const activity: PaintActivity = {
   id: 'sports-paint-3', version: 1, mode: 'paint', title: 'Gone Fishing',
   blurb: 'A quiet sunrise on the lake: an old wooden dock with a rod, an open tackle box and a bucket, a red rowboat, reeds and lily pads under soft blue hills.',
-  collectionId: 'sports', categories: ["Sports"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'sports', categories: ["Sports"], difficulty: 'Detailed',
   width: W, height: H, palette, regions, detail,
 };
 export default activity;

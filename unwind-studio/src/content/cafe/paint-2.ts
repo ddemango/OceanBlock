@@ -157,7 +157,7 @@ detail.push(stroke(line([[60, 170], [130, 170]]), '#e8d3a8', 1.4));
 const activity: PaintActivity = {
   id: 'cafe-paint-2', version: 1, mode: 'paint', title: 'The Comfy Sofa',
   blurb: 'A deep teal sofa piled with cushions and a knitted throw, lit by a floor lamp beside a little table of books and a warm mug.',
-  collectionId: 'cafe', categories: ["Friends", "Cozy"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'cafe', categories: ["Cozy", "Coffeehouse"], difficulty: 'Relaxed',
   width: W, height: H, palette, regions, detail,
 };
 export default activity;

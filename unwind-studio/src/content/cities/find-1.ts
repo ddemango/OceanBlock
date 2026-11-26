@@ -331,7 +331,7 @@ void mix; void leaf;
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'Rooftop Garden at Night',
   blurb: 'String lights glow over a little table for two on a New York rooftop, with the lit-up skyline behind and thirteen cosy finds tucked among the planters.',
-  collectionId: 'cities', categories: ["Cities"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'cities', categories: ["Cities"], difficulty: 'Relaxed',
   width: W, height: H, defs, items,
 };
 export default activity;

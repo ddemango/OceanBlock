@@ -222,7 +222,7 @@ scene(place(tennisBall(14), { x: 560, y: 1480 }), place(baseball(14), { x: 380, 
 
 const a: FindActivity = {
   id: 'sports-find-2', version: 2, mode: 'find', title: 'The Locker Room', blurb: 'A friendly club locker room after practice, with kit, trophies and balls of every sport tucked into every corner.',
-  collectionId: 'sports', categories: ["Sports"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'sports', categories: ["Sports"], difficulty: 'Moderate',
   width: 1200, height: 1500, defs,
   items,
 };

@@ -343,7 +343,7 @@ void curve; void petal; void mix; void L; void M; void cafeTable;
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'Bookstalls by the River',
   blurb: 'Browse the green bookstalls on a sunny Paris quay, with Notre-Dame and the Eiffel Tower beyond, and spot fourteen treasures among the prints, the barge and the café tables.',
-  collectionId: 'cities', categories: ["Cities"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'cities', categories: ["Cities"], difficulty: 'Moderate',
   width: W, height: H, defs, items,
 };
 export default activity;

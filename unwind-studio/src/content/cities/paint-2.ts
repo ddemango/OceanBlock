@@ -237,7 +237,7 @@ detail.push(stroke(line([[92, 986], [112, 986]]) + line([[128, 986], [148, 986]]
 const a: PaintActivity = {
   id: 'cities-paint-2', version: 1, mode: 'paint', title: 'Cable Car Hill',
   blurb: 'A cheerful cable car clangs up a steep San Francisco street of painted row houses, with the Golden Gate Bridge glowing across the bay.',
-  collectionId: 'cities', categories: ["Cities"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'cities', categories: ["Cities"], difficulty: 'Detailed',
   width: W, height: H, palette, regions, detail,
 };
 export default a;

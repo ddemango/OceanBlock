@@ -216,7 +216,7 @@ target('acorn', 'Acorn', place(acorn(30), { x: 410, y: 1380, rot: 20 }));
 
 const a: FindActivity = {
   id: 'seasons-find-3', version: 1, mode: 'find', title: 'Autumn Harvest Fair', blurb: 'Browse a golden country fair of pumpkins, hay bales, patchwork quilts and a cider stand beneath a little ferris wheel.',
-  collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Detailed',
   season: { from: '09-01', to: '11-30', label: 'autumn' },
   width: W, height: H, defs, items,
 };

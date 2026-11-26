@@ -246,7 +246,7 @@ scene(place(bucketSpade(40, '#f2c14e', '#d8452f'), { x: 40, y: 1360 }));
 
 const a: FindActivity = {
   id: 'seasons-find-2', version: 1, mode: 'find', title: 'Summer Boardwalk', blurb: 'Stroll a sunny seaside boardwalk of ice-cream carts, striped parasols, kites and sandcastles by the pier.',
-  collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Moderate',
   season: { from: '06-01', to: '08-31', label: 'summer' },
   width: W, height: H, defs, items,
 };

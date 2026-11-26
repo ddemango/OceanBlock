@@ -214,7 +214,7 @@ const activity: FindActivity = {
   id: ID, version: 2, mode: 'find',
   title: "The Wizard's Tower",
   blurb: 'High in a round stone study the candles burn low, the cauldron bubbles and the wizard\'s cat dreams among the star charts.',
-  collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Detailed',
   width: WD, height: HT,
   defs:
     linearGradient(`${ID}-sky`, [[0, '#10184a'], [0.6, '#283a7a'], [1, '#4a4a8a']]) +

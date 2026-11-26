@@ -146,7 +146,7 @@ detail.push(stroke(curve([[60, 760], [80, 740]]) + curve([[540, 790], [552, 770]
 const activity: PaintActivity = {
   id: 'holidays-paint-2', version: 1, mode: 'paint', title: 'Easter Garden',
   blurb: 'A basket of painted eggs on fresh spring grass, with tulips, a sleepy bunny and a branch of pink blossom overhead.',
-  collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Relaxed',
   season: { from: '03-15', to: '04-25', label: 'Easter' },
   width: W, height: H, palette, regions, detail,
 };

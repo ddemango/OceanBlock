@@ -105,7 +105,7 @@ D(curve([[640, 770], [700, 760], [760, 774]]) + curve([[740, 820], [820, 806], [
 const activity: PaintActivity = {
   id: 'seasons-paint-1', version: 1, mode: 'paint', title: 'Snowman at Dusk',
   blurb: 'A cheerful snowman in a red scarf and top hat waves from a snowy yard as the sky turns blue and pink behind the firs and a lamplit cottage.',
-  collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Relaxed',
   season: { from: '12-01', to: '02-28', label: 'winter' },
   width: W, height: H,
   palette: [

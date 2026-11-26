@@ -195,7 +195,7 @@ const activity: FindActivity = {
   id: ID, version: 2, mode: 'find',
   title: 'The Enchanted Forest',
   blurb: 'Fireflies drift between the trees at dusk, where a mushroom ring glows and something with a silver horn is watching from the shadows.',
-  collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Moderate',
   width: WD, height: HT,
   defs:
     linearGradient(`${ID}-sky`, [[0, '#1a2250'], [0.55, '#3e4a8a'], [1, '#8a6aa8']]) +

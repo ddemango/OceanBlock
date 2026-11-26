@@ -185,7 +185,7 @@ void blob; void leaf; void ellipse; void circle; void line; void shade; void hea
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'Sunday at the Apartment',
   blurb: 'A slow Sunday brunch in a sunny city flat, with an open kitchen, a bike on the wall and records waiting to be played.',
-  collectionId: 'cafe', categories: ["Friends", "Cozy"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'cafe', categories: ["Cozy", "Coffeehouse"], difficulty: 'Relaxed',
   width: W, height: H, defs, items,
 };
 export default activity;

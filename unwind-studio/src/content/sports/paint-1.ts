@@ -134,7 +134,7 @@ D(M(186, 162) + Q(250, 140, 320, 160) + M(430, 100) + L(520, 100), '#d6e4ea', 2)
 const activity: PaintActivity = {
   id: 'sports-paint-1', version: 1, mode: 'paint', title: 'Soccer Morning',
   blurb: 'A ball and a pair of coral cleats rest on the dewy grass by the goal as the morning sun rises over the park trees.',
-  collectionId: 'sports', categories: ["Sports"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'sports', categories: ["Sports"], difficulty: 'Relaxed',
   width: W, height: H, palette, regions, detail,
 };
 export default activity;

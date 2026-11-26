@@ -214,7 +214,7 @@ detail.push(stroke(S(xf(line([[-40, -12], [10, -12]]) + line([[-40, 4], [20, 4]]
 const activity: PaintActivity = {
   id: 'roadtrip-paint-3', version: 1, mode: 'paint', title: 'Packed for Adventure',
   blurb: 'An open suitcase of neatly folded holiday clothes, with a camera, map, passport, sunhat and sunglasses ready for the road.',
-  collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Detailed',
   width: W, height: H, palette, regions, detail,
 };
 export default activity;

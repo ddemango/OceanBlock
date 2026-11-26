@@ -346,7 +346,7 @@ void blob; void GOLD; void L;
 const activity: FindActivity = {
   id: 'roadtrip-find-1', version: 1, mode: 'find', title: 'Airport Lounge',
   blurb: 'Your flight is boarding soon: find fourteen travel bits among the seats, suitcases and café counter while the plane waits outside.',
-  collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Moderate',
   width: W, height: H, defs, items,
 };
 export default activity;

@@ -194,7 +194,7 @@ D(M(160, 136) + Q(240, 122, 330, 132) + M(560, 82) + L(680, 82), '#f3b896', 2);
 const activity: PaintActivity = {
   id: 'sports-paint-2', version: 1, mode: 'paint', title: 'Backyard Hoops',
   blurb: 'Golden-hour light warms a driveway hoop above the garage, with a ball, a pair of sneakers and a teal bike waiting for one more game.',
-  collectionId: 'sports', categories: ["Sports"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'sports', categories: ["Sports"], difficulty: 'Moderate',
   width: W, height: H, palette, regions, detail,
 };
 export default activity;

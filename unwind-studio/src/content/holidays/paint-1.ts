@@ -160,7 +160,7 @@ detail.push(stroke(M(64, 836) + Q(500, 1000, 936, 836), '#efe0d6', 1.4));
 const activity: PaintActivity = {
   id: 'holidays-paint-1', version: 1, mode: 'paint', title: "Valentine's Tea for Two",
   blurb: 'Two gilded teacups, heart-shaped shortbread and a vase of red roses on a lace-draped café table by the window.',
-  collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Moderate',
   season: { from: '01-28', to: '02-15', label: "Valentine's Day" },
   width: W, height: H, palette, regions, detail,
 };

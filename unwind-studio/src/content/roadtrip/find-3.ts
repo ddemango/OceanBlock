@@ -192,7 +192,7 @@ void L; void Q; void blob;
 const activity: FindActivity = {
   id: 'roadtrip-find-3', version: 1, mode: 'find', title: 'Cruise Ship Deck',
   blurb: 'Sunshine, sea breeze and dolphins on the horizon: find twelve holiday things around the pool, loungers and shuffleboard court.',
-  collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Relaxed',
   width: W, height: H, defs, items,
 };
 export default activity;

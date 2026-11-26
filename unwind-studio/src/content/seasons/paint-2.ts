@@ -128,7 +128,7 @@ D(curve([[250, 1000], [258, 980], [266, 1000]]) + curve([[290, 760], [296, 744],
 const activity: PaintActivity = {
   id: 'seasons-paint-2', version: 1, mode: 'paint', title: 'Cherry Blossom Lane',
   blurb: 'A quiet lane runs beneath cherry trees in full bloom, past a garden bench and over a little red bridge while petals drift down.',
-  collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'seasons', categories: ["Seasons"], difficulty: 'Detailed',
   season: { from: '03-01', to: '05-31', label: 'spring' },
   width: W, height: H,
   palette: [

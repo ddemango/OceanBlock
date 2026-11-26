@@ -252,7 +252,7 @@ void L; void Q; void M;
 const activity: FindActivity = {
   id: 'roadtrip-find-2', version: 1, mode: 'find', title: 'Campsite by the Lake',
   blurb: 'The first stars are out over the mountain lake: find sixteen camping treasures around the camper, the tent and the crackling fire.',
-  collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Detailed',
   width: W, height: H, defs, items,
 };
 export default activity;

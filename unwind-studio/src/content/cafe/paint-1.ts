@@ -171,7 +171,7 @@ detail.push(stroke(curve([[34, 612], [42, 720], [44, 830]]) + curve([[966, 612],
 const activity: PaintActivity = {
   id: 'cafe-paint-1', version: 1, mode: 'paint', title: 'Two Mugs by the Window',
   blurb: 'Two steaming mugs and a plate of chocolate-chip cookies on a honey-wood windowsill, with rain falling over the lit-up rooftops outside.',
-  collectionId: 'cafe', categories: ["Friends", "Cozy"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'cafe', categories: ["Cozy", "Coffeehouse"], difficulty: 'Moderate',
   width: W, height: H, palette, regions, detail,
 };
 export default activity;

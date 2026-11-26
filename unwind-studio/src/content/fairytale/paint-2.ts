@@ -134,7 +134,7 @@ for (const [x, y] of [[40, 1100], [180, 1060], [300, 1180], [140, 1220], [380, 1
 const activity: PaintActivity = {
   id: 'fairytale-paint-2', version: 1, mode: 'paint', title: 'Pumpkin Coach at Midnight',
   blurb: 'As the clock tower strikes twelve, a gilded pumpkin coach waits on the moonlit road and a glass slipper sparkles on the palace steps.',
-  collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'fairytale', categories: ["Fairytale"], difficulty: 'Moderate',
   width: W, height: H,
   palette: [
     { id: 'nightDeep', number: 1, name: 'Midnight', hex: '#1f2550' },

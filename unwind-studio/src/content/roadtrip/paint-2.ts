@@ -167,7 +167,7 @@ for (const [i, wx] of [[1, 334], [2, 700]] as const) {
 const activity: PaintActivity = {
   id: 'roadtrip-paint-2', version: 1, mode: 'paint', title: 'Vintage Camper Van',
   blurb: 'A two-tone camper van with a surfboard on the roof, pulled off the coast highway between the palms as the sun sinks into the Pacific.',
-  collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Moderate',
   width: W, height: H, palette, regions, detail,
 };
 export default activity;

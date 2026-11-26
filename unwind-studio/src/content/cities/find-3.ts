@@ -311,7 +311,7 @@ void ellipse; void L; void Q; void M; void blob; void circle;
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'Downtown Diner',
   blurb: 'Slide into a busy New York diner, with yellow cabs rolling past the window, and hunt for sixteen things among the booths, stools and pie stands.',
-  collectionId: 'cities', categories: ["Cities"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'cities', categories: ["Cities"], difficulty: 'Detailed',
   width: W, height: H, defs, items,
 };
 export default activity;

@@ -260,7 +260,7 @@ void leaf; void ellipse;
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'Halloween Night',
   blurb: 'Under a big harvest moon, a glowing front porch and pumpkin patch hide fourteen friendly Halloween treats.',
-  collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Moderate',
   season: { from: '10-01', to: '10-31', label: 'Halloween' },
   width: W, height: HT, defs, items,
 };

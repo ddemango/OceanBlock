@@ -244,7 +244,7 @@ scene(shadow(600, 1495, 600, 8, 0.12));
 
 const a: FindActivity = {
   id: 'sports-find-1', version: 2, mode: 'find', title: 'Ballpark Afternoon', blurb: 'A sunny afternoon in the stands, with the whole diamond spread out below and snacks on every seat.',
-  collectionId: 'sports', categories: ["Sports"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'sports', categories: ["Sports"], difficulty: 'Relaxed',
   width: 1200, height: 1500, defs,
   items,
 };

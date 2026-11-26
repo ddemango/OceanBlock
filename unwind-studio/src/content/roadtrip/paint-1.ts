@@ -187,7 +187,7 @@ hotAirBalloon({ id: 'big-balloon', cx: 404, cy: 330, r: 164, gores: ['red', 'mus
 const activity: PaintActivity = {
   id: 'roadtrip-paint-1', version: 1, mode: 'paint', title: 'Hot Air Balloons',
   blurb: 'Striped hot air balloons drift over fairy-chimney rocks, patchwork fields and a winding country road as the sun comes up.',
-  collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'roadtrip', categories: ["Travel"], difficulty: 'Relaxed',
   width: W, height: H, palette, regions, detail,
 };
 export default activity;

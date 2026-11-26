@@ -149,7 +149,7 @@ detail.push(stroke(circle(772, 1020, 3) + circle(788, 1040, 2.5) + circle(846, 1
 const activity: PaintActivity = {
   id: 'holidays-paint-3', version: 1, mode: 'paint', title: 'Fourth of July Fireworks',
   blurb: 'Fireworks bloom over a lakeside town while bunting, a flag and a pitcher of lemonade keep the porch cheerful.',
-  collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Detailed',
+  added: '2026-11-25', collectionId: 'holidays', categories: ["Holidays"], difficulty: 'Detailed',
   season: { from: '06-24', to: '07-08', label: 'the Fourth of July' },
   width: W, height: H, palette, regions, detail,
 };

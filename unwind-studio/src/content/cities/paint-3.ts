@@ -153,7 +153,7 @@ detail.push(stroke(line([[234, 960], [233, 942]]) + line([[766, 1001], [767, 985
 const a: PaintActivity = {
   id: 'cities-paint-3', version: 1, mode: 'paint', title: 'Red Bus in the Rain',
   blurb: 'A red double-decker splashes past a phone box on a rainy London street, with the great clock tower rising above the rooftops.',
-  collectionId: 'cities', categories: ["Cities"], difficulty: 'Relaxed',
+  added: '2026-11-25', collectionId: 'cities', categories: ["Cities"], difficulty: 'Relaxed',
   width: W, height: H, palette, regions, detail,
 };
 export default a;

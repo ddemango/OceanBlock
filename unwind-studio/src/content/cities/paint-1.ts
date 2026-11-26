@@ -186,7 +186,7 @@ detail.push(stroke(line([[115, 250], [115, 222]]) + line([[880, 270], [880, 226]
 const a: PaintActivity = {
   id: 'cities-paint-1', version: 1, mode: 'paint', title: 'Skyline at Sunset',
   blurb: 'New York\'s towers glow against a peach and violet sunset while the old granite bridge, with its twin Gothic arches, spans the East River.',
-  collectionId: 'cities', categories: ["Cities"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'cities', categories: ["Cities"], difficulty: 'Moderate',
   width: W, height: H, palette, regions, detail,
 };
 export default a;

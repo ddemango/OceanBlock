@@ -76,6 +76,43 @@ import cafeFind1 from './cafe/find-1';
 import cafeFind2 from './cafe/find-2';
 import cafeFind3 from './cafe/find-3';
 
+import petsPaint1 from './pets/paint-1';
+import petsPaint2 from './pets/paint-2';
+import petsPaint3 from './pets/paint-3';
+import petsFind1 from './pets/find-1';
+import petsFind2 from './pets/find-2';
+import petsFind3 from './pets/find-3';
+import oceanPaint1 from './ocean/paint-1';
+import oceanPaint2 from './ocean/paint-2';
+import oceanPaint3 from './ocean/paint-3';
+import oceanFind1 from './ocean/find-1';
+import oceanFind2 from './ocean/find-2';
+import oceanFind3 from './ocean/find-3';
+import farmPaint1 from './farm/paint-1';
+import farmPaint2 from './farm/paint-2';
+import farmPaint3 from './farm/paint-3';
+import farmFind1 from './farm/find-1';
+import farmFind2 from './farm/find-2';
+import farmFind3 from './farm/find-3';
+import sweetsPaint1 from './sweets/paint-1';
+import sweetsPaint2 from './sweets/paint-2';
+import sweetsPaint3 from './sweets/paint-3';
+import sweetsFind1 from './sweets/find-1';
+import sweetsFind2 from './sweets/find-2';
+import sweetsFind3 from './sweets/find-3';
+import craftsPaint1 from './crafts/paint-1';
+import craftsPaint2 from './crafts/paint-2';
+import craftsPaint3 from './crafts/paint-3';
+import craftsFind1 from './crafts/find-1';
+import craftsFind2 from './crafts/find-2';
+import craftsFind3 from './crafts/find-3';
+import parksPaint1 from './parks/paint-1';
+import parksPaint2 from './parks/paint-2';
+import parksPaint3 from './parks/paint-3';
+import parksFind1 from './parks/find-1';
+import parksFind2 from './parks/find-2';
+import parksFind3 from './parks/find-3';
+
 /**
  * Every hidden-object scene is a richly detailed picture, so each one is also
  * offered as a jigsaw. The puzzle is built from exactly the same artwork.
@@ -89,7 +126,7 @@ export function jigsawFromScene(f: FindActivity): PuzzleActivity {
   return {
     id: `${f.id}-jigsaw`, version: f.version, mode: 'puzzle', title: f.title,
     blurb: `${f.title}, as a jigsaw — every little detail, piece by piece.`,
-    collectionId: f.collectionId, categories: f.categories, difficulty: f.difficulty, attribution: f.attribution, season: f.season,
+    collectionId: f.collectionId, categories: f.categories, difficulty: f.difficulty, attribution: f.attribution, season: f.season, added: f.added,
     art: { width: f.width, height: f.height, defs: f.defs, shapes: f.items.flatMap((i) => i.shapes) },
     pieceCounts: [36, 64, 100, 196], geometrySeed: hashId(f.id), geometryVersion: 1,
   };
@@ -112,7 +149,13 @@ const SPECS: CollectionSpec[] = [
   { id: 'cities', title: "City Lights", theme: "Cities", description: "Rooftop gardens at night, bookstalls by the river, a busy downtown diner, skylines at sunset, cable cars and red buses in the rain.", puzzles: [], paints: [citiesPaint1, citiesPaint2, citiesPaint3], finds: [citiesFind1, citiesFind2, citiesFind3] },
   { id: 'roadtrip', title: "On the Road", theme: "Travel", description: "The joy of setting off: a bright airport lounge, a lakeside campsite, a cruise ship deck, hot air balloons, a vintage camper van and a suitcase packed for adventure.", puzzles: [], paints: [roadtripPaint1, roadtripPaint2, roadtripPaint3], finds: [roadtripFind1, roadtripFind2, roadtripFind3] },
   { id: 'fairytale', title: "Fairytale Kingdom", theme: "Fairytale", description: "Once upon a time: a glittering ballroom, an enchanted forest, a wizard's tower, fireworks over castle towers, a pumpkin coach at midnight and a dragon asleep on its treasure.", puzzles: [], paints: [fairytalePaint1, fairytalePaint2, fairytalePaint3], finds: [fairytaleFind1, fairytaleFind2, fairytaleFind3] },
-  { id: 'cafe', title: "Coffee & Good Company", theme: "Friends", description: "Good friends and good coffee: a corner coffeehouse, a lived-in city apartment, game night, two mugs by the window, a comfy sofa and pizza night.", puzzles: [], paints: [cafePaint1, cafePaint2, cafePaint3], finds: [cafeFind1, cafeFind2, cafeFind3] },
+  { id: 'cafe', title: "Coffee & Good Company", theme: "Coffeehouse", description: "Good friends and good coffee: a corner coffeehouse, a lived-in city apartment, game night, two mugs by the window, a comfy sofa and pizza night.", puzzles: [], paints: [cafePaint1, cafePaint2, cafePaint3], finds: [cafeFind1, cafeFind2, cafeFind3] },
+  { id: 'pets', title: "Paws & Whiskers", theme: "Pets", description: "Life with cats and dogs: a busy pet shop, the dog park on a sunny day, a cat caf\u00e9, a kitten in a yarn basket, a puppy at bath time and a sleepy cat on the windowsill.", puzzles: [], paints: [petsPaint1, petsPaint2, petsPaint3], finds: [petsFind1, petsFind2, petsFind3] },
+  { id: 'ocean', title: "Under the Sea", theme: "Ocean", description: "Beneath the waves: a bright coral reef, a sunken shipwreck, tide pools at low tide, a sea turtle gliding by, a pod of dolphins and a lighthouse standing over the surf.", puzzles: [], paints: [oceanPaint1, oceanPaint2, oceanPaint3], finds: [oceanFind1, oceanFind2, oceanFind3] },
+  { id: 'farm', title: "Down on the Farm", theme: "Countryside", description: "Country days: the farmyard at dawn, a farmers' market, the inside of a red barn, a proud rooster, a row of hens and a tractor in the hay field.", puzzles: [], paints: [farmPaint1, farmPaint2, farmPaint3], finds: [farmFind1, farmFind2, farmFind3] },
+  { id: 'sweets', title: "The Sweet Shop", theme: "Treats", description: "Sugar and spice: an old-fashioned candy store, an ice-cream parlour, a birthday party table, a tower of cupcakes, a sundae with a cherry on top and a jar of gumballs.", puzzles: [], paints: [sweetsPaint1, sweetsPaint2, sweetsPaint3], finds: [sweetsFind1, sweetsFind2, sweetsFind3] },
+  { id: 'crafts', title: "The Craft Room", theme: "Handmade", description: "Made by hand: a sewing room full of fabric, a yarn shop, a potter's studio, a patchwork quilt, a basket of knitting and a painter's table.", puzzles: [], paints: [craftsPaint1, craftsPaint2, craftsPaint3], finds: [craftsFind1, craftsFind2, craftsFind3] },
+  { id: 'parks', title: "The Great Outdoors", theme: "Nature", description: "Wide-open places: a ranger station in the pines, a desert canyon lookout, a mountain cabin porch, a waterfall valley, red rock arches and a moose at the lake.", puzzles: [], paints: [parksPaint1, parksPaint2, parksPaint3], finds: [parksFind1, parksFind2, parksFind3] },
 ];
 
 // Pictures still being drawn carry the title "Placeholder" and stay out of the app until finished.

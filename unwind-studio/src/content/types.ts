@@ -20,6 +20,8 @@ interface ActivityBase {
   own?: boolean;
   /** When this picture is in season, e.g. { from: '11-01', to: '11-30', label: 'Thanksgiving' }. Dates are MM-DD; a window may wrap past New Year. */
   season?: { from: string; to: string; label: string };
+  /** The day this picture joined the library (YYYY-MM-DD); recent ones are marked New. */
+  added?: string;
 }
 
 export interface PuzzleActivity extends ActivityBase {

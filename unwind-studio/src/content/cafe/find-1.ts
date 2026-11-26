@@ -215,7 +215,7 @@ void books; void blob; void leaf; void artPrint; void heart; void shade;
 const activity: FindActivity = {
   id: ID, version: 1, mode: 'find', title: 'The Corner Coffeehouse',
   blurb: 'A big street window, a hissing espresso machine and a little open-mic stage hide fifteen coffeehouse things.',
-  collectionId: 'cafe', categories: ["Friends", "Cozy"], difficulty: 'Moderate',
+  added: '2026-11-25', collectionId: 'cafe', categories: ["Cozy", "Coffeehouse"], difficulty: 'Moderate',
   width: W, height: H, defs, items,
 };
 export default activity;
