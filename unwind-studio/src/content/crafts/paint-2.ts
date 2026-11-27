@@ -51,7 +51,6 @@ detail.push(stroke(line([[850, 236], [850, 254]]) + line([[866, 238], [866, 256]
 
 // ---------- on the table: tea ----------
 R('saucer', ellipse(132, 938, 108, 27), 'cream');
-R('saucer-well', ellipse(132, 934, 70, 15), 'wall');
 R('steam-1', wisp(112, 786, 120, 12, 20, 0.4), 'cream');
 R('steam-2', wisp(152, 780, 96, 10, 18, 2.2), 'cream');
 const mug = pot(132, [[806, 64], [928, 56]], 0.3);
