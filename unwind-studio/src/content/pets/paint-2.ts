@@ -51,7 +51,7 @@ R('shampoo-drop', M(810, 240) + C(826, 262, 824, 280, 810, 280) + C(796, 280, 79
 R('sponge', rect(872, 266, 90, 52, 16), 'yellow');
 
 // bubbles drifting up the wall
-const air: [number, number, number][] = [[352, 262, 26], [640, 250, 19], [900, 470, 30], [846, 596, 20], [124, 668, 22], [770, 700, 17]];
+const air: [number, number, number][] = [[352, 262, 26], [640, 250, 19], [900, 470, 30], [846, 596, 20], [124, 668, 22], [806, 410, 17]];
 air.forEach(([x, y, r], i) => R(`air-bubble-${i + 1}`, circle(x, y, r), i % 2 ? 'bubble' : 'foam'));
 
 // ---------------------------------------------------------------- tub (back) and suds
@@ -59,7 +59,7 @@ const TX = 500, RIM = 745, RATIO = 0.21;
 const hwAt = (y: number) => 372 + ((312 - 372) * (y - RIM)) / (1050 - RIM);
 R('handle-left', band([[142, 800], [88, 814], [84, 884], [150, 902]], 22, 22), 'tinD');
 R('handle-right', band([[858, 800], [912, 814], [916, 884], [850, 902]], 22, 22), 'tinD');
-R('suds-back', puff(TX, 728, 368, 92, 14, 0.6), 'bubble');
+R('suds-back', foamFront(TX, 706, 364, 9, 40, RIM, 60), 'bubble');
 
 // rubber duck bobbing in the suds
 R('duck-body', M(196, 742) + C(196, 700, 250, 708, 286, 716) + C(310, 708, 326, 690, 336, 680) + C(340, 730, 320, 790, 262, 792) + C(222, 792, 196, 776, 196, 742) + 'Z', 'yellow');
@@ -100,8 +100,6 @@ R('paw-right', ellipse(PX + 104, 812, 50, 36), 'cream');
 // tile grid
 {
   let d = '';
-  for (const y of [300, 420, 540, 660, 780]) d += line([[0, y], [70, y]]) + line([[930, y], [W, y]]);
-  for (const y of [420, 540]) d += line([[250, y], [330, y]]);
   d += line([[0, 96], [W, 96]]) + line([[0, 180], [W, 180]]);
   for (let x = 125; x < W; x += 125) d += line([[x, 20], [x, 96]]);
   D(d, '#a7cfcb', 2);

@@ -308,7 +308,7 @@ export function fish(kind: FishKind, s: number, c1: string, c2: string, c3 = '#f
       sh(M(-27, -17) + Q(-4, -46, 25, -19) + 'Z' + M(-27, 17) + Q(-4, 46, 25, 19) + 'Z', c2), sh(M(-31, 0) + L(-48, -14) + L(-48, 14) + 'Z', shade(c1, 0.35)),
       sh(poly([[29, -8], [47, 0], [29, 9]]), c1), sh(ellipse(0, 0, 34, 30), c1), sh(ellipse(2, 12, 24, 13), '#ffffff', { opacity: 0.3 }),
       stroke(line([[-12, -25], [-2, 24]]) + line([[-2, -28], [8, 22]]) + line([[-22, -19], [-13, 21]]), c3, 1.6, { opacity: 0.55 }),
-      sh(band(18, 25, 34, 30), '#2b2a33'), sh(circle(-18, -11, 6.4), '#ffffff'), sh(circle(-18, -11, 4.4), '#2b2a33'),
+      sh(band(18, 25, 34, 30), '#2b2a33'), sh(circle(-19, -12, 4.6), '#2b2a33', { opacity: 0.85 }),
       ...eye(21.5, -4, 3.6),
     ];
   } else if (kind === 'tang') {

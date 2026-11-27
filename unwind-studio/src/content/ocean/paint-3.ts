@@ -31,8 +31,8 @@ const CX = 650; // lighthouse centre line
 R('sky-storm', rect(0, 0, W, HOR + 4), 'skyD');
 R('sky-rain', below(sample([[0, 350], [240, 322], [500, 356], [760, 326], [1000, 344]]), HOR + 4), 'skyM');
 R('sky-clearing', below(sample([[0, 584], [260, 566], [520, 590], [780, 568], [1000, 580]]), HOR + 4), 'skyL');
-R('beam-left', poly([[CX, 282], [0, 168], [0, 292], [CX, 300]]), 'beam');
-R('beam-right', poly([[CX, 282], [W, 204], [W, 296], [CX, 300]]), 'beam');
+R('beam-left', poly([[CX, 284], [0, 186], [0, 284], [CX, 300]]), 'beam');
+R('beam-right', poly([[CX, 284], [W, 216], [W, 292], [CX, 300]]), 'beam');
 function stormCloud(id: string, cx: number, base: number, w: number, h: number, k: number, ph: number) {
   R(`${id}-top`, cloud(cx, base, w, h, k, ph), 'white');
   R(`${id}-mid`, cloud(cx + w * 0.05, base, w * 0.88, h * 0.62, k, ph + 0.9), 'cloudM');
@@ -40,8 +40,8 @@ function stormCloud(id: string, cx: number, base: number, w: number, h: number, 
 }
 stormCloud('cloud-crown', 200, 138, 340, 96, 5, 0.3);
 stormCloud('cloud-high', 850, 160, 280, 84, 4, 1.1);
-stormCloud('cloud-left', 240, 560, 520, 210, 6, 0.5);
-stormCloud('cloud-right', 880, 548, 400, 180, 5, 1.4);
+stormCloud('cloud-left', 262, 560, 500, 210, 6, 0.5);
+stormCloud('cloud-right', 842, 548, 300, 170, 4, 1.4);
 
 // ---------------------------------------------------------------- the sea
 R('far-headland', below(sample([[0, 668], [70, 662], [150, 678], [230, HOR]]), HOR + 4), 'cloudD');
@@ -49,7 +49,7 @@ R('sea-far', rect(0, HOR, W, H - HOR), 'seaL');
 R('sea-mid', below(sample([[0, 774], [130, 762], [300, 778], [480, 764], [700, 776], [1000, 766]]), H), 'seaM');
 R('sea-near', below(sample([[0, 968], [160, 950], [340, 974], [520, 956], [760, 972], [1000, 958]]), H), 'seaD');
 R('whitecap-1', ellipse(92, 742, 46, 8), 'white');
-R('whitecap-2', ellipse(196, 726, 30, 7), 'white');
+R('whitecap-2', ellipse(56, 802, 40, 8), 'white');
 R('whitecap-3', ellipse(60, 846, 52, 9), 'seaL');
 R('whitecap-4', ellipse(120, 918, 40, 8), 'seaL');
 
@@ -125,8 +125,9 @@ R('wash', poly([...SHORE.map(([x, y]) => [x, y - 14] as Pt), [1000, 1110], ...sa
 R('surf-1', puff(410, 996, 92, 40, 8, 0.4), 'white');
 R('surf-2', puff(630, 1050, 104, 40, 9, 1.1), 'white');
 R('surf-3', puff(880, 1066, 110, 42, 9, 0.2), 'white');
-R('plume', puff(222, 850, 104, 150, 11, 0.5), 'white');
-R('plume-core', puff(228, 890, 54, 84, 7, 1.3), 'seaL');
+R('plume', cloud(226, 968, 230, 300, 5, 0.5), 'white');
+R('plume-core', cloud(232, 968, 118, 176, 3, 1.3), 'seaL');
+R('plume-base', puff(214, 968, 138, 34, 9, 0.7), 'white');
 ([[128, 676, 10], [236, 662, 9], [312, 706, 9], [96, 760, 9.5], [338, 648, 8], [160, 628, 8], [520, 944, 8.5], [760, 1000, 8.5]] as number[][]).forEach(([x, y, r], i) => {
   R(`spray-${i + 1}`, circle(x, y, r), 'white');
 });
@@ -139,17 +140,17 @@ R('wave-right-foam', foamCap(WAVE2.slice(10, 40), 26, 12, 6, 0.6), 'white');
 R('wave-left', below(WAVE1, H), 'seaM');
 R('wave-left-face', poly([...WAVE1.slice(3, 44).map(([x, y]) => [x, y + 16] as Pt), ...WAVE1.slice(3, 44).reverse().map(([x, y], i) => [x - 8, y + 16 + 44 * Math.sin((Math.PI * i) / 40) ** 0.7] as Pt).slice(1, -1)]), 'seaL');
 R('wave-left-foam', foamCap(WAVE1.slice(1, 46), 30, 13, 8, 0.2), 'white');
-R('rock-big', blob([[770, 1250], [776, 1186], [832, 1150], [910, 1160], [956, 1204], [1000, 1196], [1000, 1250]], 0.6), 'rockD');
+R('rock-big', poly([[766, 1250], ...sample([[766, 1250], [778, 1186], [832, 1150], [910, 1160], [956, 1204], [1000, 1196]], 6), [1000, 1250]]), 'rockD');
 R('rock-big-top', poly([[794, 1192], [836, 1160], [902, 1170], [884, 1198], [826, 1208]]), 'rockM');
-R('rock-small', blob([[600, 1250], [616, 1214], [662, 1200], [700, 1222], [712, 1250]], 0.6), 'rockM');
-R('rock-foam', puff(736, 1240, 40, 16, 6, 0.3), 'white');
+R('rock-small', poly(sample([[600, 1250], [616, 1214], [662, 1200], [700, 1222], [712, 1250]], 6)), 'rockM');
+R('rock-foam', puff(738, 1230, 40, 16, 6, 0.3), 'white');
 D(curve([[60, 1180], [130, 1168], [200, 1182]]) + curve([[240, 1220], [320, 1208], [400, 1224]]) + curve([[30, 1228], [90, 1220], [150, 1230]]), '#cfe6e2', 2.2, 0.8);
 
 // ---------------------------------------------------------------- gulls
 R('gull-1', gull(470, 132, 50, -8), 'white');
 R('gull-2', gull(560, 208, 40, 6), 'white');
-R('gull-3', gull(590, 628, 42, -6), 'rockD');
-R('gull-4', gull(500, 596, 36, 8), 'rockD');
+R('gull-3', gull(800, 640, 42, -6), 'rockD');
+R('gull-4', gull(896, 612, 36, 8), 'rockD');
 R('gull-5', gull(100, 1010, 46, -10), 'white');
 
 const activity: PaintActivity = {

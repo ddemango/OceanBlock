@@ -36,6 +36,24 @@ export function pine(h: number, col: string, seed = 1, trunk = '#5a3c26'): Shape
   }
   return out;
 }
+/** Mountain range from a ridge line (left to right) down to `base`, with shaded faces and snow on summits higher than `snowAbove`. */
+export function peaks(ridge: Pt[], base: number, col: string, snow: string, snowAbove: number, t = 0.42): Shape[] {
+  const out: Shape[] = [sh(poly([[ridge[0][0], base], ...ridge, [ridge[ridge.length - 1][0], base]]), col)];
+  let caps = '', capShade = '', shd = '';
+  for (let i = 1; i < ridge.length - 1; i++) {
+    const p = ridge[i], a = ridge[i - 1], b = ridge[i + 1];
+    if (!(p[1] < a[1] && p[1] < b[1])) continue;
+    shd += poly([p, b, [b[0], base], [p[0] + (b[0] - p[0]) * 0.2, base]]);
+    if (p[1] > snowAbove) continue;
+    const l: Pt = [p[0] + (a[0] - p[0]) * t, p[1] + (a[1] - p[1]) * t], r: Pt = [p[0] + (b[0] - p[0]) * t, p[1] + (b[1] - p[1]) * t];
+    const d = Math.min(a[1], b[1]) - p[1];
+    const m = (k: number, dy: number): Pt => [l[0] + (r[0] - l[0]) * k, l[1] + (r[1] - l[1]) * k + dy * d];
+    caps += poly([p, r, m(0.8, -0.14), m(0.64, 0.1), m(0.46, -0.12), m(0.27, 0.08), m(0.12, -0.1), l]);
+    capShade += poly([p, r, m(0.8, -0.14), m(0.64, 0.1), m(0.5, -0.1)]);
+  }
+  out.push(sh(shd, shade(col, -0.3), { opacity: 0.4 }), sh(caps, snow), sh(capShade, shade(col, 0.45), { opacity: 0.7 }));
+  return out;
+}
 /** Cloud puff. */
 export function cloud(w: number, col = '#ffffff', o = 0.9): Shape[] {
   return [

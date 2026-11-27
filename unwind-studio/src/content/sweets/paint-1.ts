@@ -62,7 +62,7 @@ R('table', rect(0, 1104, W, 146), 'teal');
 }
 
 // ---------- the stand ----------
-R('doily', scallopEllipse(500, 1192, 256, 46, 22, 0.1), 'cream');
+R('doily', scallopEllipse(500, 1192, 258, 46, 18, 0.06), 'cream');
 R('stand-foot', ellipse(500, 1186, 150, 24), 'mint');
 R('stand-stem', M(468, 1100) + L(532, 1100) + Q(522, 1152, 566, 1182) + L(434, 1182) + Q(478, 1152, 468, 1100) + 'Z', 'gold');
 const tiers: [string, number, number, number][] = [['bottom', 1050, 400, 44], ['middle', 752, 285, 34], ['top', 462, 150, 20]];
@@ -126,7 +126,7 @@ cupcake('cake-6', 500, 764, 1, 'sky', 'cream', 'berry', 'pink', 'none');
 cupcake('cake-7', 680, 764, 1, 'chocL', 'choc', 'cream', 'mintD', 'candle', 'pink');
 // top
 cupcake('cake-8', 500, 472, 1.12, 'pink', 'cream', 'lemon', 'gold', 'candle', 'red');
-sprinkles.forEach((d, i) => d && detail.push(stroke(d, sprinkleCols[i], 3.2, { strokeLinecap: 'round' } as Partial<Shape>)));
+sprinkles.forEach((d, i) => d && detail.push(stroke(d, sprinkleCols[i], 3.2)));
 
 // ---------- on the table ----------
 R('cherry-left', circle(112, 1182, 27), 'red');
@@ -138,7 +138,7 @@ detail.push(stroke(curve([[96, 1176], [100, 1168], [108, 1164]]) + curve([[162, 
 R('gift', rect(776, 1136, 136, 86, 4), 'pink');
 R('gift-lid', rect(764, 1112, 160, 32, 5), 'berry');
 R('gift-ribbon', rect(832, 1112, 24, 110), 'cream');
-R('gift-bow', M(844, 1112) + C(820, 1070, 780, 1078, 800, 1104) + Q(820, 1116, 844, 1112) + C(868, 1116, 888, 1104, 888, 1104) + C(908, 1078, 868, 1070, 844, 1112) + 'Z', 'lemon');
+R('gift-bow', M(844, 1118) + C(812, 1052, 752, 1076, 790, 1114) + Q(820, 1126, 844, 1118) + Q(868, 1126, 898, 1114) + C(936, 1076, 876, 1052, 844, 1118) + 'Z', 'lemon');
 
 // ---------- line work ----------
 detail.push(stroke(ellipse(500, 1050, 330, 30) + ellipse(500, 752, 228, 22) + ellipse(500, 462, 112, 12), '#ffffff', 1.8, { opacity: 0.7 }));

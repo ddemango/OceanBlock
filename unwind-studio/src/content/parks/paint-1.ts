@@ -1,7 +1,7 @@
-import { rect, circle, ellipse, poly, line, curve, blob, waveBand, stroke } from '../../art/kit';
+import { rect, circle, poly, line, curve, blob, waveBand, stroke } from '../../art/kit';
 import type { Shape } from '../../art/types';
 import type { PaintActivity, PaletteColor } from '../types';
-import { collector, band, ridge, treeline, pine, pineTiers, ribbon, xAtY, bank, puff, lens, tuft, boulder, type Pt } from './props-paint';
+import { collector, band, treeline, pine, pineTiers, ribbon, xAtY, bank, puff, lens, tuft, boulder, type Pt } from './props-paint';
 
 const W = 1000, H = 1250;
 
@@ -39,8 +39,8 @@ R('cloud-3', puff(610, 232, 0.5), 'white');
 R('far-ridge', band([[280, 480], [350, 446], [430, 462], [500, 436], [580, 456], [660, 430], [730, 450], [780, 476]], H), 'far');
 R('dome', poly([[474, 580], [480, 430], [486, 352], [497, 322], [520, 305], [552, 300], [588, 312], [618, 345], [640, 395], [655, 450], [668, 500], [690, 580]]), 'granite');
 R('dome-face', poly([[474, 580], [480, 430], [486, 352], [497, 322], [514, 318], [520, 384], [516, 470], [524, 580]]), 'shadow');
-R('mid-ridge', band([[280, 548], [370, 520], [440, 540], [500, 524], [560, 544], [620, 526], [690, 540], [780, 508]], H), 'stone');
-R('valley-slopes', poly([[280, 566], [380, 580], [450, 614], [520, 668], [546, 692], [576, 664], [630, 616], [690, 570], [780, 530], [780, H], [280, H]]), 'spruce');
+R('mid-ridge', band([[280, 548], [370, 520], [440, 540], [500, 524], [560, 544], [620, 526], [690, 540], [780, 508]], H), 'spruce');
+R('valley-slopes', poly([[280, 566], [380, 580], [450, 614], [520, 668], [546, 692], [576, 664], [630, 616], [690, 570], [780, 530], [780, H], [280, H]]), 'pine');
 
 // ---------- the great cliff on the left ----------
 const capTop: Pt[] = [[0, 160], [70, 140], [150, 150], [230, 178], [285, 215]];
@@ -72,16 +72,16 @@ R('fall', ribbon([[793, 350], [797, 450], [801, 560], [805, 650], [808, 736]], [
 R('forest', treeline(0, W, (x) => 762 + 12 * Math.sin(x / 90), 26, 36, H, 0.4), 'forest');
 R('mist', blob([[730, 748], [752, 716], [790, 706], [832, 708], [868, 722], [888, 750], [850, 768], [770, 770]], 0.9), 'sky');
 
-const riverSpine: Pt[] = [[548, 818], [515, 842], [455, 870], [440, 908], [505, 952], [590, 996], [615, 1052], [560, 1112], [490, 1176], [470, 1250]];
+const riverSpine: Pt[] = [[548, 818], [515, 842], [455, 870], [440, 908], [505, 952], [590, 996], [615, 1052], [560, 1112], [492, 1170], [470, 1214], [470, 1250]];
 const riverX = xAtY(riverSpine);
-R('far-bank-left', bank('l', (x) => 812 + 5 * Math.sin(x / 110), riverX, W, H), 'moss');
-R('far-bank-right', bank('r', (x) => 812 + 5 * Math.sin(x / 110), riverX, W, H), 'moss');
+R('far-bank-left', bank('l', (x) => 812 + 5 * Math.sin(x / 110), riverX, W, H), 'gold');
+R('far-bank-right', bank('r', (x) => 812 + 5 * Math.sin(x / 110), riverX, W, H), 'gold');
 R('meadow-left', bank('l', (x) => 856 + 8 * Math.sin(x / 120 + 1), riverX, W, H), 'meadow');
 R('meadow-right', bank('r', (x) => 850 + 8 * Math.sin(x / 100 + 2), riverX, W, H), 'meadow');
 
 // pines along the edge of the meadow
 for (const [i, x, base, h, w] of [[1, 232, 850, 150, 62], [2, 306, 846, 118, 54], [3, 372, 850, 136, 58], [4, 668, 846, 140, 60], [5, 742, 850, 104, 50]] as const) {
-  R(`valley-pine-${i}`, pine(x, base, h, w, 4), 'pine');
+  R(`valley-pine-${i}`, pine(x, base, h, w, 4), 'moss');
 }
 
 R('grass-gold-left', blob([[150, 940], [230, 918], [330, 926], [384, 948], [330, 972], [220, 976]], 0.9), 'gold');
@@ -89,7 +89,7 @@ R('grass-gold-right', blob([[660, 930], [740, 912], [850, 920], [900, 944], [840
 R('grass-moss-left', blob([[230, 1050], [300, 1024], [390, 1034], [430, 1064], [380, 1092], [280, 1090]], 0.9), 'moss');
 R('grass-moss-right', blob([[700, 1050], [770, 1030], [850, 1040], [880, 1068], [820, 1090], [730, 1084]], 0.9), 'moss');
 
-R('river', ribbon(riverSpine, [6, 9, 13, 18, 25, 33, 44, 58, 74, 88]), 'river');
+R('river', ribbon(riverSpine, [6, 9, 13, 18, 25, 33, 44, 58, 72, 84, 88], 1), 'river');
 R('ripple-1', lens(470, 892, 44, 9, -50), 'riverLight');
 R('ripple-2', lens(548, 972, 78, 11, 28), 'riverLight');
 R('ripple-3', lens(596, 1068, 82, 13, -55), 'riverLight');
@@ -101,12 +101,14 @@ R('bank-rock-1', boulder(660, 1206, 96, 54), 'shadow');
 R('bank-rock-2', boulder(352, 1176, 70, 40), 'stone');
 
 // wildflowers and grasses
-for (const [i, x, y] of [[1, 300, 1146], [2, 262, 1196], [3, 330, 1218], [4, 720, 1150], [5, 762, 1196], [6, 700, 1228]] as const) {
+for (const [i, x, y] of [[1, 300, 1146], [2, 262, 1196], [3, 330, 1218], [4, 720, 1150], [5, 762, 1196], [6, 700, 1228], [7, 226, 1130], [8, 800, 1140]] as const) {
   R(`poppy-${i}`, circle(x, y, 12), 'poppy');
 }
 R('grass-tuft-1', tuft(416, 1140, 64, 60, 5, -0.1), 'pine');
 R('grass-tuft-2', tuft(640, 1050, 56, 50, 5, 0.1), 'pine');
-R('grass-tuft-3', tuft(290, 1010, 56, 46, 5), 'gold');
+R('grass-tuft-3', tuft(200, 1040, 56, 46, 5), 'gold');
+R('shrub-1', blob([[420, 1010], [436, 984], [470, 978], [498, 992], [500, 1012], [460, 1020]], 0.9), 'pine');
+R('shrub-2', blob([[690, 1000], [704, 978], [736, 972], [762, 986], [764, 1004], [726, 1010]], 0.9), 'moss');
 R('grass-tuft-4', tuft(800, 1010, 56, 46, 5), 'pine');
 
 // ---------- framing pines ----------
@@ -126,13 +128,12 @@ pineTiers(920, 1206, 560, 290, 5, [W, H]).forEach((d, i) => R(`big-pine-right-${
   detail.push(stroke(line([[795, 380], [798, 470]]) + line([[800, 520], [804, 640]]) + line([[812, 600], [816, 716]]), '#9cc9dc', 2, { opacity: 0.8 }));
   // flower centres
   let dots = '';
-  for (const [x, y] of [[300, 1146], [262, 1196], [330, 1218], [720, 1150], [762, 1196], [700, 1228]]) dots += circleDot(x, y);
+  for (const [x, y] of [[300, 1146], [262, 1196], [330, 1218], [720, 1150], [762, 1196], [700, 1228], [226, 1130], [800, 1140]]) dots += circleDot(x, y);
   detail.push(stroke(dots, '#7a3b1c', 3));
   const bird = (x: number, y: number, s: number) => curve([[x - s, y - s * 0.3], [x - s * 0.5, y - s * 0.6], [x, y]], 0.8) + curve([[x, y], [x + s * 0.5, y - s * 0.6], [x + s, y - s * 0.3]], 0.8);
   detail.push(stroke(bird(330, 300, 12) + bird(366, 282, 9) + bird(410, 318, 8), '#4a5568', 2));
 }
 function circleDot(x: number, y: number) { return line([[x - 1.5, y], [x + 1.5, y]]); }
-void ellipse; void ridge;
 
 const activity: PaintActivity = {
   id: 'parks-paint-1', version: 1, mode: 'paint', title: 'Waterfall Valley',
