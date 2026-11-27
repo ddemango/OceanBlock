@@ -591,7 +591,7 @@ export function straw(x0: number, y0: number, x1: number, y1: number, w: number,
   const len = Math.hypot(x1 - x0, y1 - y0), k = Math.max(3, Math.round(len / (w * 1.6)));
   let d = '';
   for (let i = 0; i < k; i++) { const t0 = (i + 0.2) / k, t1 = (i + 0.6) / k; d += line([[x0 + (x1 - x0) * t0, y0 + (y1 - y0) * t0], [x0 + (x1 - x0) * t1, y0 + (y1 - y0) * t1]]); }
-  return [stroke(line([[x0, y0], [x1, y1]]), shade(col, -0.3), w + 1.6), stroke(line([[x0, y0], [x1, y1]]), C.white, w), sh('M0 0L0.1 0L0 0.1Z', 'none'), stroke(d, col, w, { opacity: 0.95 })].filter((s) => s.fill !== 'none' || s.stroke);
+  return [stroke(line([[x0, y0], [x1, y1]]), shade(col, -0.3), w + 1.6), stroke(line([[x0, y0], [x1, y1]]), C.white, w), stroke(d, col, w, { opacity: 0.95 })];
 }
 
 /** Ice-cream sundae in a tulip glass, height h. */
