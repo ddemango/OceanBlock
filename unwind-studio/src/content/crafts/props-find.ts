@@ -581,11 +581,11 @@ export function swift(h: number, yarn = Y.coral, wood = Y.woodLt): Shape[] {
   const r = h * 0.4, top = -h * 0.92, bot = -h * 0.22, mid = -h * 0.57;
   let back = '', front = '', strands = '';
   for (let i = 0; i <= 6; i++) { const x = -r + (i * r) / 3; const d = line([[x * 0.12, top], [x, mid], [x * 0.12, bot]]) + line([[x * 0.55, (top + mid) / 2], [x * 0.55 - (x > 0 ? r * 0.3 : -r * 0.3), mid]]); if (i % 2) front += d; else back += d; }
-  for (let i = -2; i <= 2; i++) strands += M(-r * 1.04, mid + i * h * 0.022) + Q(0, mid + i * h * 0.022 + h * 0.02, r * 1.04, mid + i * h * 0.022);
+  for (let i = -1; i <= 1; i++) strands += M(-r * 1.02, mid + i * h * 0.022) + Q(0, mid + i * h * 0.022 + h * 0.012, r * 1.02, mid + i * h * 0.022);
   return [
     ol(rect(-h * 0.07, -h * 0.05, h * 0.14, h * 0.05, 2), shade(wood, -0.2), 1, -0.4), stroke(line([[0, 0], [0, h * 0.1]]) + line([[-h * 0.04, h * 0.1], [h * 0.04, h * 0.1]]), Y.steelDk, 2.4),
     stroke(line([[0, -h * 0.05], [0, -h]]), wood, h * 0.03), stroke(back, shade(wood, -0.2), 2.2),
-    ol(rect(-r * 1.06, mid - h * 0.065, r * 2.12, h * 0.13, h * 0.06), yarn, 1.1, -0.3), stroke(strands, shade(yarn, -0.22), 1), hl(rect(-r * 0.9, mid - h * 0.05, r * 1.2, h * 0.02, 3), 0.25),
+    ol(rect(-r * 1.04, mid - h * 0.045, r * 2.08, h * 0.09, h * 0.04), yarn, 1.1, -0.3), stroke(strands, shade(yarn, -0.22), 1), hl(rect(-r * 0.9, mid - h * 0.036, r * 1.2, h * 0.014, 3), 0.25),
     stroke(front, wood, 2.4), ol(rect(-h * 0.035, top - h * 0.02, h * 0.07, h * 0.05, 2), shade(wood, -0.15), 0.9, -0.4), ol(rect(-h * 0.035, bot - h * 0.02, h * 0.07, h * 0.05, 2), shade(wood, -0.15), 0.9, -0.4), ol(circle(0, -h, h * 0.03), wood, 0.9, -0.4),
   ];
 }

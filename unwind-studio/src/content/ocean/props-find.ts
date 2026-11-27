@@ -588,7 +588,7 @@ export function octopus(s: number, col = '#d9698f'): Shape[] {
   });
   return fit([
     sh(back, shade(col, -0.2)), sh(front, col), sh(suck, shade(col, 0.5), { opacity: 0.85 }),
-    ol(blob([[-24, 4], [-29, -22], [-19, -47], [0, -55], [19, -47], [29, -22], [24, 4], [0, 12]], 1), col, 1.3, -0.25),
+    ol(M(-25, 2) + C(-36, -30, -22, -57, 0, -57) + C(22, -57, 36, -30, 25, 2) + Q(0, 16, -25, 2) + 'Z', col, 1.3, -0.25),
     sh(circle(-12, -40, 3.4) + circle(4, -46, 2.8) + circle(15, -36, 3) + circle(-3, -34, 2.2) + circle(-20, -28, 2.2) + circle(21, -26, 2), shade(col, 0.35), { opacity: 0.8 }),
     hl(ellipse(-13, -30, 5, 12, 22), 0.22), sh(ellipse(-10, -10, 7, 8.5) + ellipse(10, -10, 7, 8.5), '#ffffff'),
     sh(ellipse(-9, -9, 3.6, 5) + ellipse(11, -9, 3.6, 5), '#2b2a33'), sh(circle(-7.6, -11.5, 1.3) + circle(12.4, -11.5, 1.3), '#ffffff'),

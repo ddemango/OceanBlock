@@ -702,8 +702,8 @@ export function cherryJar(h: number): Shape[] {
 /** Folded paper server's hat, w wide. */
 export function paperHat(w: number, band = C.red): Shape[] {
   return [
-    ol(M(-w * 0.5, 0) + L(w * 0.5, 0) + L(w * 0.42, -w * 0.36) + Q(0, -w * 0.5, -w * 0.42, -w * 0.36) + 'Z', C.white, 1.2, -0.25), sh(M(-w * 0.5, 0) + L(w * 0.5, 0) + L(w * 0.47, -w * 0.13) + L(-w * 0.47, -w * 0.13) + 'Z', band),
-    stroke(M(-w * 0.2, -w * 0.4) + Q(0, -w * 0.3, w * 0.24, -w * 0.4) + M(-w * 0.47, -w * 0.13) + L(w * 0.47, -w * 0.13), shade(C.white, -0.2), 1.1), sh(rect(-w * 0.47, -w * 0.075, w * 0.94, w * 0.025), C.white, { opacity: 0.8 }),
+    ol(M(-w * 0.5, 0) + L(w * 0.5, 0) + L(w * 0.4, -w * 0.4) + Q(0, -w * 0.54, -w * 0.4, -w * 0.4) + 'Z', C.white, 1.2, -0.25), sh(M(-w * 0.5, 0) + L(w * 0.5, 0) + L(w * 0.47, -w * 0.13) + L(-w * 0.47, -w * 0.13) + 'Z', band),
+    stroke(M(-w * 0.34, -w * 0.36) + Q(0, -w * 0.46, w * 0.34, -w * 0.36) + M(-w * 0.47, -w * 0.13) + L(w * 0.47, -w * 0.13), shade(C.white, -0.2), 1.1), sh(rect(-w * 0.47, -w * 0.075, w * 0.94, w * 0.025), C.white, { opacity: 0.8 }), ol(circle(0, -w * 0.27, w * 0.06), C.pink, 0.8), sh(poly([[-w * 0.045, -w * 0.23], [w * 0.045, -w * 0.23], [0, -w * 0.15]]), C.waffle),
   ];
 }
 

@@ -63,7 +63,7 @@ R('rocks', poly([[W, 225], [950, 212], [915, 250], [885, 238], [855, 290], [822,
 R('rocks-light-1', poly([[735, 296], [708, 340], [690, 430], [672, 560], [652, 680], [690, 690], [712, 560], [728, 440], [744, 360], [754, 322]]), 'granite');
 R('rocks-light-2', poly([[915, 250], [885, 238], [855, 290], [846, 420], [884, 440], [896, 310]]), 'granite');
 R('rocks-light-3', poly([[W, 225], [950, 212], [930, 236], [942, 330], [W, 344]]), 'granite');
-R('fall-alcove', poly([[762, 330], [792, 350], [822, 322], [840, 420], [848, 560], [854, 740], [752, 740], [762, 560], [768, 430]]), 'shadow');
+R('fall-alcove', poly([[762, 330], [792, 350], [812, 338], [824, 420], [832, 560], [840, 740], [752, 740], [762, 560], [768, 430]]), 'shadow');
 R('rocks-gully', poly([[906, 470], [944, 482], [958, 600], [948, 740], [908, 740], [918, 600]]), 'shadow');
 R('fall-veil', ribbon([[806, 352], [812, 450], [818, 560], [826, 650], [832, 736]], [8, 10, 13, 17, 22]), 'riverLight');
 R('fall', ribbon([[793, 350], [797, 450], [801, 560], [805, 650], [808, 736]], [7, 9, 12, 16, 21]), 'white');
@@ -80,7 +80,7 @@ R('meadow-left', bank('l', (x) => 856 + 8 * Math.sin(x / 120 + 1), riverX, W, H)
 R('meadow-right', bank('r', (x) => 850 + 8 * Math.sin(x / 100 + 2), riverX, W, H), 'meadow');
 
 // pines along the edge of the meadow
-for (const [i, x, base, h, w] of [[1, 232, 850, 150, 62], [2, 306, 846, 118, 54], [3, 372, 850, 136, 58], [4, 668, 846, 140, 60], [5, 742, 850, 104, 50]] as const) {
+for (const [i, x, base, h, w] of [[1, 232, 830, 140, 60], [2, 306, 826, 108, 52], [3, 372, 830, 126, 56], [4, 668, 828, 130, 58], [5, 742, 830, 96, 48]] as const) {
   R(`valley-pine-${i}`, pine(x, base, h, w, 4), 'moss');
 }
 
@@ -101,7 +101,7 @@ R('bank-rock-1', boulder(660, 1206, 96, 54), 'shadow');
 R('bank-rock-2', boulder(352, 1176, 70, 40), 'stone');
 
 // wildflowers and grasses
-for (const [i, x, y] of [[1, 300, 1146], [2, 262, 1196], [3, 330, 1218], [4, 720, 1150], [5, 762, 1196], [6, 700, 1228], [7, 226, 1130], [8, 800, 1140]] as const) {
+for (const [i, x, y] of [[1, 300, 1146], [2, 250, 1234], [3, 330, 1218], [4, 720, 1150], [5, 762, 1196], [6, 700, 1228], [7, 226, 1130], [8, 800, 1140]] as const) {
   R(`poppy-${i}`, circle(x, y, 12), 'poppy');
 }
 R('grass-tuft-1', tuft(416, 1140, 64, 60, 5, -0.1), 'pine');
@@ -112,8 +112,8 @@ R('shrub-2', blob([[690, 1000], [704, 978], [736, 972], [762, 986], [764, 1004],
 R('grass-tuft-4', tuft(800, 1010, 56, 46, 5), 'pine');
 
 // ---------- framing pines ----------
-R('big-pine-left-trunk', rect(88, 1150, 40, 100), 'bark');
-pineTiers(108, 1200, 640, 330, 6, [W, H]).forEach((d, i) => R(`big-pine-left-${6 - i}`, d, i % 2 ? 'pine' : 'forest'));
+R('big-pine-left-trunk', rect(78, 1150, 40, 100), 'bark');
+pineTiers(98, 1200, 640, 350, 6, [W, H]).forEach((d, i) => R(`big-pine-left-${6 - i}`, d, i % 2 ? 'pine' : 'forest'));
 R('big-pine-right-trunk', rect(902, 1160, 36, 90), 'bark');
 pineTiers(920, 1206, 560, 290, 5, [W, H]).forEach((d, i) => R(`big-pine-right-${5 - i}`, d, i % 2 ? 'pine' : 'forest'));
 
@@ -128,7 +128,7 @@ pineTiers(920, 1206, 560, 290, 5, [W, H]).forEach((d, i) => R(`big-pine-right-${
   detail.push(stroke(line([[795, 380], [798, 470]]) + line([[800, 520], [804, 640]]) + line([[812, 600], [816, 716]]), '#9cc9dc', 2, { opacity: 0.8 }));
   // flower centres
   let dots = '';
-  for (const [x, y] of [[300, 1146], [262, 1196], [330, 1218], [720, 1150], [762, 1196], [700, 1228], [226, 1130], [800, 1140]]) dots += circleDot(x, y);
+  for (const [x, y] of [[300, 1146], [250, 1234], [330, 1218], [720, 1150], [762, 1196], [700, 1228], [226, 1130], [800, 1140]]) dots += circleDot(x, y);
   detail.push(stroke(dots, '#7a3b1c', 3));
   const bird = (x: number, y: number, s: number) => curve([[x - s, y - s * 0.3], [x - s * 0.5, y - s * 0.6], [x, y]], 0.8) + curve([[x, y], [x + s * 0.5, y - s * 0.6], [x + s, y - s * 0.3]], 0.8);
   detail.push(stroke(bird(330, 300, 12) + bird(366, 282, 9) + bird(410, 318, 8), '#4a5568', 2));

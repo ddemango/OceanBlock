@@ -22,10 +22,10 @@ const BRASS = '#d9b45a';
 /** Layered conifer with drooping, ragged boughs; origin at the base of the trunk. */
 export function pine(h: number, col: string, seed = 1, trunk = '#5a3c26'): Shape[] {
   const g = rng(seed), w = h * 0.4;
-  const out: Shape[] = [sh(poly([[-h * 0.024, 0], [h * 0.024, 0], [h * 0.012, -h * 0.5], [-h * 0.012, -h * 0.5]]), trunk)];
+  const out: Shape[] = [sh(poly([[-h * 0.016, 0], [h * 0.016, 0], [h * 0.01, -h * 0.5], [-h * 0.01, -h * 0.5]]), trunk)];
   const tiers = 7;
   for (let i = 0; i < tiers; i++) {
-    const t = i / tiers, y0 = -h * (0.12 + t * 0.76), tw = w * (1 - t * 0.82), th = h * 0.27 * (1 - t * 0.3), k = 6;
+    const t = i / tiers, y0 = -h * (0.07 + t * 0.8), tw = w * (1 - t * 0.82), th = h * 0.27 * (1 - t * 0.3), k = 6;
     const edge: Pt[] = [];
     for (let j = 0; j <= k; j++) {
       const x = tw / 2 - (tw * j) / k;
@@ -51,7 +51,8 @@ export function peaks(ridge: Pt[], base: number, col: string, snow: string, snow
     caps += poly([p, r, m(0.8, -0.14), m(0.64, 0.1), m(0.46, -0.12), m(0.27, 0.08), m(0.12, -0.1), l]);
     capShade += poly([p, r, m(0.8, -0.14), m(0.64, 0.1), m(0.5, -0.1)]);
   }
-  out.push(sh(shd, shade(col, -0.3), { opacity: 0.4 }), sh(caps, snow), sh(capShade, shade(col, 0.45), { opacity: 0.7 }));
+  if (shd) out.push(sh(shd, shade(col, -0.3), { opacity: 0.4 }));
+  if (caps) out.push(sh(caps, snow), sh(capShade, shade(col, 0.45), { opacity: 0.7 }));
   return out;
 }
 /** Cloud puff. */
@@ -558,7 +559,7 @@ export function sunglasses(s: number, frame = '#1f1f24', lens = '#5a3a2a'): Shap
 }
 export function apple(s: number, col = '#c8322a'): Shape[] {
   return [
-    ol(blob([[-s * 0.02, -s * 0.36], [-s * 0.3, -s * 0.44], [-s * 0.46, -s * 0.1], [-s * 0.26, s * 0.4], [0, s * 0.34], [s * 0.26, s * 0.4], [s * 0.46, -s * 0.1], [s * 0.3, -s * 0.44]], 0.95), col, 1), hi(ellipse(-s * 0.22, -s * 0.12, s * 0.07, s * 0.16, 15), 0.35),
+    ol(blob([[-s * 0.02, -s * 0.36], [-s * 0.3, -s * 0.44], [-s * 0.46, -s * 0.1], [-s * 0.2, s * 0.41], [0, s * 0.38], [s * 0.2, s * 0.41], [s * 0.46, -s * 0.1], [s * 0.3, -s * 0.44]], 0.95), col, 1), hi(ellipse(-s * 0.22, -s * 0.12, s * 0.07, s * 0.16, 15), 0.35),
     stroke(M(0, -s * 0.32) + Q(s * 0.02, -s * 0.5, s * 0.1, -s * 0.58), '#5a3c26', 2), ol(leaf(s * 0.04, -s * 0.44, s * 0.3, s * 0.1, -20), '#6fae5a', 0.8),
   ];
 }

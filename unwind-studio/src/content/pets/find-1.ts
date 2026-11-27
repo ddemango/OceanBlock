@@ -99,7 +99,7 @@ scene(at(birdCageBack(116, 210), 412, 340), at(parakeet(68, '#5aa8e0', '#fbf6ec'
   scene(at(collar(56, C.red), 196, 628), at(collar(56, C.green, '#c9d0d5'), 196, 708));
   scene(at(dogJumper(66, C.blue, '#f2c84a'), 256, 602));
   target('collar', 'Blue collar', at(collar(60, C.blue), 258, 712));
-  target('jumper', 'Dog jumper', at(dogJumper(78, C.red), 320, 602));
+  target('jumper', 'Red dog jumper', at(dogJumper(78, C.red), 320, 602));
   scene(at(collar(46, C.plum, '#e8c04a'), 324, 722));
 }
 scene(sh(rect(0, 792, 470, 18), '#6f9486'));
@@ -142,7 +142,7 @@ const SX = 480, SW = 690, ROWS = [240, 400, 570, 740];
   const g = rng(5);
   for (let i = 0; i < 9; i++) scene(ol(circle(772 + (i % 5) * 16 + g.range(-3, 3), y - 62 - Math.floor(i / 5) * 13 + g.range(-3, 3), 11), cols[i % cols.length], 1));
   scene(at(basket(96, 52, '#c99a5b'), 804, y - 52));
-  target('duck', 'Rubber duck', at(rubberDuck(54), 896, y));
+  target('duck', 'Yellow rubber duck', at(rubberDuck(54), 896, y));
   scene(at(frisbee(30, C.red), 972, y - 8), at(frisbee(30, C.teal), 972, y - 19), at(frisbee(30, C.mustard), 972, y - 30), at(frisbee(30, C.blue), 972, y - 41));
   scene(at(bone(64, '#e89ab0'), 1048, y - 10), at(bone(64, '#9ad28a'), 1052, y - 30, 1, -8), at(bone(60, '#f2c84a'), 1046, y - 50, 1, 6));
   scene(at(ropeToy(70, '#4f86c0', '#fbf6ec'), 1122, y - 10), at(ropeToy(66, '#f08a2a', '#fbf6ec'), 1120, y - 32, 1, 6), at(toyMouse(44, '#e8b878'), 1120, y - 44));
@@ -195,7 +195,7 @@ scene(sh(rect(0, 806, W, 14), '#000000', { opacity: 0.16 }));
   scene(at(pup(118, C.golden, { collar: C.red, tongue: true }), 112, 1052));
   scene(at(pup(104, C.white, { eyePatch: C.brown, earCol: C.brown, bow: C.red }), 226, 1034));
   scene(at(dog(112, C.ginger, { leg: 15, ear: 'point', tail: 'stub', patch: C.white, socks: C.white, muzzle: C.white, collar: C.teal, tongue: true }), 348, 1066));
-  scene(at(tennisBall(11), 268, 1066));
+  scene(ol(circle(268, 1064, 11), '#e85a5a', 1));
   let front = '';
   for (let x = x0 - 6; x < x1 + 14; x += 15) front += line([[x, 984], [x, 1090]]);
   scene(stroke(front, '#c0c8cc', 1.5), stroke(line([[x0 - 14, 984], [x1 + 14, 984]]) + line([[x0 - 14, 1090], [x1 + 14, 1090]]), '#8a9298', 4), sh(rect(x0 - 18, 976, 8, 118, 3) + rect(x1 + 10, 976, 8, 118, 3), '#6f7480'));
@@ -210,7 +210,7 @@ scene(sh(rect(0, 806, W, 14), '#000000', { opacity: 0.16 }));
   scene(at(catCurl(112, C.ginger, { pat: 'tabby' }), cx - 22 * u, by - 94 * u));
   scene(at(catSit(92, C.white, { pat: 'calico' }), cx + 23 * u, by - 66 * u));
   scene(at(catPeek(50, C.black, { pat: 'tux', eye: '#f2c84a' }), cx - 17 * u, by - 9.5 * u));
-  target('toy-mouse', 'Toy mouse', at(toyMouse(46), cx - 4 * u, by - 39 * u));
+  target('toy-mouse', 'Grey toy mouse', at(toyMouse(46), cx - 4 * u, by - 39 * u));
 }
 target('feather-wand', 'Feather wand', at(featherWand(118), 420, 1196));
 
@@ -226,7 +226,7 @@ target('feather-wand', 'Feather wand', at(featherWand(118), 420, 1196));
   scene(stroke(pan, '#2f625e', 2.4), sh(rect(x0 + 10, top + 20, 440, 10), '#000000', { opacity: 0.18 }), sh(rect(x0 + 10, top + 168, 440, 18), '#2f625e'));
   scene(sh(circle(x0 + 226, top + 104, 40), '#f6ead2'), sh(pawPrint(x0 + 226, top + 104, 22), '#c8473a'), sh(pawPrint(x0 + 88, top + 104, 14, -12) + pawPrint(x0 + 364, top + 104, 14, 12), '#5a9a94'));
   scene(ol(rect(x0, top, 460, 22, 4), '#b07a4a', 1.2), sh(rect(x0, top, 460, 6, 3), '#d0a070'));
-  target('shampoo', 'Pet shampoo', at(shampoo(82, '#5aa8d8'), x0 + 30, top));
+  target('shampoo', 'Blue pet shampoo', at(shampoo(82, '#5aa8d8'), x0 + 30, top));
   scene(at(petBowl(84, '#f6ead2', '#d9a860', 'fish'), x0 + 104, top), at(fishBiscuit(34), x0 + 104, top - 44, 1, -20), at(fishBiscuit(30), x0 + 86, top - 38, 1, 24));
   target('treat-jar', 'Treat jar', at(treatJar(100), x0 + 192, top));
   target('cat-food', 'Tin of cat food', at(foodCan(44, C.mustard, 'fish'), x0 + 262, top));
@@ -243,7 +243,7 @@ scene(at(shopSign(120, '#c8473a', 'heart'), 1086, 44));
 // =====================================================================
 scene(sh(ellipse(300, 1392, 330, 96), '#3f7f7a'), stroke(ellipse(300, 1392, 300, 84) + ellipse(300, 1392, 236, 62), '#f6ead2', 3, { opacity: 0.8 }), stroke(ellipse(300, 1392, 268, 73), '#f2c84a', 2.4, { opacity: 0.85 }));
 scene(at(petBed(280, C.red), 220, 1420), at(lyingDog(210, '#9a6238', '#f6ead2'), 228, 1388), at(petBedFront(280, C.red), 220, 1420));
-target('rope-toy', 'Rope toy', at(ropeToy(84), 400, 1140, 1, 16));
+target('rope-toy', 'Red rope toy', at(ropeToy(84), 400, 1140, 1, 16));
 target('bone', 'Dog bone', at(bone(78), 478, 1430, 1, -18));
 target('ball', 'Tennis ball', at(tennisBall(20), 742, 1236));
 scene(at(catWalk(124, C.grey, { pat: 'tabby' }), 600, 1330));
@@ -252,7 +252,7 @@ scene(at(petBowl(96, C.mustard, '#9a6238', 'bone'), 560, 1480));
 scene(at(boxBack(130, 92), 880, 1476), at(catPeek(62, C.ginger, { pat: 'tabby' }), 880, 1386), at(boxFront(130, 92), 880, 1476));
 {
   // toy basket
-  scene(at(bone(70, '#f6ead2'), 1010, 1380, 1, -50), at(ropeToy(80, '#9ad28a', '#fbf6ec'), 1060, 1378, 1, 62), ol(circle(1034, 1386, 17), '#e85a5a', 1.2), ol(circle(1084, 1390, 15), '#5aa8d8', 1.2), at(rubberDuck(40, '#f6b0c0'), 1100, 1388));
+  scene(at(bone(70, '#8ab8e0'), 1010, 1380, 1, -50), at(ropeToy(80, '#9ad28a', '#fbf6ec'), 1060, 1378, 1, 62), ol(circle(1034, 1386, 17), '#e85a5a', 1.2), ol(circle(1084, 1390, 15), '#5aa8d8', 1.2), at(rubberDuck(40, '#f6b0c0'), 1100, 1388));
   scene(at(basket(150, 84, '#c99a5b'), 1050, 1392));
 }
 scene(at(snakePlant(170, 9, '#f6ead2'), 1160, 1496));

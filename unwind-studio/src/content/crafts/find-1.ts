@@ -141,13 +141,13 @@ scene(at(fern(rng(8), 110, 64, 52, '#3f8a84', 12), 300, 960));
   scene(ol(blob([[516, 702], [526, 668], [580, 650], [640, 662], [700, 652], [756, 668], [806, 676], [812, 702]], 0.8), '#3a4f7a', 1.2), sh(blob([[536, 700], [546, 676], [590, 664], [640, 674], [650, 700]], 0.8), '#cf4a3c'), sh(blob([[650, 700], [652, 676], [700, 664], [740, 676], [746, 700]], 0.8), '#f3d77a'), sh(blob([[746, 700], [748, 680], [790, 682], [800, 700]], 0.8), '#f6ecd6'));
   scene(stroke(curve([[540, 690], [590, 672], [640, 684], [700, 670], [760, 686], [804, 690]]) + curve([[600, 700], [606, 680], [596, 666]]) + curve([[706, 700], [700, 682], [712, 668]]), '#2a3a5c', 1.4, { opacity: 0.7 }), stroke(dash([[548, 696], [640, 692], [730, 696], [800, 696]], 5, 4), '#fbf6ea', 1.2));
   scene(at(sewingMachine(300, '#2f3f4a', Y.red), 880, ty));
-  target('pin-cushion', 'Pin cushion', at(pinCushion(46), 1078, ty));
-  scene(at(deskLamp(200, '#3f8a84'), 1150, ty));
-  scene(at(spool(26, Y.sky), 1040, ty), sh(rect(1100, ty - 6, 30, 6, 2), '#fbf6ea'), stroke(line([[1100, ty - 6], [1130, ty - 6]]), '#b8a47e', 1));
+  target('pin-cushion', 'Pin cushion', at(pinCushion(46), 1066, ty));
+  scene(at(deskLamp(150, '#3f8a84'), 1128, ty));
+  
 }
 scene(at(chairBack(400, '#a8743f', '#3f8a84'), 1010, 1110));
 target('spool', 'Spool of yellow thread', at(spoolLoose(40, '#f0bf45'), 1150, 1150, 1, -78));
-target('safety-pin', 'Safety pin', at(safetyPin(46), 866, 1232, 1, -14));
+target('safety-pin', 'Safety pin', at(safetyPin(46), 566, 1160, 1, -14));
 
 // =====================================================================
 // dress form with a half-pinned skirt
@@ -155,15 +155,15 @@ target('safety-pin', 'Safety pin', at(safetyPin(46), 866, 1232, 1, -14));
 {
   const fx = 405, fy = 1130, h = 600;
   scene(at(dressForm(h, '#ecdfc4'), fx, fy));
-  const sk = M(fx - h * 0.1, fy - h * 0.62) + Q(fx, fy - h * 0.6, fx + h * 0.1, fy - h * 0.62) + Q(fx + h * 0.2, fy - h * 0.44, fx + h * 0.27, fy - h * 0.2) + Q(fx, fy - h * 0.15, fx - h * 0.27, fy - h * 0.2) + Q(fx - h * 0.2, fy - h * 0.44, fx - h * 0.1, fy - h * 0.62) + 'Z';
+  const sk = M(fx - h * 0.1, fy - h * 0.62) + Q(fx, fy - h * 0.6, fx + h * 0.1, fy - h * 0.62) + Q(fx + h * 0.17, fy - h * 0.46, fx + h * 0.21, fy - h * 0.25) + Q(fx, fy - h * 0.21, fx - h * 0.21, fy - h * 0.25) + Q(fx - h * 0.17, fy - h * 0.46, fx - h * 0.1, fy - h * 0.62) + 'Z';
   let dots = '', folds = '';
   const g = rng(31);
-  for (let i = 0; i < 46; i++) { const t = g.range(0.08, 0.92), yy = fy - h * (0.58 - t * 0.38), half = h * (0.09 + t * 0.16); dots += circle(fx + g.range(-1, 1) * half, yy, 3); }
-  for (const k of [-0.6, -0.2, 0.25, 0.65]) folds += M(fx + k * h * 0.1, fy - h * 0.6) + Q(fx + k * h * 0.2, fy - h * 0.4, fx + k * h * 0.27, fy - h * 0.19);
+  for (let i = 0; i < 46; i++) { const t = g.range(0.08, 0.92), yy = fy - h * (0.58 - t * 0.33), half = h * (0.085 + t * 0.11); dots += circle(fx + g.range(-1, 1) * half, yy, 3); }
+  for (const k of [-0.6, -0.2, 0.25, 0.65]) folds += M(fx + k * h * 0.1, fy - h * 0.6) + Q(fx + k * h * 0.17, fy - h * 0.42, fx + k * h * 0.2, fy - h * 0.245);
   scene(ol(sk, '#7fb0d0', 1.3, -0.3), sh(dots, '#fbf6ea', { opacity: 0.85 }), stroke(folds, '#5a8eae', 1.6, { opacity: 0.8 }), sh(rect(fx - h * 0.1, fy - h * 0.635, h * 0.2, h * 0.028, 3), '#3a4f7a'));
   // pins holding the hem and a tape measure round the neck
   let pins = '', heads = '';
-  for (const k of [-0.2, -0.08, 0.06, 0.19]) { pins += line([[fx + k * h, fy - h * 0.2], [fx + k * h + 8, fy - h * 0.225]]); heads += circle(fx + k * h + 8, fy - h * 0.225, 3); }
+  for (const k of [-0.15, -0.05, 0.05, 0.15]) { pins += line([[fx + k * h, fy - h * 0.25], [fx + k * h + 8, fy - h * 0.275]]); heads += circle(fx + k * h + 8, fy - h * 0.275, 3); }
   scene(stroke(pins, '#8a9298', 1.2), sh(heads, Y.red));
   const tp: [number, number][] = [[fx - 46, fy - h * 0.6], [fx - 54, fy - h * 0.76], [fx - 36, fy - h * 0.895], [fx, fy - h * 0.915], [fx + 36, fy - h * 0.895], [fx + 58, fy - h * 0.74], [fx + 50, fy - h * 0.54]];
   let tk = '';
