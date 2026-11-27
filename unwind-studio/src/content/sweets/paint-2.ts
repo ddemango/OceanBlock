@@ -45,7 +45,7 @@ for (const [id, x] of [['lamp-left', 150], ['lamp-right', 850]] as [string, numb
 
 // ---------- counter ----------
 R('counter', rect(0, 900, W, 274), 'peach');
-R('counter-trim', rect(0, 1170, W, 36), 'steel', [500, 1179]);
+R('counter-trim', rect(0, 1170, W, 36), 'steel', [500, 1187]);
 R('counter-front', rect(0, 1204, W, 46), 'red', [500, 1228]);
 
 // sugar shaker

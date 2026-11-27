@@ -62,12 +62,12 @@ R('table', rect(0, 1104, W, 146), 'teal');
 }
 
 // ---------- the stand ----------
-R('doily', scallopEllipse(500, 1192, 258, 46, 18, 0.06), 'cream');
+R('doily', scallopEllipse(500, 1192, 258, 46, 20, 0.09), 'cream');
 R('stand-foot', ellipse(500, 1186, 150, 24), 'mint');
 R('stand-stem', M(468, 1100) + L(532, 1100) + Q(522, 1152, 566, 1182) + L(434, 1182) + Q(478, 1152, 468, 1100) + 'Z', 'gold');
-const tiers: [string, number, number, number][] = [['bottom', 1050, 400, 44], ['middle', 752, 285, 34], ['top', 462, 150, 20]];
-const plate = ([name, y, rx, ry]: [string, number, number, number]) => {
-  R(`plate-${name}-rim`, ellipse(500, y + 15, rx, ry), 'gold');
+const tiers: [string, number, number, number, number][] = [['bottom', 1050, 400, 44, 22], ['middle', 752, 285, 34, 18], ['top', 462, 150, 20, 16]];
+const plate = ([name, y, rx, ry, lip]: [string, number, number, number, number]) => {
+  R(`plate-${name}-rim`, ellipse(500, y + lip, rx, ry), 'gold');
   R(`plate-${name}`, ellipse(500, y, rx, ry), 'mint');
 };
 plate(tiers[0]);
@@ -131,7 +131,7 @@ sprinkles.forEach((d, i) => d && detail.push(stroke(d, sprinkleCols[i], 3.2)));
 // ---------- on the table ----------
 R('cherry-left', circle(112, 1182, 27), 'red');
 R('cherry-right', circle(176, 1198, 25), 'red');
-R('cherry-leaf', leaf(158, 1118, 62, 17, -24), 'mintD');
+R('cherry-leaf', leaf(158, 1120, 66, 22, -20), 'mintD');
 detail.push(stroke(curve([[114, 1158], [128, 1132], [158, 1118]]) + curve([[178, 1175], [174, 1144], [158, 1118]]), '#6b8f3a', 2.8));
 detail.push(stroke(curve([[96, 1176], [100, 1168], [108, 1164]]) + curve([[162, 1192], [166, 1184], [173, 1181]]), '#ffffff', 2.6, { opacity: 0.85 }));
 

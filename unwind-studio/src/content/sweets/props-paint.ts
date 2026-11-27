@@ -106,9 +106,9 @@ export function heart(cx: number, cy: number, w: number, rot = 0): string {
 /** An ellipse with a scalloped (lace) edge of `count` lobes. */
 export function scallopEllipse(cx: number, cy: number, rx: number, ry: number, count: number, dip = 0.08): string {
   const pts: Pt[] = [];
-  for (let i = 0; i < count * 4; i++) {
-    const a = (i / (count * 4)) * Math.PI * 2;
-    const f = 1 - dip * (0.5 + 0.5 * Math.cos((i / 4) * Math.PI * 2));
+  for (let i = 0; i < count * 8; i++) {
+    const a = (i / (count * 8)) * Math.PI * 2;
+    const f = 1 - dip * (1 - Math.sin((Math.PI * (i % 8)) / 8));
     pts.push([cx + Math.cos(a) * rx * f, cy + Math.sin(a) * ry * f]);
   }
   return poly(pts);

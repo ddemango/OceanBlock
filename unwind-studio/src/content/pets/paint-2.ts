@@ -33,8 +33,8 @@ R('floor', rect(0, 936, W, 314), 'floor', [50, 1010]);
 R('puddle-left', ellipse(96, 1040, 76, 20), 'bubble');
 R('puddle-right', ellipse(912, 1030, 66, 18), 'bubble');
 R('mat', rect(110, 1066, 780, 150, 34), 'coral');
-R('mat-stripe-1', rect(150, 1142, 700, 20, 10), 'cream');
-R('mat-stripe-2', rect(150, 1176, 700, 20, 10), 'cream');
+R('mat-stripe-1', rect(150, 1138, 700, 24, 10), 'cream', [500, 1150]);
+R('mat-stripe-2', rect(150, 1176, 700, 24, 10), 'cream', [500, 1188]);
 
 // towel on a rail
 R('rail', rect(40, 300, 240, 16, 8), 'tinD');

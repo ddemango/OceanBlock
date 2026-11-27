@@ -122,7 +122,7 @@ export function dog(s: number, col: string, o: DogOpt = {}): Shape[] {
     out.push(ol(circle(hx + hr * 0.15, hy - hr * 0.95, hr * 0.62), pc, 1.2), ol(circle(hx + hr * 0.75, hy + hr * 0.5, hr * 0.5), pc, 1.2));
     out.push(ol(circle(tx + 9, ty - 26, 6.5), pc, 1.2), ol(circle(-21 * l - 1, -9, 6), pc, 1.2), ol(circle(27 * l - 1, -9, 6), pc, 1.2), ol(circle(-6 * l, ty + 6, 9) + circle(-18 * l, ty + 10, 9), pc, 1.2));
   }
-  if (o.item) out.push(...place(o.item, { x: hx - hr * (0.75 + 0.5 * sn), y: hy + hr * 0.55 }));
+  if (o.item) out.push(...place(o.item, { x: hx - hr * (1.0 + 0.7 * sn), y: hy + hr * 0.6 }));
   return sc(out, s);
 }
 
@@ -835,13 +835,6 @@ export function coffeeCart(w: number, col = '#3f7f7a', a = '#c8473a', b = '#fbf6
   // back board with menu
   out.push(ol(rect(-hw * 0.5, top - w * 0.36, hw, w * 0.26, 3), '#2f3533', 1.2, 0.3));
   out.push(stroke(line([[-hw * 0.4, top - w * 0.3], [hw * 0.1, top - w * 0.3]]) + line([[-hw * 0.4, top - w * 0.24], [hw * 0.3, top - w * 0.24]]) + line([[-hw * 0.4, top - w * 0.18], [0, top - w * 0.18]]), '#f1eee4', 1.6, { opacity: 0.85 }), sh(pawPrint(hw * 0.32, top - w * 0.2, w * 0.03), '#f2c84a'));
-  // wheels
-  for (const s of [-1, 1]) {
-    const cx = s * hw * 0.56, r = w * 0.15;
-    let sp = '';
-    for (let i = 0; i < 8; i++) { const an = (i * Math.PI) / 4; sp += line([[cx, -r], [cx + Math.cos(an) * r * 0.86, -r + Math.sin(an) * r * 0.86]]); }
-    out.push(stroke(sp, '#8a6a48', 1.6), stroke(circle(cx, -r, r * 0.92), '#4a3a30', r * 0.2), ol(circle(cx, -r, r * 0.18), '#c9a24a', 1));
-  }
   // body
   out.push(ol(rect(-hw, top, w, bh, 5), col, 1.4), sh(rect(hw * 0.5, top, hw * 0.5, bh, 5), '#000000', { opacity: 0.1 }));
   let slats = '';
@@ -849,6 +842,13 @@ export function coffeeCart(w: number, col = '#3f7f7a', a = '#c8473a', b = '#fbf6
   out.push(stroke(slats, shade(col, -0.2), 1.3), ol(ellipse(0, top + bh * 0.52, hw * 0.4, bh * 0.3), '#f5ead2', 1.2, -0.25));
   out.push(stroke(`M${hw * 0.1} ${top + bh * 0.42}Q${hw * 0.24} ${top + bh * 0.44} ${hw * 0.18} ${top + bh * 0.56}`, shade(col, -0.2), 2.4), sh(`M${-hw * 0.14} ${top + bh * 0.36}L${hw * 0.12} ${top + bh * 0.36}Q${hw * 0.1} ${top + bh * 0.7} ${-hw * 0.01} ${top + bh * 0.7}Q${-hw * 0.12} ${top + bh * 0.7} ${-hw * 0.14} ${top + bh * 0.36}Z`, shade(col, -0.2)));
   out.push(ol(rect(-hw - 6, top - 7, w + 12, 9, 3), '#b07a4a', 1.2), hl(rect(-hw - 2, top - 6, w + 4, 2, 1), 0.3));
+  // wheels
+  for (const s of [-1, 1]) {
+    const cx = s * hw * 0.56, r = w * 0.15;
+    let sp = '';
+    for (let i = 0; i < 8; i++) { const an = (i * Math.PI) / 4; sp += line([[cx, -r], [cx + Math.cos(an) * r * 0.86, -r + Math.sin(an) * r * 0.86]]); }
+    out.push(stroke(sp, '#8a6a48', 1.6), stroke(circle(cx, -r, r * 0.92), '#4a3a30', r * 0.2), ol(circle(cx, -r, r * 0.18), '#c9a24a', 1));
+  }
   // handle
   out.push(stroke(`M${hw} ${top + bh * 0.2}L${hw * 1.2} ${top + bh * 0.1}`, '#5a4a40', 4), stroke(line([[hw * 1.2, top + bh * 0.02], [hw * 1.2, top + bh * 0.2]]), '#5a4a40', 5));
   // awning

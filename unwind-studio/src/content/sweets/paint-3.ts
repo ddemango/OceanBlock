@@ -30,7 +30,7 @@ const detail: Shape[] = [];
 // ---------- shop wall, awning and counter ----------
 R('wall', rect(0, 0, W, 660), 'wall');
 R('panelling', rect(0, 650, W, 320), 'mint');
-R('rail', rect(0, 636, W, 22), 'cream', [400 - 60, 647]);
+R('rail', rect(0, 636, W, 22), 'cream', [340, 647]);
 for (let i = 0; i < 10; i++) {
   const x = i * 100;
   R(`awning-${i + 1}`, M(x, 0) + L(x + 100, 0) + L(x + 100, 88) + C(x + 100, 154, x, 154, x, 88) + 'Z', i % 2 ? 'cream' : 'pink');

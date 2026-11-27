@@ -104,7 +104,7 @@ scene(at(henHouse(220), 968, 858));
 target('horseshoe', 'Horseshoe', at(horseshoe(30), 968, 724));
 scene(strewnStraw(820, 860, 330, 70, 40, 5));
 scene(at(chicken(64, '#fbf6ec'), 846, 892), at(chicken(60, '#c9783a'), 1100, 900, 1, 0, true), at(chicken(56, '#3b3430'), 1150, 872), at(chicken(52, '#d9b07a'), 884, 806, 1, -20));
-scene(at(chicken(66, '#c9783a'), 760, 950), at(chick(22), 716, 958), at(chick(20), 688, 966), at(chick(21), 800, 968, 1, 0, true));
+scene(at(chicken(66, '#c9783a'), 760, 950), at(chick(22), 808, 984), at(chick(20), 840, 996), at(chick(21), 872, 982, 1, 0, true));
 {
   // scattered grain
   const g = rng(8);
@@ -150,7 +150,7 @@ scene(strewnStraw(20, 1210, 240, 30, 22, 12));
   for (let i = 0; i < 6; i++) scene(at(cabbage(19, 20 + i), 34 + i * 56, 1302 + (i % 2) * 4));
   for (let i = 0; i < 5; i++) scene(at(cabbage(21, 40 + i), 60 + i * 58, 1346 - (i % 2) * 4));
 }
-target('wheelbarrow', 'Wheelbarrow', [...at(hayPile(120, 50, 3), 170, 1404), ...at(wheelbarrow(190, '#5c8a6a'), 176, 1486)]);
+target('wheelbarrow', 'Wheelbarrow', [...at(hayPile(130, 64, 3), 168, 1380), ...at(wheelbarrow(190, '#5c8a6a'), 176, 1476)]);
 scene(at(pumpkin(60), 40, 1470), at(pumpkin(46, '#f0a03a'), 96, 1486));
 target('watering-can', 'Watering can', at(wateringCan(96, '#5a86b8'), 372, 1470));
 scene(grassTufts(250, 1380, 200, 110, 14, 23, ['#6b8f45', '#7fa04e', '#5f8a45'], 16));

@@ -64,7 +64,7 @@ R('d-window', rect(716, 632, 40, 48, 4), 'slate');
 R('glazing-bars', poly([[488, 136], [512, 136], [512, 384], [860, 384], [860, 408], [512, 408], [512, 870], [488, 870], [488, 408], [140, 408], [140, 384], [488, 384]]), 'cream', [500, 300]);
 
 // ---------------------------------------------------------------- plants on the sill
-const fan: [number, number, number, string][] = [[-126, 150, 44, 'greenD'], [-56, 150, 44, 'greenD'], [-108, 188, 50, 'green'], [-72, 188, 50, 'greenL'], [-90, 214, 54, 'greenD']];
+const fan: [number, number, number, string][] = [[-120, 150, 44, 'greenD'], [-60, 150, 44, 'greenD'], [-108, 188, 50, 'green'], [-72, 188, 50, 'greenL'], [-90, 214, 54, 'greenD']];
 fan.forEach(([rot, len, wid, col], i) => R(`fern-leaf-${i + 1}`, leaf(200, 772, len, wid, rot), col));
 R('fern-pot', poly([[158, 780], [242, 780], [232, 870], [168, 870]]), 'terra');
 R('fern-pot-rim', rect(148, 762, 104, 24, 7), 'brick');
@@ -109,7 +109,7 @@ R('cat-muzzle', ellipse(CX, 820, 40, 27), 'cream');
 R('cat-nose', M(CX - 15, 800) + Q(CX, 795, CX + 15, 800) + Q(CX + 9, 815, CX, 818) + Q(CX - 9, 815, CX - 15, 800) + 'Z', 'rose');
 R('cat-paw-left', ellipse(CX - 36, 866, 34, 17), 'cream');
 R('cat-paw-right', ellipse(CX + 42, 866, 34, 17), 'cream');
-const tail: [number, number][] = [[690, 846], [734, 872], [756, 930], [742, 1000], [704, 1040]];
+const tail: [number, number][] = [[690, 846], [730, 874], [750, 930], [746, 990], [726, 1040]];
 R('cat-tail', band(tail, 46, 34, true), 'tabby');
 R('tail-ring-1', bandSlice(tail, 46, 34, 0.3, 0.42), 'tabbyD');
 R('tail-ring-2', bandSlice(tail, 46, 34, 0.54, 0.66), 'tabbyD');
@@ -165,7 +165,6 @@ fan.forEach(([rot, len]) => { const a = (rot * Math.PI) / 180; D(line([[200, 772
   for (const x of [22, 66, 110, 890, 934, 978]) d += circle(x, 66, 7);
   D(d, '#5e4a3d', 2.4);
 }
-D(rect(206, 964, 588, 72, 6), '#e2cf96', 2);
 D(curve([[548, 1200], [580, 1210], [600, 1196], [622, 1204]]), '#6b87a8', 2.6);
 D(circle(454, 1196, 1.6), '#2b2b33', 2.4);
 D(line([[150, 1118], [150, 1140]]) + line([[420, 1118], [420, 1140]]) + line([[620, 1118], [620, 1146]]) + line([[900, 1118], [900, 1150]]), '#a97c4d', 1.6, 0.7);
