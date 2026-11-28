@@ -7,8 +7,9 @@ Actions:
   invite       - resend TestFlight invitations
   gamecenter   - enable Game Center and create the Daily Challenge leaderboard
   rename       - set the App Store name (passed in the second argument)
+  prepare      - fill in version 1.0 for App Store review from store/listing.json + store/*.png
 """
-import json, os, sys, time, urllib.request, urllib.error
+import hashlib, json, os, sys, time, urllib.request, urllib.error
 import jwt  # PyJWT
 
 APP_ID = os.environ.get('ASC_APP_ID', '6838143219')
@@ -230,6 +231,150 @@ def rename(new_name):
         print('Could not rename the app listing')
 
 
+EDITABLE = ('PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED', 'INVALID_BINARY')
+
+
+def all_pages(path):
+    out, url = [], path
+    while url:
+        r = call('GET', url) or {}
+        out += r.get('data', [])
+        url = (r.get('links') or {}).get('next')
+    return out
+
+
+def upload_screens(loc_id, display_type, files):
+    sets = call('GET', f'/appStoreVersionLocalizations/{loc_id}/appScreenshotSets') or {'data': []}
+    sset = next((x for x in sets['data'] if x['attributes']['screenshotDisplayType'] == display_type), None)
+    if not sset:
+        r = call('POST', '/appScreenshotSets', {'data': {'type': 'appScreenshotSets', 'attributes': {'screenshotDisplayType': display_type},
+                 'relationships': {'appStoreVersionLocalization': {'data': {'type': 'appStoreVersionLocalizations', 'id': loc_id}}}}})
+        if not r:
+            return False
+        sset = r['data']
+    for old in (call('GET', f"/appScreenshotSets/{sset['id']}/appScreenshots") or {'data': []})['data']:
+        call('DELETE', f"/appScreenshots/{old['id']}")
+    for path in files:
+        data = open(path, 'rb').read()
+        r = call('POST', '/appScreenshots', {'data': {'type': 'appScreenshots', 'attributes': {'fileName': os.path.basename(path), 'fileSize': len(data)},
+                 'relationships': {'appScreenshotSet': {'data': {'type': 'appScreenshotSets', 'id': sset['id']}}}}})
+        if not r:
+            return False
+        shot = r['data']
+        for op in shot['attributes']['uploadOperations']:
+            chunk = data[op['offset']:op['offset'] + op['length']]
+            req = urllib.request.Request(op['url'], data=chunk, method=op['method'],
+                                         headers={h['name']: h['value'] for h in op.get('requestHeaders', [])})
+            urllib.request.urlopen(req).read()
+        call('PATCH', f"/appScreenshots/{shot['id']}", {'data': {'type': 'appScreenshots', 'id': shot['id'],
+             'attributes': {'uploaded': True, 'sourceFileChecksum': hashlib.md5(data).hexdigest()}}})
+        print('  uploaded', os.path.basename(path), 'to', display_type)
+    return True
+
+
+def prepare():
+    L = json.load(open('store/listing.json'))
+    ok = {}
+    # 1. app-level settings
+    ok['content rights'] = call('PATCH', f'/apps/{APP_ID}', {'data': {'type': 'apps', 'id': APP_ID,
+        'attributes': {'contentRightsDeclaration': 'DOES_NOT_USE_THIRD_PARTY_CONTENT'}}}) is not None
+    # 2. version 1.0
+    versions = (call('GET', f'/apps/{APP_ID}/appStoreVersions?filter[platform]=IOS&limit=10') or {'data': []})['data']
+    ver = next((v for v in versions if (v['attributes'].get('appStoreState') or v['attributes'].get('appVersionState')) in EDITABLE), None)
+    if not ver:
+        r = call('POST', '/appStoreVersions', {'data': {'type': 'appStoreVersions', 'attributes': {'platform': 'IOS', 'versionString': '1.0'},
+                 'relationships': {'app': {'data': {'type': 'apps', 'id': APP_ID}}}}})
+        ver = r['data'] if r else None
+    if not ver:
+        print('!! no editable App Store version'); return
+    vid = ver['id']
+    print('Version', ver['attributes'].get('versionString'), vid)
+    ok['copyright'] = call('PATCH', f'/appStoreVersions/{vid}', {'data': {'type': 'appStoreVersions', 'id': vid,
+        'attributes': {'copyright': L['copyright']}}}) is not None
+    locs = (call('GET', f'/appStoreVersions/{vid}/appStoreVersionLocalizations') or {'data': []})['data']
+    loc = next((l for l in locs if l['attributes']['locale'] == 'en-US'), locs[0] if locs else None)
+    ok['description/keywords'] = call('PATCH', f"/appStoreVersionLocalizations/{loc['id']}", {'data': {'type': 'appStoreVersionLocalizations', 'id': loc['id'],
+        'attributes': {'description': L['description'], 'keywords': L['keywords'], 'supportUrl': L['supportUrl'], 'promotionalText': L['promotionalText']}}}) is not None
+    # 3. app info: categories, subtitle, privacy URL, age rating
+    infos = (call('GET', f'/apps/{APP_ID}/appInfos') or {'data': []})['data']
+    info = next((i for i in infos if (i['attributes'].get('appStoreState') or i['attributes'].get('state')) in EDITABLE), infos[0])
+    iid = info['id']
+    cat = lambda c: {'data': {'type': 'appCategories', 'id': c}}
+    ok['category'] = call('PATCH', f'/appInfos/{iid}', {'data': {'type': 'appInfos', 'id': iid, 'relationships': {
+        'primaryCategory': cat('GAMES'), 'primarySubcategoryOne': cat('GAMES_ACTION'), 'primarySubcategoryTwo': cat('GAMES_CASUAL')}}}) is not None
+    for il in (call('GET', f'/appInfos/{iid}/appInfoLocalizations') or {'data': []})['data']:
+        ok['subtitle/privacy URL'] = call('PATCH', f"/appInfoLocalizations/{il['id']}", {'data': {'type': 'appInfoLocalizations', 'id': il['id'],
+            'attributes': {'name': L['name'], 'subtitle': L['subtitle'], 'privacyPolicyUrl': L['privacyPolicyUrl']}}}) is not None
+    ard = call('GET', f'/appInfos/{iid}/ageRatingDeclaration')
+    if ard and ard.get('data'):
+        aid = ard['data']['id']
+        print('Age rating fields:', sorted(ard['data']['attributes'].keys()))
+        attrs = {}
+        for k, v in ard['data']['attributes'].items():
+            if k in ('kidsAgeBand', 'ageRatingOverride', 'ageRatingOverrideV2', 'koreaAgeRatingOverride', 'developerAgeRatingInfoUrl'):
+                continue
+            if isinstance(v, bool) or k in ('gambling', 'unrestrictedWebAccess', 'lootBox', 'messagingAndChat', 'parentalControls',
+                                            'ageAssurance', 'userGeneratedContent', 'advertising', 'healthOrWellnessTopics', 'seventeenPlus'):
+                attrs[k] = False
+            else:
+                attrs[k] = 'NONE'
+        r = call('PATCH', f'/ageRatingDeclarations/{aid}', {'data': {'type': 'ageRatingDeclarations', 'id': aid, 'attributes': attrs}})
+        if r is None:  # set fields one at a time so one unknown field can't block the rest
+            r = all(call('PATCH', f'/ageRatingDeclarations/{aid}', {'data': {'type': 'ageRatingDeclarations', 'id': aid, 'attributes': {k: v}}}) is not None for k, v in attrs.items())
+        ok['age rating 4+'] = bool(r)
+    # 4. price: free
+    existing = call('GET', f'/apps/{APP_ID}/appPriceSchedule')
+    if existing and existing.get('data'):
+        ok['price: free'] = True
+    else:
+        pts = (call('GET', f'/apps/{APP_ID}/appPricePoints?filter[territory]=USA&limit=200') or {'data': []})['data']
+        free = next((p for p in pts if float(p['attributes'].get('customerPrice') or 0) == 0), None)
+        ok['price: free'] = bool(free) and call('POST', '/appPriceSchedules', {'data': {'type': 'appPriceSchedules', 'relationships': {
+            'app': {'data': {'type': 'apps', 'id': APP_ID}}, 'baseTerritory': {'data': {'type': 'territories', 'id': 'USA'}},
+            'manualPrices': {'data': [{'type': 'appPrices', 'id': '${price1}'}]}}},
+            'included': [{'type': 'appPrices', 'id': '${price1}', 'attributes': {'startDate': None},
+                          'relationships': {'appPricePoint': {'data': {'type': 'appPricePoints', 'id': free['id']}}}}]}) is not None
+    # 5. availability: every country
+    av = call('GET', f'/apps/{APP_ID}/appAvailabilityV2')
+    if av and av.get('data'):
+        ok['available worldwide'] = True
+    else:
+        terrs = all_pages('/territories?limit=200')
+        inc = [{'type': 'territoryAvailabilities', 'id': '${t' + t['id'] + '}', 'attributes': {'available': True},
+                'relationships': {'territory': {'data': {'type': 'territories', 'id': t['id']}}}} for t in terrs]
+        ok['available worldwide'] = call('POST', 'https://api.appstoreconnect.apple.com/v2/appAvailabilities', {'data': {'type': 'appAvailabilities',
+            'attributes': {'availableInNewTerritories': True}, 'relationships': {'app': {'data': {'type': 'apps', 'id': APP_ID}},
+            'territoryAvailabilities': {'data': [{'type': 'territoryAvailabilities', 'id': i['id']} for i in inc]}}}, 'included': inc}) is not None
+    # 6. screenshots
+    iphone = [f'store/screenshot-{i}.png' for i in range(1, 7)]
+    ipad = [f'store/ipad-screenshot-{i}.png' for i in range(1, 7)]
+    ok['iPhone screenshots'] = upload_screens(loc['id'], 'APP_IPHONE_67', iphone) or upload_screens(loc['id'], 'APP_IPHONE_69', iphone)
+    ok['iPad screenshots'] = upload_screens(loc['id'], 'APP_IPAD_PRO_3GEN_129', ipad)
+    # 7. newest processed build
+    b = (call('GET', f'/builds?filter[app]={APP_ID}&filter[processingState]=VALID&sort=-uploadedDate&limit=1') or {'data': []})['data']
+    if b:
+        ok[f"build {b[0]['attributes']['version']} attached"] = call('PATCH', f'/appStoreVersions/{vid}/relationships/build',
+            {'data': {'type': 'builds', 'id': b[0]['id']}}) is not None
+    # 8. review contact
+    R = {k: v for k, v in L['review'].items() if v}
+    R['demoAccountRequired'] = False
+    det = call('GET', f'/appStoreVersions/{vid}/appStoreReviewDetail')
+    if det and det.get('data'):
+        ok['review contact'] = call('PATCH', f"/appStoreReviewDetails/{det['data']['id']}", {'data': {'type': 'appStoreReviewDetails',
+            'id': det['data']['id'], 'attributes': R}}) is not None
+    else:
+        ok['review contact'] = call('POST', '/appStoreReviewDetails', {'data': {'type': 'appStoreReviewDetails', 'attributes': R,
+            'relationships': {'appStoreVersion': {'data': {'type': 'appStoreVersions', 'id': vid}}}}}) is not None
+    print('Review phone set:', bool(L['review'].get('contactPhone')))
+    # 9. Game Center on this version
+    gcv = call('POST', '/gameCenterAppVersions', {'data': {'type': 'gameCenterAppVersions', 'relationships': {
+        'appStoreVersion': {'data': {'type': 'appStoreVersions', 'id': vid}}}}})
+    print('Game Center app version:', 'created' if gcv else 'not created (may already exist)')
+    print('\n==== READINESS ====')
+    for k, v in ok.items():
+        print(('OK   ' if v else 'FAIL ') + k)
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'preflight':
         sys.exit(0 if preflight(os.environ.get('ASC_BUNDLE_ID', '').strip()) else 1)
@@ -247,4 +392,6 @@ if __name__ == '__main__':
         gamecenter()
     if action == 'rename':
         rename(sys.argv[2])
+    if action == 'prepare':
+        prepare()
     status()

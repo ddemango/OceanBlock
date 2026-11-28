@@ -119,7 +119,6 @@ scene(at(pot(4, 22, Y.bisque), 1120, 544), at(pot(4, 18, Y.bisque), 1120, 524));
   target('wire', 'Wire clay cutter', at(wireCutter(88), 184, 626, 1, -4));
   scene(at(toolJar(62, 6), 268, by));
   scene(at(bandingWheel(112), 368, by), at(pot(5, 86, Y.bisque, { band: G.cobalt }), 368, by - 43));
-  target('brush', 'Paintbrush', at(brush(96, '#cf4a3c', G.cobalt), 470, 632, 1, -5));
   scene(at(pot(4, 20, G.white), 444, by), sh(ellipse(444, by - 19, 9, 2), G.cobalt));
   target('pin', 'Rolling pin', at(rollingPin(120), 500, by - 9 - 22));
   scene(sh(rect(450, by - 22, 104, 22, 3), '#a98c78'), stroke(rect(450, by - 22, 104, 22, 3), '#8a705e', 1));
@@ -131,6 +130,10 @@ scene(at(pot(4, 22, Y.bisque), 1120, 544), at(pot(4, 18, Y.bisque), 1120, 524));
 scene(at(pot(1, 200, G.teal, { band: G.cream }), 96, 1130), at(monstera(170, 3, G.teal, 0.1).slice(0, -3), 96, 1000));
 scene(at(pot(3, 150, G.oxblood, { dip: G.honey }), 222, 1150));
 target('can', 'Watering can', at(wateringCan(92, '#e0a93a'), 352, 1110));
+
+// ware board of freshly thrown bowls drying on the floor
+scene(shadow(850, 1112, 150, 8, 0.16), sh(rect(730, 1090, 20, 20) + rect(950, 1090, 20, 20), '#8a623c'), ol(rect(712, 1078, 276, 14, 3), '#d2a56c', 1, -0.35));
+scene(at(pot(4, 34, Y.wetClay), 756, 1078), at(pot(4, 38, shade(Y.wetClay, 0.08)), 826, 1078), at(pot(5, 60, Y.wetClay, { rings: true }), 894, 1078), at(pot(4, 32, shade(Y.wetClay, -0.06)), 954, 1078));
 
 // =====================================================================
 // the wheel
@@ -154,11 +157,12 @@ scene(ol(rect(170, 1420, 120, 52, 8), '#a98c78', 1.2), sh(rect(176, 1426, 30, 40
   scene(sh(poly([[760, 1244], [880, 1244], [884, 1300], [744, 1300]]), '#efe6d0'), stroke(poly([[760, 1244], [880, 1244], [884, 1300], [744, 1300]]), '#b8a47e', 1));
   target('loop', 'Loop tool', at(loopTool(104, '#cf4a3c'), 812, 1272, 1, -12));
   target('rib', 'Wooden rib', place(woodRib(66), { x: 944, y: 1272, rot: 14, sy: 0.8 }));
-  scene(stroke(line([[900, 1300], [990, 1306]]), '#8a9298', 2), ol(rect(892, 1296, 34, 8, 4), '#d7a970', 0.8), at(pot(4, 18, G.celadon), 1000, 1262), sh(ellipse(770, 1308, 14, 4) + ellipse(960, 1244, 10, 3), Y.wetClay, { opacity: 0.6 }));
+  target('brush', 'Paintbrush', at(brush(104, '#3f8a84', G.cobalt), 946, 1304, 1, 4));
+  scene(at(pot(4, 18, G.celadon), 1000, 1262), sh(ellipse(770, 1308, 14, 4) + ellipse(960, 1244, 10, 3), Y.wetClay, { opacity: 0.6 }));
   scene(at(glazeBucket(104, 110, G.teal, '#f4f0e6', false), 1100, 1372), at(glazeBucket(118, 122, G.rose), 1130, 1478));
   scene(stroke(line([[1130, 1360], [1160, 1290]]), '#d7a970', 6));
 }
-scene(at(pendant(70, 70, '#5d756c'), 470, 26), at(pendant(50, 60, '#b0413a'), 900, 26));
+scene(at(pendant(34, 56, '#b0413a'), 606, 26));
 
 const activity: FindActivity = {
   id: 'crafts-find-3', version: 1, mode: 'find', title: "The Potter's Studio",

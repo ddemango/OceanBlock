@@ -8,7 +8,7 @@ import {
   monstera, hangingPlant, cactus, cityView, wallShelf, cushion, yarnBall,
 } from '../cafe/props-find';
 import { curtain } from '../blooms/props-find';
-import { PET as C, pawPrint, catSit, catLoaf, catLie, catCurl, catPeek, catWalk, petBed, petBedFront, petBowl, toyMouse, featherWand, catTree, catPortrait, fishBiscuit, heartPath, boxBack, boxFront, scratchPost } from './props-find';
+import { PET as C, pawPrint, catSit, catLoaf, catLie, catCurl, catPeek, catWalk, petBed, petBedFront, petBowl, toyMouse, featherWand, catTree, catPortrait, fishBiscuit, heartPath, boxBack, boxFront } from './props-find';
 
 const ID = 'pets-find-3';
 const W = 1200, H = 1500;
@@ -100,7 +100,7 @@ scene(at(wallShelf(196, '#c69462'), 596, 478));
 target('siamese', 'Siamese cat', at(catSit(104, C.cream, { pat: 'siam' }), 692, 478));
 // little steps between the walkways
 scene(ol(rect(800, 346, 40, 10, 3), '#c69462', 1), ol(rect(786, 432, 40, 10, 3), '#c69462', 1));
-scene(at(pendant(110, 60, '#c8473a'), 300, 44), at(pendant(70, 54, '#3f7f7a'), 780, 44));
+scene(at(pendant(110, 60, '#c8473a'), 300, 44));
 
 // =====================================================================
 // counter with the cake case
@@ -183,12 +183,12 @@ scene(at(catSit(112, C.ginger, { pat: 'tabby', head: 1.18, collar: C.teal }), 45
 target('toy-mouse', 'Toy mouse', at(toyMouse(54), 590, 1474));
 target('feather-wand', 'Feather wand', at(featherWand(124), 664, 1486));
 scene(at(petBed(240, C.mustard), 880, 1462), at(catCurl(156, C.grey, { pat: 'tabby' }), 880, 1436), at(petBedFront(240, C.mustard, '#fbf6ec'), 880, 1462));
-scene(at(petBowl(84, '#e89ab0', '#9a6238', 'fish'), 1050, 1486), at(petBowl(70, '#5aa8d8', '#8fd0dc', 'paw'), 1010, 1400));
+scene(at(petBowl(84, '#e89ab0', '#9a6238', 'fish'), 1050, 1486), at(petBowl(70, '#5aa8d8', '#8fd0dc', 'paw'), 560, 1268));
 scene(at(monstera(300, 7, '#f6ead2', 0.42), 1140, 1498));
 scene(at(catWalk(128, C.black, { pat: 'tux' }), 690, 1300));
 scene(at(boxBack(120, 84), 60, 1220), at(catPeek(58, C.cream, { pat: 'plain' }), 60, 1138), at(boxFront(120, 84), 60, 1220));
 scene(bookStack(770, 1250, 60, 3, rng(21)).shapes);
-void line; void scratchPost; void catWalk;
+void line;
 
 const activity: FindActivity = {
   id: 'pets-find-3', version: 1, mode: 'find', title: 'The Cat Café', blurb: 'Cats nap on every shelf, cushion and windowsill of this cosy tea room, where fourteen treats and playthings are tucked among the whiskers.',

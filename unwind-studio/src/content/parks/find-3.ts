@@ -74,6 +74,7 @@ scene(place(pine(520, '#2f4a48', 21), { x: 640, y: 420 }), place(pine(600, '#284
   // chimney, smoke
   scene(ol(rect(980, 14, 76, 120), '#a09488', 1.2), ol(rect(970, 4, 96, 16, 3), '#7a7068', 1));
   for (let r = 0; r < 6; r++) for (let i = 0; i < 3; i++) scene(ol(rect(984 + i * 23 + (r % 2) * 5 - 2, 24 + r * 18, g.range(15, 20), 13, 4), g.pick(['#b8aca0', '#948a80', '#a89c8e', '#c8b8a8']), 0.6, -0.25));
+  scene(stroke(curve([[1018, 0], [1004, -30]]) + curve([[1030, 2], [1046, -20]]), '#ffffff', 9, { opacity: 0.35 }));
   // roof
   const rl = (y: number) => 470 - ((y - 90) / (EAVE - 90)) * 170;
   scene(sh(poly([[rl(EAVE), EAVE], [W, EAVE], [W, 90], [rl(90), 90]]), ROOF));
@@ -116,7 +117,7 @@ scene(place(pine(520, '#2f4a48', 21), { x: 640, y: 420 }), place(pine(600, '#284
   scene(ol(rect(316, EDGE, W - 316 + 4, 24, 3), '#a8743e', 1), sh(rect(316, EDGE, W - 316, 5), '#ffc880', { opacity: 0.35 }));
   scene(sh(rect(326, EDGE + 24, W - 326, 78), '#3a2a24'));
   let lat = '';
-  for (let x = 300; x < W + 80; x += 26) lat += line([[x, EDGE + 24], [x - 78, EDGE + 102]]) + line([[x - 78, EDGE + 24], [x, EDGE + 102]]);
+  for (let x = 404; x < W + 80; x += 26) lat += line([[x, EDGE + 24], [x - 78, EDGE + 102]]) + line([[x - 78, EDGE + 24], [x, EDGE + 102]]);
   scene(stroke(lat, '#8a623c', 3.2), sh(rect(326, EDGE + 96, W - 326, 8), '#6a4a30'));
   for (let i = 0; i < 3; i++) scene(ol(rect(630 - i * 16, EDGE + 22 + i * 28, 260 + i * 32, 28, 2), i % 2 ? '#b8875a' : '#c89a64', 1), sh(rect(630 - i * 16, EDGE + 42 + i * 28, 260 + i * 32, 8), shade(WOOD, -0.12)));
 }

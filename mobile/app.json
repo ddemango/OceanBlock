@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#8fd7ee",
+    "backgroundColor": "#2a93ea",
     "ios": {
       "bundleIdentifier": "com.tidebreaker.game",
       "supportsTablet": true,
@@ -32,14 +32,13 @@
           "initialOrientation": "PORTRAIT_UP"
         }
       ],
-      "expo-splash-screen",
       [
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
-          "imageWidth": 260,
+          "imageWidth": 300,
           "resizeMode": "contain",
-          "backgroundColor": "#0068e3"
+          "backgroundColor": "#2a93ea"
         }
       ]
     ],

@@ -176,7 +176,6 @@ put(1470, at(pup(132, C.golden, { collar: C.blue, tongue: true }), 1120, 1476));
 queue.sort((a, b) => a.y - b.y).forEach((q) => items.push(q.item));
 // foreground grass along the bottom edge
 scene(grassTufts(0, 1486, W, 12, 46, 9, ['#4f8e44', '#63a652'], 26));
-void blob;
 
 const activity: FindActivity = {
   id: 'pets-find-2', version: 1, mode: 'find', title: 'Dog Park Saturday', blurb: 'Under a blue city sky the dogs race, leap and splash around the fountain while thirteen things from a sunny day out hide in the grass.',

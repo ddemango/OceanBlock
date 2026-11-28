@@ -221,3 +221,11 @@ export function sfxThunder() {
   noise(1.6, 'lowpass', 300, 0.5, 0.7);
   noise(0.3, 'lowpass', 900, 0.5, 0.4, 0.05);
 }
+
+// Pause/resume all sound (app going to the background and back).
+export function suspendAll() {
+  if (ctx && ctx.state === 'running') ctx.suspend();
+}
+export function resumeAll() {
+  if (ctx && ctx.state === 'suspended' && audio.enabled) ctx.resume();
+}

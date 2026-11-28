@@ -1,4 +1,4 @@
-import { rect, ellipse, circle, poly, line, curve, sh, stroke, place, shade, rng, linearGradient } from '../../art/kit';
+import { rect, ellipse, circle, poly, line, sh, stroke, place, shade, rng, linearGradient } from '../../art/kit';
 import type { Shape } from '../../art/types';
 import type { FindActivity, FindItem } from '../types';
 import { basket } from '../kitchen/props-find';
@@ -257,7 +257,6 @@ scene(at(boxBack(130, 92), 880, 1476), at(catPeek(62, C.ginger, { pat: 'tabby' }
 }
 scene(at(snakePlant(170, 9, '#f6ead2'), 1160, 1496));
 scene(at(scratchPost(150, '#5aa8d8'), 60, 1240));
-void curve; void dog;
 
 const activity: FindActivity = {
   id: 'pets-find-1', version: 1, mode: 'find', title: 'The Pet Shop', blurb: 'Fish tanks bubble, puppies tumble in their pen and kittens rule the cat tree while sixteen pet-shop treasures wait to be found.',
