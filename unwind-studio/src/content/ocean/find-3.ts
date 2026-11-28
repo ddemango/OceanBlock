@@ -46,8 +46,21 @@ scene(
   sh(blob([[820, 392], [860, 366], [930, 348], [1040, 342], [1130, 326], [1240, 316], [1240, 372], [1100, 372], [960, 378]], 0.6), '#8fb070'),
   sh(blob([[1040, 344], [1130, 328], [1240, 318], [1240, 350], [1120, 356]], 0.6), '#a4c27e'),
   stroke(line([[880, 392], [884, 414]]) + line([[960, 384], [956, 418]]) + line([[1050, 378], [1056, 420]]) + line([[1140, 376], [1136, 424]]), '#a8926e', 2, { opacity: 0.7 }),
-  sh(waveBand(790, W, 426, 4, 70, 444, 1), '#ffffff', { opacity: 0.85 }),
+  sh(waveBand(790, W, 428, 3, 60, 437, 1), '#ffffff', { opacity: 0.85 }),
 );
+// thrift, a fence and a path on the headland; a buoy and a fishing boat out at sea
+{
+  const g = rng(7);
+  let pink = '', stems = '', posts = '';
+  for (let i = 0; i < 26; i++) { const x = g.range(1050, 1195), y = g.range(336, 366); pink += circle(x, y, g.range(1.6, 2.8)); stems += line([[x, y], [x, y + 5]]); }
+  for (let x = 1020; x <= 1200; x += 18) posts += line([[x, 346 - (x - 1020) * 0.13], [x, 334 - (x - 1020) * 0.13]]);
+  scene(stroke(stems, '#6f9a5a', 1), sh(pink, '#f08ab0'), stroke(posts + line([[1020, 338], [1200, 314.6]]), '#f6efe0', 1.6), stroke(curve([[986, 362], [960, 372], [920, 374], [880, 386]]), '#e6d6b0', 4, { opacity: 0.9 }));
+  scene(
+    ol(poly([[628, 408], [690, 408], [682, 420], [634, 420]]), '#3f7f9c', 1), sh(rect(650, 394, 20, 14, 2), '#fbf6ea'), sh(rect(654, 398, 5, 5) + rect(662, 398, 5, 5), '#6fa8c4'), stroke(line([[676, 408], [676, 384]]), '#5a4434', 1.6), sh(poly([[676, 384], [688, 388], [676, 392]]), '#f2c230'),
+    stroke(line([[622, 423], [650, 423]]) + line([[660, 426], [694, 426]]), '#ffffff', 1.6, { opacity: 0.6 }),
+  );
+  scene(ol(poly([[520, 500], [540, 500], [536, 482], [524, 482]]), '#e8603a', 1), sh(rect(523, 488, 14, 4), '#fbf6ea'), stroke(line([[530, 482], [530, 470]]), '#3b3633', 1.6), sh(circle(530, 468, 3), '#f2c230'), stroke(curve([[508, 502], [530, 506], [552, 502]]), '#ffffff', 2, { opacity: 0.7 }));
+}
 target('lighthouse', 'Lighthouse', at(lighthouse(220), 980, 362));
 target('sailboat', 'Sailboat', at(sailboat(92, '#d8493b', '#fbf6ea', '#f6d86a'), 270, 452));
 scene(stroke(curve([[60, 500], [140, 492], [220, 502], [320, 492], [420, 502]]) + curve([[560, 520], [660, 510], [760, 522], [880, 510], [1000, 520], [1140, 510]]), '#ffffff', 3, { opacity: 0.55 }));
@@ -121,7 +134,7 @@ scene(at(crab(52, '#6f9a6a'), 1090, 742), at(limpets(27, 6, 90, 34, '#c9b79a', 8
 // boulder with the watching gull
 scene(shadow(96, 716, 110, 12, 0.25, '#3b322c'), at(rock(31, 200, 92, '#8c8078'), 92, 716), at(barnacles(32, 16, 110, 30, 3.5), 96, 690), at(limpets(33, 3, 60, 16, '#d6c6a8', 7), 140, 664));
 target('gull', 'Standing gull', at(gull(112), 86, 636));
-scene(at(kelpFrond([[20, 640], [60, 650], [110, 664], [170, 660], [220, 676]], 16, '#7a8a3a'), 400, 40, { rot: 6 }));
+scene(at(kelpFrond([[20, 640], [60, 650], [110, 664], [170, 660], [220, 676]], 16, '#8a8436'), 400, 40, { rot: 6 }));
 
 // middle pools
 pool(880, 1010, 196, 96, 3);
@@ -129,7 +142,7 @@ scene(
   at(poolAnemone(41, 34, '#e8607a'), 760, 1010, { sy: 0.72 }), at(poolAnemone(42, 26, '#8fd06a'), 960, 960, { sy: 0.72 }), at(poolAnemone(43, 22, '#f2a8c4'), 1000, 1050, { sy: 0.72 }),
   at(starfish(58, '#e86a8a', -24), 880, 1040, { sy: 0.8 }), at(goby(54, '#6f8090'), 850, 962, { rot: 8 }), at(goby(44, '#8a7a5c'), 940, 1018, { rot: 200 }), at(pebbles(44, 14, 280, 110, ['#8f9aa8', '#c9b99c', '#6f8090', '#e3d6b8'], 5), 880, 1016),
 );
-scene(at(kelpFrond([[0, 0], [30, 14], [70, 10], [110, 26], [150, 20]], 18, '#6f8a3a'), 1000, 928, { rot: 14 }), at(mussels(45, 12, 110, 34, 15), 700, 1090), at(limpets(46, 5, 90, 30, '#c9b79a', 9), 1090, 1000));
+scene(at(kelpFrond([[0, 0], [30, 14], [70, 10], [110, 26], [150, 20]], 18, '#7d7a30'), 1000, 928, { rot: 14 }), at(mussels(45, 12, 110, 34, 15), 700, 1090), at(limpets(46, 5, 90, 30, '#c9b79a', 9), 1090, 1000));
 pool(350, 1090, 250, 142, 4);
 scene(
   at(poolAnemone(51, 40, '#f29a5a'), 190, 1060, { sy: 0.78 }), at(poolAnemone(52, 30, '#e8607a'), 480, 1010, { sy: 0.78 }), at(poolAnemone(53, 26, '#a884e6'), 520, 1150, { sy: 0.78 }), at(poolAnemone(54, 22, '#8fd06a'), 250, 1180, { sy: 0.78 }),
@@ -137,7 +150,7 @@ scene(
   at(pebbles(55, 18, 380, 180, ['#8f9aa8', '#c9b99c', '#6f8090', '#e3d6b8'], 6), 350, 1100), at(scallop(30, '#f6e2b0'), 400, 1100, { rot: 30 }),
 );
 target('starfish', 'Orange starfish', at(starfish(92, '#f6883a', 14), 300, 1096, { sy: 0.88 }));
-scene(at(kelpFrond([[0, 0], [40, -16], [84, -8], [130, -26], [176, -18]], 20, '#7a8a3a'), 96, 1010, { rot: -8 }), at(barnacles(56, 26, 150, 40, 4), 600, 1180), at(limpets(57, 5, 100, 34, '#d6c6a8', 10), 130, 1190), at(mussels(58, 10, 90, 30, 16), 560, 1010));
+scene(at(kelpFrond([[0, 0], [40, -16], [84, -8], [130, -26], [176, -18]], 20, '#8a8436'), 96, 1010, { rot: -8 }), at(barnacles(56, 26, 150, 40, 4), 600, 1180), at(limpets(57, 5, 100, 34, '#d6c6a8', 10), 130, 1190), at(mussels(58, 10, 90, 30, 16), 560, 1010));
 
 // --- things left on the rocks ---
 target('net', 'Fishing net', [sh(poly([[330, 876], [345, 872], [580, 800], [600, 810], [585, 840], [540, 836], [345, 884]]), '#3b322c', { opacity: 0.2 }), ...at(dipNet(170), 468, 824, { rot: -18 })]);
@@ -146,10 +159,16 @@ target('wellies', 'Yellow boots', [shadow(1094, 880, 66, 10, 0.28, '#3b322c'), .
 target('spade', 'Blue spade', [shadow(606, 956, 60, 8, 0.2, '#3b322c'), ...at(spade(118, '#3f7fc4'), 600, 946, { rot: 74 })]);
 scene(at(seaGlass(61, 6, 110, 36), 800, 1180), at(pebbles(62, 12, 160, 40, ['#d9cdb8', '#6f655f', '#b9a58c'], 6), 520, 900), at(scallop(34, '#f4a6b8'), 1000, 1190, { rot: -20 }), at(snailShell(26, '#c9a67a'), 640, 1108), at(snailShell(20, '#8f7fa8'), 76, 900), at(scallop(26, '#f6e2b0'), 160, 880, { rot: 40 }));
 target('crab', 'Red crab', [shadow(1088, 1196, 50, 8, 0.25, '#3b322c'), ...at(crab(110, '#dc5a42'), 1086, 1172)]);
-target('whelk', 'Spiral shell', [shadow(124, 1300, 44, 7, 0.25, '#3b322c'), ...at(spiralShell(92, '#eab07a'), 120, 1282, { rot: -10 })]);
+target('whelk', 'Whelk shell', [shadow(124, 1300, 44, 7, 0.25, '#3b322c'), ...at(spiralShell(92, '#eab07a'), 120, 1282, { rot: -10 })]);
 scene(shadow(430, 1322, 110, 9, 0.22, '#3b322c'), at(driftwood(220), 420, 1308, { rot: -6 }), at(limpets(63, 4, 70, 20, '#c9b79a', 9), 250, 1300));
 target('hermit', 'Hermit crab', [shadow(636, 1322, 42, 7, 0.25, '#3b322c'), ...at(hermitCrab(92, '#d9a66a', '#e0734f'), 630, 1320)]);
 
+// more small life scattered over the shelf
+scene(at(rock(101, 120, 46, '#7f736b'), 560, 650), at(rock(102, 150, 54, '#8a7d74'), 1140, 660), at(rock(103, 110, 40, '#7a6f67'), 380, 664), at(barnacles(104, 14, 90, 20, 3), 562, 634), at(limpets(105, 3, 60, 14, '#d6c6a8', 7), 1140, 632));
+scene(at(snailShell(18, '#c9a67a'), 300, 880), at(snailShell(16, '#6f6a7a'), 320, 892), at(snailShell(17, '#d9c8a8'), 960, 836, { rot: 40 }), at(snailShell(20, '#8f7fa8'), 1150, 1090), at(snailShell(18, '#c9a67a'), 760, 1262, { rot: -30 }));
+scene(at(scallop(30, '#f6c89a'), 240, 950, { rot: -24 }), at(scallop(26, '#c9d8ee'), 880, 870, { rot: 30 }), at(scallop(30, '#f6e2b0'), 1150, 1440, { rot: 150 }), at(starfish(36, '#e0a03a', 24), 1010, 1236), at(crab(40, '#6f9a6a'), 220, 1330));
+scene(at(limpets(106, 4, 80, 24, '#c9b79a', 9), 420, 930), at(mussels(107, 8, 70, 24, 13), 60, 980), at(barnacles(108, 20, 120, 34, 4), 1120, 950), at(limpets(109, 4, 80, 26, '#d6c6a8', 10), 700, 1470), at(mussels(110, 9, 80, 26, 15), 1130, 1238), at(barnacles(111, 18, 120, 30, 4), 300, 1250));
+scene(at(pebbles(112, 14, 200, 44, ['#d9cdb8', '#6f655f', '#b9a58c'], 6), 900, 1220), at(pebbles(113, 12, 180, 40, ['#d9cdb8', '#6f655f', '#b9a58c'], 6), 180, 1240), at(seaGlass(114, 5, 90, 30), 1010, 800), at(pebbles(115, 12, 200, 30, ['#d9cdb8', '#6f655f', '#8f9aa8'], 5), 700, 640));
 // near pools
 pool(900, 1370, 230, 104, 5);
 scene(
@@ -162,7 +181,7 @@ scene(at(poolAnemone(75, 28, '#e8607a'), 180, 1436, { sy: 0.9 }), at(poolAnemone
 scene(at(mussels(78, 12, 120, 34, 17), 620, 1420), at(barnacles(79, 24, 150, 40, 4.5), 500, 1450), at(limpets(80, 5, 110, 30, '#d6c6a8', 11), 1120, 1280), at(seaGlass(81, 4, 70, 26), 440, 1400));
 // foreground boulders and weed along the bottom edge
 scene(at(rock(91, 260, 80, '#6f655f'), 60, 1524), at(rock(92, 300, 70, '#756a62'), 640, 1530), at(rock(93, 240, 86, '#6a605a'), 1150, 1528));
-scene(at(kelpFrond([[0, 0], [36, -20], [80, -12], [120, -34], [170, -26]], 22, '#6f8a3a'), 20, 1480), at(kelpFrond([[0, 0], [-40, -18], [-84, -8], [-124, -28]], 20, '#7a8a3a'), 1190, 1476), at(seagrass(94, 70, 60, '#6f9a4a', 8), 640, 1470), at(barnacles(95, 18, 160, 30, 4.5), 1120, 1470));
+scene(at(kelpFrond([[0, 0], [36, -20], [80, -12], [120, -34], [170, -26]], 22, '#7d7a30'), 20, 1480), at(kelpFrond([[0, 0], [-40, -18], [-84, -8], [-124, -28]], 20, '#8a8436'), 1190, 1476), at(seagrass(94, 70, 60, '#6f9a4a', 8), 640, 1470), at(barnacles(95, 18, 160, 30, 4.5), 1120, 1470));
 
 const a: FindActivity = {
   id: 'ocean-find-3', version: 1, mode: 'find', title: 'Tide Pools at Low Tide', blurb: 'The tide is out, leaving sunny rock pools full of starfish, crabs and anemones below the lighthouse.',

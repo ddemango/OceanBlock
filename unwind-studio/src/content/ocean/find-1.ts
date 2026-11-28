@@ -112,7 +112,7 @@ scene(at(starfish(46, '#b06fd0', -20), 965, 1300), at(starfish(38, '#ef6f8f', 30
 target('clam', 'Clam with a pearl', [shadow(300, 1378, 62, 9, 0.2), ...at(pearlClam(120, '#b6a4dc'), 300, 1380, { rot: -3 })]);
 target('crab', 'Red crab', [shadow(860, 1352, 44, 7, 0.2), ...at(crab(96, '#dc5a42'), 860, 1330)]);
 target('scallop', 'Pink scallop shell', [shadow(640, 1420, 30, 6, 0.2), ...at(scallop(60, '#f49ab4'), 640, 1400, { rot: 14 })]);
-target('conch', 'Spiral shell', [shadow(1040, 1432, 40, 7, 0.2), ...at(spiralShell(84, '#eab07a'), 1036, 1414, { rot: -8 })]);
+target('conch', 'Conch shell', [shadow(1040, 1432, 40, 7, 0.2), ...at(spiralShell(84, '#eab07a'), 1036, 1414, { rot: -8 })]);
 scene(at(scallop(34, '#f6e2b0'), 520, 1300, { rot: -30 }), at(scallop(30, '#c9d8ee'), 760, 1450, { rot: 40 }), at(snailShell(28, '#d9a66a'), 220, 1250, { rot: 20 }), at(snailShell(24, '#b98ac0'), 1130, 1370), at(scallop(28, '#f6c89a'), 430, 1470, { rot: 160 }));
 scene(L(fish('slim', 44, '#f6b04a', '#c9703a', '#fbf3df'), 560, 1250, 3), at(school(50, 9, 150, 50, 16, '#7fd6c8'), 1060, 1240, { rot: -4 }));
 // foreground corals framing the bottom corners

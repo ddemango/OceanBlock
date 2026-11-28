@@ -2,7 +2,7 @@ import { rect, ellipse, circle, line, curve, sh, stroke, place, shade, rng, line
 import type { Shape } from '../../art/types';
 import type { FindActivity, FindItem } from '../types';
 import { chalkboard, hayBale, awning, townhouse, bunting, cobbles, cloud, honeyJar, sunflower, tulipBucket, potted, robin, bicycle, pumpkin, basket, basketHandle, lantern, pie, jug, tree, shadow, ol } from '../seasons/props-find';
-import { pile, baguette, bloomer, cob, plait, bun, pretzel, milkBottle, honeyPot, shopBell, ladybird, cabbage, leek, strawberry, cherries, lemon, pear, jar, sack, mushroom, cornCob, type Veg } from '../kitchen/props-find';
+import { pile, baguette, bloomer, cob, plait, bun, pretzel, milkBottle, honeyPot, shopBell, ladybird, cabbage, leek, strawberry, cherries, lemon, pear, jar, sack, mushroom, cornCob } from '../kitchen/props-find';
 import {
   F, stallBack, stallFront, shelf, produceCrate, produceBasket, chalkSign, scale, cheeseWheel, cheeseWedge, eggBox, paperBag, carrotBunch, watermelon, grapes,
   flowerBucket, clothDrape, vegString, beeSkep, bee, bucket, milkChurn, strewnStraw,
@@ -168,7 +168,7 @@ scene(at(flowerBucket(46, 23, ['#b48ad6', '#fbf6ec', '#f4a6b8']), 876, 870), at(
 
 // goods in front of the front row
 scene(at(chalkboard(190), 600, 1392));
-scene(at(produceCrate(124, 52, '#c69462', ['apple'], 65, 12, 2), 130, 1330), at(produceCrate(118, 50, '#b98552', ['pear' as Veg, 'greenapple'].filter((k) => k !== 'pear') as Veg[], 66, 12, 2), 262, 1338), at(pumpkin(64), 480, 1336), at(pumpkin(48, '#f3ead6'), 426, 1342));
+scene(at(produceCrate(124, 52, '#c69462', ['apple'], 65, 12, 2), 130, 1330), at(produceCrate(118, 50, '#b98552', ['greenapple'], 66, 12, 2), 262, 1338), at(pumpkin(64), 480, 1336), at(pumpkin(48, '#f3ead6'), 426, 1342));
 scene(hayBale(140, 66, 9).map((q) => place([q], { x: 880, y: 1348 })[0]), at(beeSkep(70), 930, 1282), at(honeyJar(34, '#5a86b8'), 990, 1282), at(milkChurn(112), 1096, 1346), at(produceBasket(92, 40, ['brownegg', 'egg'], 67, 10, 2), 760, 1342));
 
 // =====================================================================
@@ -194,7 +194,7 @@ scene(strewnStraw(680, 1470, 200, 24, 16, 5));
   for (let i = 0; i < 20; i++) d2 += ellipse(g.range(10, 1190), g.range(846, 866), g.range(3, 5), 2, g.range(0, 180));
   scene(sh(d2, '#f4a6b8', { opacity: 0.8 }));
 }
-void curve; void shade; void basketHandle; void Object; void ([] as Veg[]);
+void curve; void shade; void basketHandle; void pie;
 
 const activity: FindActivity = {
   id: 'farm-find-2', version: 1, mode: 'find', title: "The Farmers' Market", blurb: 'Five brimming stalls of vegetables, bread and cheese, flowers, fruit, eggs and honey hide sixteen market-day finds.',

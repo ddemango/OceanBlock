@@ -918,7 +918,6 @@ export function lighthouse(h: number): Shape[] {
   let rail = '';
   for (let x = -9; x <= 9; x += 3) rail += line([[x, -73], [x, -78]]);
   return fit([
-    sh(poly([[4, -80], [70, -96], [70, -64]]) + poly([[-4, -80], [-70, -92], [-70, -68]]), '#fff6c8', { opacity: 0.22 }),
     ol(rect(13, -15, 24, 15), '#fbf6ea', 0.6), ol(poly([[10, -15], [25, -25], [40, -15]]), '#c8553f', 0.6), sh(rect(30, -26, 4, 8), '#8a5a4a'),
     sh(rect(17, -10, 5, 5) + rect(28, -10, 5, 5), '#8fb8cc'), sh(rect(23.4, -8, 3.6, 8), '#5a7aa8'),
     ol(poly([[-11, 0], [11, 0], [7, -70], [-7, -70]]), '#fbf6ea', 0.7, -0.25), sh(bandAt(-12, -26) + bandAt(-40, -54), '#d8493b'),
@@ -1032,8 +1031,13 @@ export function seaGlass(seed: number, count: number, w: number, h: number): Sha
 
 /** Ribbon of kelp draped flat, following the points. */
 export function kelpFrond(pts: Pt[], wid: number, col: string): Shape[] {
-  const c = smooth(pts, 4);
-  let ruffle = '';
-  c.forEach(([x, y], i) => { if (i % 2 && i < c.length - 1) ruffle += circle(x + wid * 0.28, y - wid * 0.2, wid * 0.13); });
-  return [ol(tube(pts, [wid * 0.3, wid, wid * 1.1, wid * 0.8, wid * 0.3], 6), col, 1, -0.3), stroke(curve(pts), shade(col, 0.3), wid * 0.14, { opacity: 0.8 }), sh(ruffle, shade(col, -0.25), { opacity: 0.6 })];
+  const c = smooth(pts, 3);
+  let la = '', lb = '';
+  c.forEach(([x, y], i) => {
+    if (i === 0 || i >= c.length - 1) return;
+    const ang = (Math.atan2(c[i + 1][1] - c[i - 1][1], c[i + 1][0] - c[i - 1][0]) * 180) / Math.PI, side = i % 2 ? 1 : -1;
+    const d = leaf(x, y, wid * 1.9, wid * 0.42, ang + side * 52);
+    if (i % 2) la += d; else lb += d;
+  });
+  return [sh(circle(pts[0][0], pts[0][1], wid * 0.4), shade(col, -0.35)), ol(lb, shade(col, -0.12), 1, -0.3), ol(la, col, 1, -0.3), ol(tube(pts, [wid * 0.34, wid * 0.5, wid * 0.44, wid * 0.2], 6), shade(col, 0.1), 1, -0.35), stroke(curve(pts), shade(col, 0.4), wid * 0.1, { opacity: 0.7 })];
 }
