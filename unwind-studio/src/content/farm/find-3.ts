@@ -157,12 +157,11 @@ scene(ol(rect(96, 880, 60, 20, 3), F.brass, 1), stroke(curve([[104, 892], [116, 
   // broom leaning by the door and nail heads on the sliding door
   let br = '', nails = '';
   for (let i = 0; i < 9; i++) br += line([[984 + i * 4, 1050], [976 + i * 6.5, 1108]]);
-  scene(stroke(line([[1000, 1050], [1024, 760]]), '#c99a62', 6), sh(rect(980, 1040, 40, 14, 3), '#8a5230'), stroke(br, '#d9b04c', 3));
+  scene(stroke(line([[1000, 1050], [1016, 850]]), '#c99a62', 6), sh(rect(980, 1040, 40, 14, 3), '#8a5230'), stroke(br, '#d9b04c', 3));
   for (const y of [556, 814, 830, 1090]) for (let x = 811; x < 964; x += 23) nails += circle(x - 11, y, 1.8);
   scene(sh(nails, '#7a2a1e'));
 }
 scene(at(swallow(34), 700, 60, 1, 30), at(swallow(30), 420, 210, 1, -40), at(chicken(46, '#fbf6ec'), 60, 362), at(chick(20), 200, 1104), at(chick(18), 232, 1108, 1, 0, true));
-scene(at(sack(70, 80, '#cdb98a', '#b8402e'), 410, 434).slice(1));
 
 // =====================================================================
 // floor
