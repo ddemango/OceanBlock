@@ -146,6 +146,7 @@ function toToon(m) {
   return new THREE.MeshToonMaterial({ map: m.map || null, color: m.color, gradientMap: toonRamp, emissive: m.emissive || new THREE.Color(0) });
 }
 const outlineMat = new THREE.MeshBasicMaterial({ color: 0x1d2638, side: THREE.BackSide });
+outlineMat.userData.shared = true;
 function addOutline(mesh, thickness = 0.06) {
   const shell = new THREE.Mesh(mesh.geometry, outlineMat);
   mesh.geometry.computeBoundingBox();
@@ -256,6 +257,18 @@ function ballMaterial(kind) {
   return ballMats[kind.id];
 }
 
+// free GPU buffers/textures of a one-off object tree (shared caches are left alone)
+function disposeTree(obj) {
+  obj.traverse((o) => {
+    if (o.geometry && !o.geometry.userData.shared) o.geometry.dispose();
+    const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
+    for (const m of mats) {
+      if (m.userData.shared) continue;
+      if (m.map) m.map.dispose();
+      m.dispose();
+    }
+  });
+}
 function clearLevel() {
   for (const b of state.blocks) {
     world.removeBody(b.body);
@@ -268,7 +281,9 @@ function clearLevel() {
   for (const r of state.rafts) {
     world.removeBody(r.body);
     scene.remove(r.mesh);
+    disposeTree(r.mesh); // rafts build their own textures/geometry: free the GPU memory
   }
+  for (const b of state.blocks) b.removed = true; // stops any delayed chain reaction from touching them
   state.blocks = [];
   state.balls = [];
   state.rafts = [];
@@ -516,10 +531,11 @@ function driftRafts(dt) {
       carryCargo(i, 0, vy, 0, dt);
       continue;
     }
-    const w = r.mode === 'orbit' ? 0.7 : 0.85;
-    const a = r.t * w; // all rafts move in step so neighbours never bump into each other
+    const a = r.t * 0.8; // all rafts move in step so neighbours never bump into each other
+    r.orbitK = Math.min(1, (r.orbitK || 0) + (r.mode === 'orbit' ? dt * 0.5 : -1)); // ease the loop in, never a jump
+    if (r.mode !== 'orbit') r.orbitK = 0;
     const tx = r.def.x + Math.sin(a) * r.amp;
-    const tz = r.mode === 'orbit' ? r.def.z + (Math.cos(a) - 1) * r.amp * 0.7 : r.def.z;
+    const tz = r.def.z + (Math.cos(a) - 1) * r.amp * 0.7 * r.orbitK;
     const k = 1 / Math.max(dt, 1 / 120);
     const vx = (tx - r.body.position.x) * k;
     const vz = (tz - r.body.position.z) * k;
@@ -546,11 +562,26 @@ function releaseCargo() {
     b.body.wakeUp();
   }
 }
+const ZERO = new CANNON.Vec3();
+// the raft whose deck a block is currently over (cargo can land on a neighbouring raft)
+function raftUnder(b) {
+  const p = b.body.position;
+  for (const r of state.rafts) {
+    const q = r.body.position;
+    if (Math.abs(p.x - q.x) < r.def.w / 2 + 0.3 && Math.abs(p.z - q.z) < r.def.d / 2 + 0.3) return r;
+  }
+  return null;
+}
 function carryCargo(i, vx, vy, vz, dt) {
   for (const b of state.blocks) {
     if (b.raft !== i || b.removed || b.cleared || b.spec.floats) continue;
     if (b.body.type === CANNON.Body.KINEMATIC) {
       b.body.velocity.set(vx, vy, vz); // locked stacks move exactly with the raft
+      continue;
+    }
+    const under = raftUnder(b);
+    if (under !== state.rafts[i]) {
+      if (under) b.raft = state.rafts.indexOf(under); // it landed on another raft: ride that one from now on
       continue;
     }
     if (b.body.sleepState === CANNON.Body.SLEEPING) {
@@ -652,6 +683,7 @@ function onCargoCleared() {
     }
   }
   stat('sunk');
+  state.quietTime = 0;
   const left = blocksRemaining();
   if (left === 0) {
     // final piece: dramatic slow motion
@@ -749,6 +781,7 @@ const pointer = { down: false, x: 0, y: 0 };
 
 function onPointerDown(e) {
   sfx.unlockAudio();
+  if (performance.now() - (state.playSince || 0) < 350) return; // a double tap on Start/Resume shouldn't fire
   pointer.down = true;
   pointer.inside = true;
   pointer.x = e.clientX;
@@ -1020,7 +1053,10 @@ function updateTime(dt) {
 const wind = { x: 0 };
 const ev = { kind: null, t: 0, objs: [], rain: null, shark: null, pool: null, jump: null, nextJump: 3, nextFlash: 4 };
 function stopEvent() {
-  for (const o of ev.objs) scene.remove(o);
+  for (const o of ev.objs) {
+    scene.remove(o);
+    disposeTree(o);
+  }
   ev.objs = [];
   ev.kind = null;
   ev.rain = ev.shark = ev.pool = ev.jump = ev.snow = null;
@@ -1032,6 +1068,7 @@ function stopEvent() {
 }
 const sharkMat = new THREE.MeshToonMaterial({ color: 0x5d7488, gradientMap: toonRamp });
 const bellyMat = new THREE.MeshToonMaterial({ color: 0xe6edf2, gradientMap: toonRamp });
+sharkMat.userData.shared = bellyMat.userData.shared = true;
 function buildShark() {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 12).scale(1, 0.75, 2.6), sharkMat);
@@ -1241,6 +1278,7 @@ function updateEvent(dt) {
 const FISH_COLORS = [0xff8a3c, 0xffd23c, 0xff5a8a, 0x4fc3ff, 0x7ee081, 0xb98cff];
 const fishGeo = new THREE.SphereGeometry(0.28, 12, 8).scale(0.75, 0.9, 1.7);
 const finGeo = new THREE.ConeGeometry(0.22, 0.4, 4).scale(0.3, 1, 1);
+fishGeo.userData.shared = finGeo.userData.shared = true;
 function buildFish(color) {
   const g = new THREE.Group();
   const mat = new THREE.MeshToonMaterial({ color, gradientMap: toonRamp });
@@ -1265,7 +1303,10 @@ function buildFish(color) {
 const sea = { list: [] };
 const rand = (a, b) => a + Math.random() * (b - a);
 function clearSeaLife() {
-  for (const c of sea.list) scene.remove(c.mesh);
+  for (const c of sea.list) {
+    scene.remove(c.mesh);
+    disposeTree(c.mesh);
+  }
   sea.list = [];
 }
 function setupSeaLife(level) {
@@ -1550,6 +1591,11 @@ function updateGame(dt) {
 
   if (state.mode !== 'play') return;
 
+  if (state.eventDelay > 0) {
+    state.eventDelay -= dt;
+    if (state.eventDelay <= 0) startEvent(state.event);
+  }
+
   if (blocksRemaining() === 0) {
     state.endTimer += dt;
     if (state.endTimer > 0.9) onWin();
@@ -1558,12 +1604,13 @@ function updateGame(dt) {
   if (state.shots <= 0) {
     // wait until balls are gone and things have settled before declaring failure
     const moving = state.blocks.some((b) => {
-      if (b.cleared || b.spec.floats) return false;
-      const rv = state.rafts[b.raft].body.velocity; // motion relative to the raft it rides
+      if (b.cleared || b.spec.floats || b.body.sleepState === CANNON.Body.SLEEPING) return false;
+      const rv = raftUnder(b)?.body.velocity || ZERO; // motion relative to the raft it is sitting on
       return Math.hypot(b.body.velocity.x - rv.x, b.body.velocity.y - rv.y, b.body.velocity.z - rv.z) > 0.35;
     });
     const ballsFlying = state.balls.some((b) => b.body.position.y > 0 && b.age < 4);
-    if (!moving && !ballsFlying) {
+    state.quietTime = ballsFlying ? 0 : (state.quietTime || 0) + dt; // reset whenever cargo is cleared
+    if ((!moving && !ballsFlying) || state.quietTime > 4) {
       state.endTimer += dt;
       if (state.endTimer > 1.6) onFail();
     } else state.endTimer = 0;
@@ -1846,13 +1893,14 @@ function doSpin() {
   wheelAngle += 360 * 5 + ((stopAt - (wheelAngle % 360)) + 360) % 360;
   $('wheel').style.transform = `rotate(${wheelAngle}deg)`;
   refreshSpinButton();
+  // the prize is granted and saved right away, so closing the app mid-spin can't lose it
+  const what = WHEEL[idx].give();
+  stat('spins');
+  persist();
   let ticks = 0;
   const tick = setInterval(() => (++ticks < 22 ? sfx.sfxTick() : clearInterval(tick)), 160);
   setTimeout(() => {
     spinning = false;
-    const what = WHEEL[idx].give();
-    persist();
-    stat('spins');
     sfx.sfxWin();
     celebrate(1600);
     vibrate([30, 40, 30]);
@@ -2056,6 +2104,7 @@ function beginLevel(boosts, def) {
   }
   state.triple = boosts.triple ? 10 : 0;
   state.mode = 'play';
+  state.playSince = performance.now();
   show(null);
   updateHud();
   const lv = state.level;
@@ -2068,8 +2117,44 @@ function beginLevel(boosts, def) {
   if (lv === 1 && !save.tutorialDone) $('hint').classList.remove('hidden');
   if (state.challenge) setTimeout(() => popup('DAILY CHALLENGE', '#ffc93c', 'beat your best score'), 300);
   renderPowerbar();
-  const id = ++runId;
-  if (state.event) setTimeout(() => runId === id && startEvent(state.event), 2600);
+  ++runId;
+  if (!state.challenge && state.level > 1) showTips();
+  state.eventDelay = state.event ? 2.6 : 0; // counted down in game time, so pausing can't skip it
+}
+
+// ---- "New!" tips the first time each kind of cargo or weather shows up ----
+const TIPS = {
+  ice: ['Ice blocks', 'shatter with a single hit'],
+  balloon: ['Balloons', 'pop them — or knock them loose and they float away'],
+  iron: ['Iron crates', 'take two hits before they budge'],
+  tnt: ['Powder kegs', 'explode and set off their neighbours'],
+  storm: ['Storm', 'the wind bends your shots — watch the WIND meter'],
+  snow: ['Snowstorm', 'icy gusts and whiteouts — aim into the wind'],
+  shark: ['Shark waters', 'the shark may knock cargo off for you'],
+  whirlpool: ['Whirlpool', 'the rafts start circling — lead your shots'],
+  sharks: ['Hungry sharks', 'leaping sharks can snatch your cannonballs'],
+  fish: ['Flying fish', 'hit a leaping fish for a bonus shot'],
+};
+function showTips() {
+  save.tips = save.tips || {};
+  const found = new Set(state.blocks.map((b) => b.type));
+  if (state.event) found.add(state.event);
+  if (sea.list.some((c) => c.bold)) found.add('sharks');
+  if (sea.list.some((c) => c.kind === 'fish') && state.level >= 4) found.add('fish');
+  const fresh = Object.keys(TIPS).filter((k) => found.has(k) && !save.tips[k]).slice(0, 2);
+  fresh.forEach((k, i) => {
+    save.tips[k] = true;
+    setTimeout(() => {
+      if (state.mode !== 'play') return;
+      const el = document.createElement('div');
+      el.className = 'tip';
+      el.innerHTML = `<b>NEW!</b> ${TIPS[k][0]}<small>${TIPS[k][1]}</small>`;
+      document.body.appendChild(el);
+      setTimeout(() => el.classList.add('out'), 3600);
+      setTimeout(() => el.remove(), 4200);
+    }, 900 + i * 4300);
+  });
+  if (fresh.length) persist();
 }
 
 function hideHint() {
@@ -2153,7 +2238,10 @@ $('btn-extra').addEventListener('click', () => {
   state.shots += 5;
   state.startShots += 5;
   state.endTimer = 0;
+  state.quietTime = 0;
   state.mode = 'play';
+  state.playSince = performance.now();
+  if (state.event) startEvent(state.event); // the storm/shark/snow comes back for the extra shots
   sfx.sfxCoin();
   show(null);
   updateHud();
@@ -2172,10 +2260,14 @@ $('btn-settings').addEventListener('click', () => {
 $('btn-resume').addEventListener('click', () => {
   sfx.sfxClick();
   state.mode = 'play';
+  state.playSince = performance.now();
   show(null);
 });
 $('btn-restart').addEventListener('click', () => {
   sfx.sfxClick();
+  runId++;
+  stopEvent();
+  clearLevel();
   if (state.challenge) return startChallenge();
   if (state.shotsFired > 0) loseLife();
   startLevel();
@@ -2220,6 +2312,21 @@ window.addEventListener('pointerdown', () => sfx.setMusic(save.sound && save.mus
 optVibe.addEventListener('change', () => {
   save.vibe = optVibe.checked;
   persist();
+});
+
+// Leaving the app (call, app switch, lock screen) pauses the game and silences it.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (state.mode === 'play') {
+      state.mode = 'paused';
+      show('settings');
+    }
+    pointer.down = false;
+    sfx.suspendAll();
+  } else {
+    sfx.resumeAll();
+    clock.getDelta(); // don't simulate the time spent away in one giant step
+  }
 });
 
 canvas.addEventListener('pointerdown', onPointerDown);
@@ -2299,7 +2406,7 @@ function frame() {
 }
 
 // Debug / test hook
-window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save, startChallenge, usePowerup, startEvent, getLevel, sea };
+window.__tidebreaker = { state, camera, fire: (x, y, z) => fire(new THREE.Vector3(x, y, z)), startLevel, save, startChallenge, usePowerup, startEvent, getLevel, sea, scene, world };
 
 goHome();
 frame();

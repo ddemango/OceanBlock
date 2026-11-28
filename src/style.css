@@ -509,3 +509,13 @@ body.flash #fx-overlay { background: rgba(255, 255, 255, 0.75); transition: none
 .logo-img { display: block; width: min(330px, 80vw); height: auto; margin: 0 auto -6px; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .35)); animation: logoIn .7s cubic-bezier(.3, 1.6, .5, 1) both; }
 .ld-logo-img { width: min(300px, 78vw); height: auto; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .3)); }
 @keyframes logoIn { from { transform: scale(.6); opacity: 0; } }
+
+/* ---------- "New!" tips ---------- */
+.tip { position: fixed; left: 50%; top: calc(150px + env(safe-area-inset-top)); transform: translateX(-50%); z-index: 20; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 16px; border-radius: 16px; border: 3px solid var(--ink);
+  background: #fff8e6; color: var(--ink); font-weight: 900; font-size: 17px; box-shadow: 0 4px 0 var(--ink); white-space: nowrap;
+  animation: tipIn .45s cubic-bezier(.3, 1.6, .5, 1); transition: opacity .5s, transform .5s; }
+.tip b { color: #fff; background: #ff5a3c; border-radius: 8px; padding: 0 6px; margin-right: 4px; font-size: 13px; }
+.tip small { font-weight: 700; font-size: 13px; opacity: .8; }
+.tip.out { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+@keyframes tipIn { from { transform: translateX(-50%) scale(.5); opacity: 0; } }
