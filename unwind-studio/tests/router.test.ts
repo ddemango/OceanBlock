@@ -12,7 +12,7 @@ describe('router', () => {
     expect(currentRoute()).toBe(a); // a new object here makes React loop forever
     loc.hash = '#/explore?mode=paint';
     const b = currentRoute();
-    expect(b).toEqual({ name: 'explore', mode: 'paint', fav: false });
+    expect(b).toEqual({ name: 'explore', mode: 'paint', fav: false, fresh: false });
     expect(currentRoute()).toBe(b);
   });
 

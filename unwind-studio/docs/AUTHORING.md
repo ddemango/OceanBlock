@@ -96,7 +96,8 @@ origin, then `place()` them.
 `categories`, chosen from: `Seaside`, `Travel`, `Interiors`, `Still life`,
 `Garden`, `Flowers`, `Birds`, `Architecture`, `Cozy`, `Woodland`, `Animals`,
 `Kitchen`, `Food`, `Winter`, `Holidays`, `Seasons`, `Sports`, `Cities`,
-`Fairytale`, `Friends`.
+`Fairytale`, `Coffeehouse`, `Pets`, `Ocean`, `Countryside`, `Treats`, `Crafts`,
+`Nature`.
 
 `season` (optional): `{ from: 'MM-DD', to: 'MM-DD', label }` marks a holiday
 or seasonal picture. Home shows everything in season today under "In season"
