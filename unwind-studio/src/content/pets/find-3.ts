@@ -18,6 +18,8 @@ const target = (id: string, name: string, shapes: Shape[]) => { items.push({ id,
 const at = (s: Shape[], x: number, y: number, k = 1, rot = 0) => place(s, { x, y, s: k, rot });
 const ol = (d: string, fill: string, w = 1, amt = -0.3): Shape => sh(d, fill, { stroke: shade(fill, amt), strokeWidth: w });
 
+const tartlet = (x: number, y: number): Shape[] => [ol(ellipse(x, y, 16, 7), '#f2d18a', 1), sh(ellipse(x, y - 2, 12, 3.4), '#fbf6ec'), sh(circle(x, y - 5, 3), '#c8322a')];
+
 const defs = linearGradient(`${ID}-sky`, [[0, '#f6c890'], [0.55, '#f9dfb4'], [1, '#fcefd8']]);
 
 // =====================================================================
@@ -117,7 +119,7 @@ scene(at(pendant(110, 60, '#c8473a'), 300, 44));
   scene(at(pastryCaseBack(pw, ph, [54, 104]), px, py));
   scene(at(doughnut(40, '#7a4a2a'), px + 36, py + 40), at(doughnut(40, '#f29bb5'), px + 76, py + 42), at(cupcake(42, '#6f8fd6', '#fbf6ec'), px + 124, py + 52), at(cupcake(42, '#e89ab0', '#f6c8d8'), px + 166, py + 52));
   scene(at(muffin(40, '#7a4a2a', '#f3ead6'), px + 30, py + 102), at(muffin(40, '#c98a4a', '#5a3420'), px + 70, py + 102), at(macaron(26, '#f2b0c0'), px + 112, py + 94), at(macaron(26, '#a9c98a'), px + 140, py + 94), at(macaron(26, '#f3d77a'), px + 168, py + 94));
-  scene(sh(ellipse(px + 52, py + 146, 40, 6), '#fbf6ec'), at(cookie(14), px + 36, py + 138), at(cookie(14), px + 60, py + 136), at(cookie(13), px + 48, py + 130), at(fishBiscuit(34, '#c98a4a'), px + 120, py + 140), at(fishBiscuit(34, '#c98a4a'), px + 158, py + 138, 1, -8));
+  scene(sh(ellipse(px + 52, py + 146, 40, 6), '#fbf6ec'), at(cookie(14), px + 36, py + 138), at(cookie(14), px + 60, py + 136), at(cookie(13), px + 48, py + 130), tartlet(px + 124, py + 140), tartlet(px + 162, py + 140));
   scene(at(pastryCaseFront(pw, ph), px, py));
   scene(at(cakeStand(92, 40, '#fbf6ec'), 1066, top), at(cake(72, 46, '#f2d18a', '#f6c8d8', '#c8322a'), 1066, top - 42));
   target('mug', 'Paw-print mug', [...at(mug(42, '#fbf6ec', '#fbf6ec'), 1126, top), sh(pawPrint(1126, top - 19, 9), '#c8473a')]);

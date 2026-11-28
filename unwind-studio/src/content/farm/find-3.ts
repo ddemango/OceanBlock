@@ -1,11 +1,11 @@
 import { rect, ellipse, circle, poly, line, curve, blob, waveBand, sh, stroke, place, rng, linearGradient, radialGradient } from '../../art/kit';
 import type { Shape } from '../../art/types';
 import type { FindActivity, FindItem } from '../types';
-import { planks, hayBale, barrel, lantern, rake, tree, pumpkin, boots, shadow, ol } from '../seasons/props-find';
-import { sack, sittingCat, mouse, apple, egg } from '../kitchen/props-find';
+import { rosette, planks, hayBale, barrel, lantern, rake, tree, pumpkin, boots, shadow, ol } from '../seasons/props-find';
+import { sack, sittingCat, mouse, apple, egg, jar, tin } from '../kitchen/props-find';
 import {
   F, hayPile, strewnStraw, railFence, cropRows, chicken, chick, cowFront, horseHead, swallow, swallowNest, barnOwl, milkChurn, bucket, strawHat, wagonWheel,
-  pitchfork, spade, sickle, handSaw, ropeCoil, horseshoe, saddle, bridle, cowbell, milkingStool, ladder, cobweb, produceCrate, trough,
+  vegString, shelf, pitchfork, spade, sickle, handSaw, ropeCoil, horseshoe, saddle, bridle, cowbell, milkingStool, ladder, cobweb, produceCrate, trough,
 } from './props-find';
 
 const ID = 'farm-find-3';
@@ -94,9 +94,10 @@ target('horseshoe', 'Horseshoe', at(horseshoe(40), 655, 500));
 // hay loft (left)
 // =====================================================================
 scene(sh(rect(0, 284, 452, 230), '#2a1408', { opacity: 0.22 }));
+scene(stroke(line([[330, 284], [330, 330]]), '#3b3633', 2), sh(circle(330, 392, 70), `url(#${ID}-glow)`, { opacity: 0.6 }));
 scene(hayBale(150, 72, 3).map((q) => place([q], { x: 6, y: 506 })[0]), hayBale(150, 72, 5).map((q) => place([q], { x: 172, y: 506 })[0]), hayBale(150, 70, 7).map((q) => place([q], { x: 70, y: 434 })[0]));
 scene(at(hayPile(190, 96, 4), 352, 508), at(hayPile(120, 50, 8), 250, 366));
-target('pitchfork', 'Pitchfork', at(pitchfork(190), 366, 470, 1, 14));
+target('pitchfork', 'Pitchfork', at(pitchfork(190), 404, 476, 1, 12));
 scene(at(chicken(48, '#d9b07a'), 270, 364, 1, 0, true));
 // loft floor beam, joists and post
 scene(ol(rect(0, 500, 462, 30), BEAM, 1.4), sh(rect(0, 500, 462, 7), '#8a6038'), sh(rect(0, 530, 452, 16), '#3a2418'));
@@ -144,8 +145,24 @@ scene(at(handSaw(116), 822, 384));
 target('rope', 'Coil of rope', at(ropeCoil(72), 888, 384));
 scene(at(lantern(74, '#3f4a44'), 948, 380));
 scene(at(saddle(124), 1062, 760), at(saddle(116, '#5e3520', '#5a86b8', '#f6d98a'), 1140, 960, 1, 0, true));
-scene(stroke(line([[330, 284], [330, 330]]), '#3b3633', 2), sh(circle(330, 392, 70), `url(#${ID}-glow)`, { opacity: 0.6 }));
 target('lantern', 'Red lantern', at(lantern(88, '#b8402e'), 330, 326));
+
+
+// extra barn clutter: drying strings, shelf of tins, rosettes, name plates, broom
+scene(at(vegString(84, '#c98a3c', 5), 520, 284), at(vegString(76, '#f4ecdc', 5), 560, 284), at(vegString(88, '#8a3550', 5), 1010, 284), at(vegString(70, '#e8c55e', 4), 690, 284));
+scene(at(shelf(150, '#caa06c'), 590, 440), at(jar(26, 36, '#c98a2a', 1, '#c9ced1'), 612, 440), at(jar(24, 30, '#7a4a2a', 2, '#c9a06a'), 644, 440), at(tin(30, 38, '#5f8a6a', '#f6ecd6'), 680, 440), at(tin(26, 30, '#b8402e', '#f6ecd6'), 714, 440));
+scene(at(rosette(34, '#3e64b0'), 60, 536), at(rosette(30, '#c8452f'), 104, 540), at(rosette(32, '#e0a83a', '#fbf6ec'), 300, 538));
+scene(ol(rect(96, 880, 60, 20, 3), F.brass, 1), stroke(curve([[104, 892], [116, 886], [128, 893], [148, 888]]), '#7a5a1e', 1.6), ol(rect(340, 880, 60, 20, 3), F.brass, 1), stroke(curve([[348, 890], [362, 894], [374, 886], [392, 891]]), '#7a5a1e', 1.6));
+{
+  // broom leaning by the door and nail heads on the sliding door
+  let br = '', nails = '';
+  for (let i = 0; i < 9; i++) br += line([[984 + i * 4, 1050], [976 + i * 6.5, 1108]]);
+  scene(stroke(line([[1000, 1050], [1024, 760]]), '#c99a62', 6), sh(rect(980, 1040, 40, 14, 3), '#8a5230'), stroke(br, '#d9b04c', 3));
+  for (const y of [556, 814, 830, 1090]) for (let x = 811; x < 964; x += 23) nails += circle(x - 11, y, 1.8);
+  scene(sh(nails, '#7a2a1e'));
+}
+scene(at(swallow(34), 700, 60, 1, 30), at(swallow(30), 420, 210, 1, -40), at(chicken(46, '#fbf6ec'), 60, 362), at(chick(20), 200, 1104), at(chick(18), 232, 1108, 1, 0, true));
+scene(at(sack(70, 80, '#cdb98a', '#b8402e'), 410, 434).slice(1));
 
 // =====================================================================
 // floor
