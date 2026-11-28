@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: status | add-testers | invite | gamecenter | rename
+        description: status | add-testers | invite | gamecenter | rename | prepare
         default: status
       emails:
         description: Comma-separated tester emails (add-testers) or the new app name (rename)
