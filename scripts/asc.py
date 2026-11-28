@@ -37,6 +37,21 @@ def call(method, path, body=None):
         return None
 
 
+def call_raw(method, path, body=None):
+    url = path if path.startswith('http') else API + path
+    req = urllib.request.Request(url, method=method, data=json.dumps(body).encode() if body else None,
+                                 headers={'Authorization': 'Bearer ' + token(), 'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(req) as r:
+            raw = r.read()
+            return r.status, (json.loads(raw) if raw else {})
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read().decode())
+        except Exception:
+            return e.code, {}
+
+
 def internal_group():
     groups = call('GET', f'/apps/{APP_ID}/betaGroups?limit=50') or {'data': []}
     internal = [g for g in groups['data'] if g['attributes'].get('isInternalGroup')]
@@ -241,20 +256,28 @@ def prepare():
     ard = call('GET', f'/appInfos/{iid}/ageRatingDeclaration')
     if ard and ard.get('data'):
         aid = ard['data']['id']
-        print('Age rating fields:', sorted(ard['data']['attributes'].keys()))
-        attrs = {}
-        for k, v in ard['data']['attributes'].items():
-            if k in ('kidsAgeBand', 'ageRatingOverride', 'ageRatingOverrideV2', 'koreaAgeRatingOverride', 'developerAgeRatingInfoUrl'):
-                continue
-            if isinstance(v, bool) or k in ('gambling', 'unrestrictedWebAccess', 'lootBox', 'messagingAndChat', 'parentalControls',
-                                            'ageAssurance', 'userGeneratedContent', 'advertising', 'healthOrWellnessTopics', 'seventeenPlus'):
-                attrs[k] = False
-            else:
-                attrs[k] = 'NONE'
-        r = call('PATCH', f'/ageRatingDeclarations/{aid}', {'data': {'type': 'ageRatingDeclarations', 'id': aid, 'attributes': attrs}})
-        if r is None:  # set fields one at a time so one unknown field can't block the rest
-            r = all(call('PATCH', f'/ageRatingDeclarations/{aid}', {'data': {'type': 'ageRatingDeclarations', 'id': aid, 'attributes': {k: v}}}) is not None for k, v in attrs.items())
-        ok['age rating 4+'] = bool(r)
+        skip = ('kidsAgeBand', 'ageRatingOverride', 'ageRatingOverrideV2', 'koreaAgeRatingOverride', 'developerAgeRatingInfoUrl', 'gracRatingClassificationNumber')
+        attrs = {k: 'NONE' for k in ard['data']['attributes'] if k not in skip}
+        attrs['gunsOrOtherWeapons'] = 'INFREQUENT_OR_MILD'  # a cartoon cannon (fired only at cargo) - declared honestly
+        # Apple's form mixes yes/no and none/mild/frequent questions: let its error messages tell us which is which
+        done = False
+        for _ in range(6):
+            st, body = call_raw('PATCH', f'/ageRatingDeclarations/{aid}', {'data': {'type': 'ageRatingDeclarations', 'id': aid, 'attributes': attrs}})
+            if st < 300:
+                done = True
+                break
+            changed = False
+            for e in body.get('errors', []):
+                field = (e.get('source') or {}).get('pointer', '').split('/')[-1]
+                if 'Expected a BOOLEAN' in e.get('detail', '') and field in attrs:
+                    attrs[field] = False; changed = True
+                elif field and field not in attrs and 'required' in e.get('detail', '').lower():
+                    attrs[field] = 'NONE'; changed = True
+            if not changed:
+                print('!! age rating:', json.dumps(body)[:800]); break
+        ok['age rating'] = done
+        if done:
+            print('Age rating answers:', json.dumps(attrs))
     # 4. price: free
     existing = call('GET', f'/apps/{APP_ID}/appPriceSchedule')
     if existing and existing.get('data'):
