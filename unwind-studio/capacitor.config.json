@@ -1,0 +1,11 @@
+{
+  "appId": "com.unwindstudio.app",
+  "appName": "Unwind with Ma Dukes",
+  "webDir": "dist",
+  "backgroundColor": "#f6f3fb",
+  "ios": { "contentInset": "never", "allowsLinkPreview": false, "scrollEnabled": true },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 600, "launchAutoHide": true, "backgroundColor": "#f6f3fb", "showSpinner": false },
+    "StatusBar": { "overlaysWebView": true, "style": "DEFAULT" }
+  }
+}

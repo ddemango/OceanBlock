@@ -160,6 +160,73 @@ def gamecenter():
     print('Added English name' if loc else 'Localization failed')
 
 
+def register_app(bundle, name):
+    """Register the bundle id and try to create the App Store Connect app record."""
+    found = call('GET', f'/bundleIds?filter[identifier]={bundle}&limit=5') or {'data': []}
+    match = [b for b in found['data'] if b['attributes']['identifier'] == bundle]
+    if match:
+        bid = match[0]['id']
+        print('Bundle id already registered:', bundle)
+    else:
+        r = call('POST', '/bundleIds', {'data': {'type': 'bundleIds', 'attributes': {
+            'identifier': bundle, 'name': name, 'platform': 'IOS'}}})
+        if not r:
+            print('Could not register the bundle id.')
+            return False
+        bid = r['data']['id']
+        print('Registered bundle id:', bundle)
+    apps = call('GET', f'/apps?filter[bundleId]={bundle}&limit=1') or {'data': []}
+    if apps['data']:
+        print('App record already exists:', apps['data'][0]['attributes']['name'], apps['data'][0]['id'])
+        return True
+    r = call('POST', '/apps', {'data': {'type': 'apps', 'attributes': {
+        'name': name, 'sku': bundle.replace('.', '-'), 'primaryLocale': 'en-US', 'bundleId': bundle},
+        'relationships': {'bundleId': {'data': {'type': 'bundleIds', 'id': bid}}}}})
+    if r:
+        print('Created app record:', r['data']['id'])
+        return True
+    print('APP_RECORD_NOT_CREATED: Apple rejected creating the app record through the API.')
+    return False
+
+
+def team_id(bundle):
+    """The Apple team (App ID prefix) that owns a registered bundle id."""
+    r = call('GET', f'/bundleIds?filter[identifier]={bundle}&limit=5') or {'data': []}
+    for b in r['data']:
+        if b['attributes']['identifier'] == bundle:
+            return b['attributes'].get('seedId')
+    return None
+
+
+def preflight(bundle):
+    """Print TEAM_ID=... for the workflow, and fail clearly if the app record is missing."""
+    tid = team_id(bundle)
+    if not tid:
+        print(f'::error::Bundle id {bundle} is not registered on this Apple account.')
+        return False
+    print(f'TEAM_ID={tid}')
+    apps = call('GET', f'/apps?filter[bundleId]={bundle}&limit=1') or {'data': []}
+    if not apps['data']:
+        print(f'::error::No App Store Connect app record uses {bundle} yet. Create it once at appstoreconnect.apple.com → Apps → + → New App, choosing this bundle id, then run this workflow again.')
+        return False
+    print('App record:', apps['data'][0]['attributes']['name'])
+    return True
+
+
+def resolve_app():
+    """Optionally target another app by bundle id (ASC_BUNDLE_ID), e.g. Unwind with Ma Dukes."""
+    global APP_ID
+    bundle = os.environ.get('ASC_BUNDLE_ID', '').strip()
+    if not bundle:
+        return True
+    r = call('GET', f'/apps?filter[bundleId]={bundle}&limit=1')
+    if not r or not r.get('data'):
+        print(f'No App Store Connect app found for bundle id {bundle}. Create the app record first.')
+        return False
+    APP_ID = r['data'][0]['id']
+    return True
+
+
 def rename(new_name):
     infos = call('GET', f'/apps/{APP_ID}/appInfos?include=appInfoLocalizations') or {'data': []}
     locs = {i['id']: i for i in infos.get('included', []) if i['type'] == 'appInfoLocalizations'}
@@ -332,6 +399,13 @@ def prepare():
 
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'preflight':
+        sys.exit(0 if preflight(os.environ.get('ASC_BUNDLE_ID', '').strip()) else 1)
+    if len(sys.argv) > 1 and sys.argv[1] == 'register-app':
+        ok = register_app(os.environ.get('ASC_BUNDLE_ID', '').strip(), os.environ.get('ASC_APP_NAME', 'Unwind with Ma Dukes'))
+        sys.exit(0 if ok else 1)
+    if not resolve_app():
+        sys.exit(1)
     action = sys.argv[1] if len(sys.argv) > 1 else 'status'
     if action == 'add-testers':
         add_testers([e.strip() for e in sys.argv[2].split(',') if e.strip()])

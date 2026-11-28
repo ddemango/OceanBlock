@@ -1,0 +1,124 @@
+name: Unwind with Ma Dukes → TestFlight
+
+# Builds the Unwind with Ma Dukes iOS app (unwind-studio/) on a GitHub-hosted Mac.
+# - Run manually (Actions → this workflow → Run workflow): signs the app and
+#   uploads it to TestFlight using the App Store Connect API key secrets
+#   ASC_KEY_P8, ASC_KEY_ID and ASC_ISSUER_ID. The Apple team is looked up
+#   from the account (APPLE_TEAM_ID is used instead if it is set).
+# - Or push a commit whose message contains [testflight]: same signed upload.
+# - On pull requests that touch unwind-studio/: an unsigned simulator build
+#   only, to check the iOS project still compiles. Nothing is uploaded.
+on:
+  workflow_dispatch:
+  # A pushed commit whose message contains [testflight] also uploads.
+  push:
+    paths:
+      - 'unwind-studio/**'
+      - '.github/workflows/unwind-testflight.yml'
+  pull_request:
+    paths:
+      - 'unwind-studio/**'
+      - '.github/workflows/unwind-testflight.yml'
+
+concurrency:
+  group: unwind-testflight-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ios:
+    # ordinary pushes are covered by the pull_request build; only [testflight] pushes run here
+    if: github.event_name != 'push' || contains(github.event.head_commit.message, '[testflight]')
+    runs-on: macos-15
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: unwind-studio
+    env:
+      UPLOAD: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'push') && secrets.ASC_KEY_P8 != '' && secrets.ASC_KEY_ID != '' && secrets.ASC_ISSUER_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: unwind-studio/package-lock.json
+
+      - name: Pick newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+
+      - name: Test, build the web app and sync into the iOS project
+        run: |
+          npm ci
+          npm test
+          npm run build
+          npx cap sync ios
+
+      - name: Simulator build (nothing uploaded)
+        if: env.UPLOAD != 'true'
+        run: |
+          set -eo pipefail
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "::warning::Apple secrets are not set, so this was an unsigned simulator build only. Add ASC_KEY_P8, ASC_KEY_ID and ASC_ISSUER_ID to upload to TestFlight."
+          fi
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build | tail -30
+
+      - name: Check the App Store Connect app and find the Apple team
+        if: env.UPLOAD == 'true'
+        id: apple
+        working-directory: .
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_BUNDLE_ID: com.unwindstudio.app
+        run: |
+          set -o pipefail
+          pip3 install --quiet --break-system-packages pyjwt cryptography 2>/dev/null || pip3 install --quiet pyjwt cryptography
+          python3 scripts/asc.py preflight | tee "$RUNNER_TEMP/preflight.txt"
+          echo "team=$(grep '^TEAM_ID=' "$RUNNER_TEMP/preflight.txt" | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Archive, sign and upload to TestFlight
+        if: env.UPLOAD == 'true'
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID || steps.apple.outputs.team }}
+        run: |
+          set -eo pipefail
+          KEY_PATH="$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          printf '%s' "$ASC_KEY_P8" > "$KEY_PATH"
+          AUTH=(-allowProvisioningUpdates -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID")
+          # Unique, increasing build number for every upload
+          BUILD_NUMBER=${{ github.run_number }}
+
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            "${AUTH[@]}" archive | tail -40
+
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+          </dict></plist>
+          PLIST
+
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" "${AUTH[@]}" | tail -40
+
+          echo "::notice::Build $BUILD_NUMBER uploaded. It appears in TestFlight after Apple finishes processing (usually 5–20 minutes)."
+          rm -f "$KEY_PATH"

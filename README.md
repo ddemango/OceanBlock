@@ -93,3 +93,7 @@ npx @capacitor/assets generate --iconBackgroundColor '#1b9fc9' --splashBackgroun
 | `ASC_KEY_P8` | Full text of the downloaded `AuthKey_XXXX.p8` file |
 
 The app record (bundle id `com.tidebreaker.game`) must exist in App Store Connect first.
+
+## Unwind with Ma Dukes
+
+This repository also contains **Unwind with Ma Dukes**, a separate relaxing-games web app (jigsaw, paint by number, hidden objects) in [`unwind-studio/`](unwind-studio/README.md). It has its own `package.json` and does not affect Tidebreaker.
